@@ -23,7 +23,7 @@ kotlin {
                 implementation(project(":helperplanning"))
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
                 implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
                 implementation("io.insert-koin:koin-core:3.4.3")

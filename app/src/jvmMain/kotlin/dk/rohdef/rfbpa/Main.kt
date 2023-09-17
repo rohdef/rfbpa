@@ -14,8 +14,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import org.koin.dsl.onClose
-import java.io.Closeable
 
 fun main(cliArguments: Array<String>) {
     val log = KotlinLogging.logger { }
