@@ -6,15 +6,7 @@
   "type": "object",
   "patternProperties": {
     "": {
-      "type": "object",
-      "properties": {
-        "axpId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
+      "type": "string",
     }
   }
 }

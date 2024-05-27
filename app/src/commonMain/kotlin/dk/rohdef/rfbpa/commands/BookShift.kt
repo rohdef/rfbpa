@@ -5,16 +5,11 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.help
-import com.github.ajalt.clikt.parameters.types.enum
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
-import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import java.io.Closeable
 
 class BookShift(
@@ -24,39 +19,26 @@ class BookShift(
 ): CliktCommand() {
     private val log = KotlinLogging.logger {}
 
-    private val type: ShiftType by argument()
-        .enum()
+    private val shiftId by argument()
+        .convert { ShiftId(it) }
+        .help("ID of the shift")
 
-    private val helper: HelperBooking by argument()
+    private val helper by argument()
         .convert { HelperBooking.PermanentHelper(helpers[it]!!) }
         .help("ID of the helper to request data for")
-
-    private val start: Instant by argument()
-        .convert {
-            LocalDateTime.parse(it).toInstant(TimeZone.of("Europe/Copenhagen"))
-        }
-        .help("Start date of shift in ISO w.o. timezone (assumes Europe/Copenhagen)")
-    private val end: Instant by argument()
-        .convert {
-            LocalDateTime.parse(it).toInstant(TimeZone.of("Europe/Copenhagen"))
-        }
-        .help("End date of shift in ISO w.o. timezone (assumes Europe/Copenhagen)")
 
     override fun run(): Unit = runBlocking {
         log.info { "Booking shift" }
 
         val bookingId = weekPlanRepository.bookShift(
+            shiftId,
             helper,
-            type,
-            start,
-            end,
         )
 
         when (bookingId) {
             is Either.Right -> {
                 log.info { "Successfully booked" }
                 log.info { "Helper: $helper" }
-                log.info { "$start -- $end" }
                 log.info { "${bookingId.value}" }
             }
             is Either.Left -> {

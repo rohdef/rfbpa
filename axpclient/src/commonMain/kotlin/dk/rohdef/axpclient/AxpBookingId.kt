@@ -1,10 +1,10 @@
 package dk.rohdef.axpclient
 
-import dk.rohdef.helperplanning.shifts.BookingId
+import dk.rohdef.helperplanning.shifts.ShiftId
 
 data class AxpBookingId(
     val axpId: String,
 ) {
-    fun bookingId(): BookingId =
-        BookingId(axpId)
+    fun bookingId(): ShiftId =
+        ShiftId(axpId)
 }

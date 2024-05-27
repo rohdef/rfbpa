@@ -8,11 +8,9 @@ import kotlinx.datetime.Instant
 
 interface WeekPlanRepository {
     suspend fun bookShift(
-        helper: HelperBooking,
-        type: ShiftType,
-        start: Instant,
-        end: Instant,
-    ): Either<Unit, BookingId>
+        booking: ShiftId,
+        helper: HelperBooking.PermanentHelper,
+    ): Either<Unit, ShiftId>
 
     suspend fun shifts(yearWeeks: YearWeekRange): Either<ShiftsError, WeekPlans> = either {
         val weeks = yearWeeks.map { shifts(it).bind() }
@@ -21,5 +19,5 @@ interface WeekPlanRepository {
 
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, BookingId>
+    suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, ShiftId>
 }

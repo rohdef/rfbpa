@@ -1,5 +1,5 @@
 package dk.rohdef.helperplanning.shifts
 
-data class BookingId(
+data class ShiftId(
     val id: String,
 )

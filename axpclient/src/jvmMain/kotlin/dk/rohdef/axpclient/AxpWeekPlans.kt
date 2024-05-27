@@ -35,42 +35,26 @@ class AxpWeekPlans(
     )
     private val weekPlanParser = WeekPlanParser()
 
-    override suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, BookingId> = either {
+    override suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, ShiftId> = either {
         ensureLoggedIn()
 
-        axpClient.createShift(AxpShift.CustomerId("1366"), start, end, AxpShift.ShiftType.from(type))
+        axpClient.createShift(start, end, AxpShift.ShiftType.from(type))
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
     }
 
     override suspend fun bookShift(
-        helper: HelperBooking,
-        type: ShiftType,
-        start: Instant,
-        end: Instant,
-    ): Either<Unit, BookingId> {
+        shiftId: ShiftId,
+        helper: HelperBooking.PermanentHelper,
+    ): Either<Unit, ShiftId> {
         ensureLoggedIn()
 
-        val shift = AxpShift(
-            start,
-            end,
-            helper,
-            AxpShift.ShiftType.from(type),
-            // TODO: 23/04/2024 rohdef - where does this customer ID come from? Do we need?
-            AxpShift.CustomerId("1366"),
-        )
-
-        return axpClient.bookShift(shift)
+        return axpClient.bookHelper(shiftId, helper)
             .mapLeft {
                 // TODO improve
                 log.error { it }
             }
-    }
-
-    suspend fun registrate(
-
-    ): Either<Unit, Unit> {
-        TODO()
+            .map { shiftId }
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {

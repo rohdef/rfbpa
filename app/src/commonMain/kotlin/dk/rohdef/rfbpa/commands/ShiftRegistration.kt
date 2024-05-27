@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.types.enum
-import dk.rohdef.helperplanning.shifts.BookingId
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftRegistration
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import kotlinx.datetime.Instant
@@ -20,8 +20,8 @@ class ShiftRegistration(
 ): CliktCommand() {
     private val log = KotlinLogging.logger { }
 
-    private val bookingIdtype: BookingId by argument()
-        .convert { BookingId(it) }
+    private val shiftIdtype: ShiftId by argument()
+        .convert { ShiftId(it) }
         .help("ID of the booking")
 
     private val registration: ShiftRegistration by argument()

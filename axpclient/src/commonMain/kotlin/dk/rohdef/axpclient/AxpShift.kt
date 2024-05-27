@@ -9,7 +9,6 @@ data class AxpShift(
     val end: Instant,
     val helper: HelperBooking,
     val type: ShiftType,
-    val customerId: CustomerId,
 ) {
     data class CustomerId(val id: String)
 
