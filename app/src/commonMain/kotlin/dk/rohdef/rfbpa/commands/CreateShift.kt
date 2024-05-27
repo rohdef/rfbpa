@@ -40,9 +40,6 @@ class CreateShift(
 
     override fun run() = runBlocking {
         log.info { "Creating a new shift" }
-//        val hmm = Instant.parse("2024-W18-2", kotlinx.datetime.format.DateTimeFormat.formatAsKotlinBuilderDsl())
-//        println(hmm)
-//        TODO()
         val bookingId = weekPlansRepository.createShift(start, end, type)
 
         when (bookingId) {

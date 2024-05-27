@@ -30,7 +30,6 @@ class RfBpa(
                 RfBpa(get())
                     .subcommands(
                         UnbookedShifts(get()),
-                        HoursWorked(get(), get(named("helpers"))),
                         BookShift(get(), get(named("helpers"))),
                         CreateShift(get()),
                     )

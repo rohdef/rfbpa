@@ -1,17 +1,15 @@
 package dk.rohdef.rfbpa
 
 import arrow.core.raise.either
-import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftData
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeekRange
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.datetime.*
-import kotlinx.datetime.TimeZone
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.time.Duration
 
 class ShiftsReader(private val weekPlansRepository: WeekPlanRepository) {
     private val log = KotlinLogging.logger { }
@@ -24,31 +22,6 @@ class ShiftsReader(private val weekPlansRepository: WeekPlanRepository) {
             .bind()
 
         printShifts(weekPlans.nonBookedShiftsByDate)
-    }
-
-    suspend fun hoursWorked(range: YearWeekRange, helper: HelperBooking.PermanentHelper) = either {
-        val weekPlans = weekPlansRepository
-            .shifts(range)
-            .bind()
-
-        val shiftsFor = weekPlans.shiftsFor(helper)
-        val duration = duration(shiftsFor)
-
-        log.info { duration }
-    }
-
-    fun duration(shifts: ShiftData): Duration {
-        return when (shifts) {
-            ShiftData.NoData -> Duration.parse("PT0M")
-            is ShiftData.Shifts -> shifts.shifts
-                .foldRight(Duration.parse("PT0M")) { shift, acc ->
-                    val end = shift.end.toInstant(TimeZone.of("Europe/Copenhagen"))
-                    val start = shift.start.toInstant(TimeZone.of("Europe/Copenhagen"))
-                    val duration = end - start
-
-                    acc + duration
-                }
-        }
     }
 
     private val dateFormat = DateTimeFormatter.ofPattern("EEEE 'den' d. MMM:", Locale("da"))
