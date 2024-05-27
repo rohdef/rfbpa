@@ -1,4 +1,4 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.rfweeks
 
 data class YearWeekRange(
     override val start: YearWeek,

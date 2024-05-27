@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.rfbpa.ShiftsReader
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.Closeable
 
 class HoursWorked(

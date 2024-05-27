@@ -3,7 +3,7 @@ import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.9.0"
+    kotlin("plugin.serialization") version "1.9.23"
     application
 }
 
@@ -16,20 +16,17 @@ application {
 }
 kotlin {
     sourceSets {
-        val ktorVersion = "2.3.0"
-
         val commonMain by getting {
             dependencies {
                 implementation(project(":helperplanning"))
+                implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
                 implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
-                implementation("io.insert-koin:koin-core:3.4.3")
+                implementation("io.insert-koin:koin-core:3.6.0-Beta2")
 
                 // TODO terrible library design in clikt, but only usable option here and now
-                implementation("com.github.ajalt.clikt:clikt:4.2.0")
+                implementation("com.github.ajalt.clikt:clikt:4.3.0")
 
                 implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
             }

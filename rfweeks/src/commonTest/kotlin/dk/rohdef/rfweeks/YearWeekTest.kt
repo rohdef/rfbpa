@@ -1,4 +1,4 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.rfweeks
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -8,6 +8,7 @@ import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 
 class YearWeekTest : FunSpec({
     context("Constructor") {
@@ -264,5 +265,40 @@ class YearWeekTest : FunSpec({
 
         yearWeekRange.start shouldBe YearWeek(2023, 16)
         yearWeekRange.endInclusive shouldBe YearWeek(2023, 19)
+    }
+
+    context("Parsing") {
+//        DayOfWeek.MONDAY
+//
+//        val input = listOf(
+//            "2024-W12",
+//            "2024-W12-3",
+//            "2023W04",
+//            "2023W045",
+//        )
+//        val inputWithTime = listOf(
+//            "2024-W12-3T11:53",
+//            "2023W045T09:18",
+//        )
+//        val inputRelaxed = listOf(
+//            "2023-w02",
+//            "2023-w02-1",
+//            "2022w01",
+//            "2022w012",
+//        )
+//        val badInput = listOf(
+//            "24-W11",
+//            "2024-W11-0",
+//            "2024-W11-8",
+//            "2024-W1",
+//            "2024-W1-3",
+//        )
+    }
+
+    context("To LocalDate") {
+        test("hey") {
+            val lt = LocalTime.parse("11:53")
+            println(lt)
+        }
     }
 })

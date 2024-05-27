@@ -3,21 +3,25 @@ package dk.rohdef.rfbpa.convention
 import org.gradle.api.*
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 
 fun Project.configureCommon() {
     nativeTarget()
 
-    val kotlinLoggingVersion = "3.0.4"
-    val arrowKtVersion = "1.1.3"
+    val kotlinLoggingVersion = "6.0.9"
+    val arrowKtVersion = "1.2.4"
 
     kotlin {
         sourceSets {
             val commonMain by getting {
                 dependencies {
-                    implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
+                    // Base functionality
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1-Beta")
+                    implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
 
-                    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+                    // Base types
+                    implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC.2")
+                    implementation("app.softwork:kotlinx-uuid-core:0.0.25")
                 }
             }
 
@@ -29,13 +33,13 @@ fun Project.configureCommon() {
 
             val jvmMain by getting {
                 dependencies {
-                    val log4jVersion = "2.20.0"
-                    implementation("org.slf4j:slf4j-api:2.0.7")
+                    val log4jVersion = "3.0.0-beta2"
+                    implementation("org.slf4j:slf4j-api:2.1.0-alpha1")
                     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
                     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
                     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 
-                    implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
+                    implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
                 }
             }
         }
@@ -45,8 +49,8 @@ fun Project.configureCommon() {
 fun Project.kotest() {
     apply(plugin = "io.kotest.multiplatform")
 
-    val kotestVersion = "5.6.2"
-    val arrowKtVersionKotest = "1.3.3"
+    val kotestVersion = "5.8.1"
+    val arrowKtVersionKotest = "1.4.0"
 
     kotlin {
         jvm {

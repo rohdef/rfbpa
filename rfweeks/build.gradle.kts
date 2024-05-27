@@ -5,7 +5,7 @@ plugins {
     kotlin("multiplatform")
 }
 
-description = "Integration with Handicapformidlingen"
+description = "Library for dealing with weeks and kotlinx.datetime"
 
 configureCommon()
 kotlin {
@@ -16,12 +16,5 @@ kotlin {
                 kotest()
             }
         }
-
-        val jvmMain by getting {
-            dependencies {
-                implementation("com.github.mpe85:grampa:1.3.0")
-            }
-        }
-        val jvmTest by getting
     }
 }

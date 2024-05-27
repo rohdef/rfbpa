@@ -1,6 +1,6 @@
 package dk.rohdef.axpclient
 
-import dk.rohdef.helperplanning.shifts.YearWeek
+import dk.rohdef.rfweeks.YearWeek
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.TimeZone

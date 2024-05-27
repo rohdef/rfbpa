@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinVersion = "1.9.0"
+    val kotlinVersion = "1.9.23"
     implementation(kotlin("gradle-plugin", kotlinVersion))
     implementation("io.kotest:kotest-framework-multiplatform-plugin-gradle:5.6.2")
 }

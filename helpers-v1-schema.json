@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://rfbpa.rohdef.dk/helpers/v1",
+  "title": "Schema for RFBPA helpers",
+
+  "type": "object",
+  "patternProperties": {
+    "": {
+      "type": "object",
+      "properties": {
+        "axpId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

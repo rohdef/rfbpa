@@ -5,7 +5,7 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.mamoe.yamlkt.Yaml
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -17,7 +17,7 @@ import org.koin.dsl.module
 
 fun main(cliArguments: Array<String>) {
     val log = KotlinLogging.logger { }
-    log.info { "Reading shifts from system" }
+    log.info { "Reading shifts from system - awesomeness upcoming" }
 
     val configurationModule = module {
         val configuration = object {}::class.java

@@ -1,10 +1,11 @@
 rootProject.name = "rfbpa"
 
 include(
-        "app",
+    "app",
 
-        "helperplanning",
+    "helperplanning",
 
-        "axpclient",
-        "rfsimplejs",
+    "axpclient",
+    "rfsimplejs",
+    "rfweeks",
 )

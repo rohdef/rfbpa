@@ -1,6 +1,6 @@
 package dk.rohdef.axpclient
 
-import dk.rohdef.helperplanning.shifts.YearWeek
+import dk.rohdef.rfweeks.YearWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 

@@ -1,23 +1,25 @@
 package dk.rohdef.axpclient
 
 import arrow.core.Either
+import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.rfweeks.YearWeek
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.statement.*
 import kotlinx.datetime.Instant
-import mu.KotlinLogging
 import java.io.Closeable
 
-private val log = KotlinLogging.logger { }
 class AxpWeekPlans(
     configuration: AxpConfiguration,
 ): WeekPlanRepository, Closeable {
-    val client = HttpClient(OkHttp) {
+    private val log = KotlinLogging.logger { }
+    private val client = HttpClient(OkHttp) {
         install(HttpCookies)
 //        install(Logging)
 
@@ -33,6 +35,14 @@ class AxpWeekPlans(
     )
     private val weekPlanParser = WeekPlanParser()
 
+    override suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, BookingId> = either {
+        ensureLoggedIn()
+
+        axpClient.createShift(AxpShift.CustomerId("1366"), start, end, AxpShift.ShiftType.from(type))
+            .mapLeft { TODO("Domain error should be added here") }
+            .bind()
+    }
+
     override suspend fun bookShift(
         helper: HelperBooking,
         type: ShiftType,
@@ -46,6 +56,7 @@ class AxpWeekPlans(
             end,
             helper,
             AxpShift.ShiftType.from(type),
+            // TODO: 23/04/2024 rohdef - where does this customer ID come from? Do we need?
             AxpShift.CustomerId("1366"),
         )
 
@@ -54,6 +65,12 @@ class AxpWeekPlans(
                 // TODO improve
                 log.error { it }
             }
+    }
+
+    suspend fun registrate(
+
+    ): Either<Unit, Unit> {
+        TODO()
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {

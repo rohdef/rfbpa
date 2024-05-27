@@ -1,6 +1,6 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.rfweeks
 
-class LazyMap<K, V> private constructor(
+internal class LazyMap<K, V> private constructor(
     private val actualMap: MutableMap<K, V>,
     private val valueFunction: (K) -> V
 ) : Map<K, V> by actualMap {

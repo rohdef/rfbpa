@@ -1,22 +1,25 @@
 package dk.rohdef.axpclient
 
 import arrow.core.*
-import arrow.core.continuations.either
+import arrow.core.raise.either
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.shifts.BookingId
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.YearWeek
+import dk.rohdef.rfweeks.YearWeek
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.datetime.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 
 private val log = KotlinLogging.logger { }
 
@@ -62,6 +65,47 @@ internal class AxpClient(
         return client.request(shiftsUrl)
     }
 
+    suspend fun createShift(
+        // TODO: 23/04/2024 rohdef - I think customer ID should be part of the client - the credentials so to speak
+        customerId: AxpShift.CustomerId,
+        start: Instant,
+        end: Instant,
+        type: AxpShift.ShiftType,
+    ): Either<BookShiftError, BookingId> = either {
+        log.info { "Creating shift" }
+
+        checkCustomerContract(customerId, start, end).bind()
+        saveShift(customerId, start, end, type).bind()
+            .bookingId()
+    }
+
+    suspend fun registrate(shift: AxpShift, bookingId: AxpBookingId): Either<Unit, Unit> = either {
+        val response = client.submitForm(
+            urls.index,
+            parameters {
+                shiftPlan(ShiftPlanAct.SHIFT_REGISTRATIONS, shift.customerId)
+
+                append("shifttype", shift.type.axpId)
+
+                append("booking", bookingId.axpId)
+                append("bizarea", "34")
+            }
+        )
+        val body: String = response.body()
+        log.warn { "registrate: [$body]" }
+
+        TODO()
+//        return when {
+//            body.lowercase().startsWith("ok") ->
+//                AxpBookingId(body.substring(2))
+//                    .right()
+//
+//            else ->
+//                BookShiftError.SaveShift
+//                    .left()
+//        }
+    }
+
     suspend fun bookShift(shift: AxpShift): Either<BookShiftError, BookingId> = either {
         when (shift.helper) {
             HelperBooking.NoBooking -> {}
@@ -74,7 +118,7 @@ internal class AxpClient(
         }
 
         checkCustomerContract(shift).bind()
-        val bookingId = saveShift(shift).bind()
+        val bookingId = saveShift(shift.customerId, shift.start,  shift.end, shift.type).bind()
         saveBooking(shift, bookingId).bind()
 
         bookingId.bookingId()
@@ -86,6 +130,7 @@ internal class AxpClient(
         CHECK_CUSTOMER_CONTRACT,
         SAVE_SHIFT,
         SAVE_BOOKING,
+        SHIFT_REGISTRATIONS,
     }
 
     private fun ParametersBuilder.shiftPlan(shiftPlanAct: ShiftPlanAct, customerId: AxpShift.CustomerId) {
@@ -104,7 +149,7 @@ internal class AxpClient(
         append("quiet_run", "1")
     }
 
-    private fun ParametersBuilder.shiftTimes(start: Instant, end: Instant) {
+    private fun ParametersBuilder.shiftTimes(start: Instant, end: Instant, type: AxpShift.ShiftType) {
         start
             .let { DDate(it) }
             .let { Json.encodeToString(it) }
@@ -119,6 +164,8 @@ internal class AxpClient(
         end.toLocalDateTime(TimeZone.of("Europe/Copenhagen"))
             .let { "${it.hour}:${it.minute}" }
             .let { append("to_time", it) }
+
+        append("shifttype", type.axpId)
     }
 
     private fun ParametersBuilder.doNotRepeat() {
@@ -143,8 +190,7 @@ internal class AxpClient(
                 shiftPlan(ShiftPlanAct.CHECK_APPROVED_CONFLICT, shift.customerId)
                 forHelper(shift.helper)
 
-                append("shifttype", shift.type.axpId)
-                shiftTimes(shift.start, shift.end)
+                shiftTimes(shift.start, shift.end, shift.type)
                 doNotRepeat()
 
                 append("booking", "")
@@ -167,8 +213,8 @@ internal class AxpClient(
                 shiftPlan(ShiftPlanAct.CHECK_DOUBLE_CONFLICT, shift.customerId)
                 forHelper(shift.helper)
 
-                append("shifttype", shift.type.axpId)
-                shiftTimes(shift.start, shift.end)
+
+                shiftTimes(shift.start, shift.end, shift.type)
                 doNotRepeat()
 
                 append("booking", "")
@@ -185,14 +231,22 @@ internal class AxpClient(
         }
     }
 
-    private suspend fun checkCustomerContract(shift: AxpShift): Either<BookShiftError, Unit> {
+    private suspend fun checkCustomerContract(
+        shift: AxpShift,
+    ): Either<BookShiftError, Unit> = checkCustomerContract(shift.customerId, shift.start, shift.end)
+
+    private suspend fun checkCustomerContract(
+        customerId: AxpShift.CustomerId,
+        start: Instant,
+        end: Instant,
+    ): Either<BookShiftError, Unit> {
         val response = client.submitForm(
             urls.index,
             parameters {
-                shiftPlan(ShiftPlanAct.CHECK_CUSTOMER_CONTRACT, shift.customerId)
+                shiftPlan(ShiftPlanAct.CHECK_CUSTOMER_CONTRACT, customerId)
 
-                append("from", shift.start.epochSeconds.toString())
-                append("to", shift.end.epochSeconds.toString())
+                append("from", start.epochSeconds.toString())
+                append("to", end.epochSeconds.toString())
 
                 append("bizarea", "34")
             }
@@ -209,14 +263,18 @@ internal class AxpClient(
         }
     }
 
-    private suspend fun saveShift(shift: AxpShift): Either<BookShiftError, AxpBookingId> {
+    private suspend fun saveShift(
+        customerId: AxpShift.CustomerId,
+        start: Instant,
+        end: Instant,
+        type: AxpShift.ShiftType,
+    ): Either<BookShiftError, AxpBookingId> {
         val response = client.submitForm(
             urls.index,
             parameters {
-                shiftPlan(ShiftPlanAct.SAVE_SHIFT, shift.customerId)
+                shiftPlan(ShiftPlanAct.SAVE_SHIFT, customerId)
 
-                append("shifttype", shift.type.axpId)
-                shiftTimes(shift.start, shift.end)
+                shiftTimes(start, end, type)
                 doNotRepeat()
 
                 append("booking", "")
@@ -235,6 +293,23 @@ internal class AxpClient(
                 BookShiftError.SaveShift
                     .left()
         }
+    }
+
+    private suspend fun saveBooking(customerId: AxpShift.CustomerId, bookingId: AxpBookingId): Either<BookShiftError, Unit> {
+        val response = client.submitForm(
+            urls.index,
+            parameters {
+                shiftPlan(ShiftPlanAct.SAVE_BOOKING, customerId)
+
+                append("booking", bookingId.axpId)
+                // TODO deal with helper in a good way
+                append("clear_temp", "1")
+            }
+        )
+        val body: String = response.body()
+        log.warn { "saveBooking: [$body]" }
+
+        return Unit.right()
     }
 
     private suspend fun saveBooking(shift: AxpShift, bookingId: AxpBookingId): Either<BookShiftError, Unit> {
