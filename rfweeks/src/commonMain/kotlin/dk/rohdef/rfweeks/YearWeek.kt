@@ -1,6 +1,15 @@
 package dk.rohdef.rfweeks
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import kotlinx.datetime.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 data class YearWeek(
     val year: Int,
@@ -59,6 +68,47 @@ data class YearWeek(
     }
 
     companion object {
+        fun parse(text: String): Either<YearWeekParseError, YearWeek> {
+            // TODO: 01/06/2024 rohdef - deal with substring sections IndexOutOfBoundsExceptions
+            val yearPart = text.substring(0, 4)
+
+            val wAndWeekPart = if (text[4] == '-') {
+                text.substring(5)
+            } else {
+                text.substring(4)
+            }
+
+            val year = try {
+                yearPart.toInt()
+            } catch (e: NumberFormatException) {
+                return YearWeekParseError.YearMustBeANumber(
+                    yearPart,
+                    text,
+                ).left()
+            }
+
+            val prefixRegex = "^([^0-9]*).*".toRegex()
+            val weekPrefix = prefixRegex.find(wAndWeekPart)!!.groupValues.get(1)!!
+            if (weekPrefix != "W") {
+                return YearWeekParseError.WeekMustBePrefixedWithW(
+                    weekPrefix,
+                    text,
+                ).left()
+            }
+
+            val weekPart = wAndWeekPart.substring(1)
+            val week = try {
+                weekPart.toInt()
+            } catch (e: NumberFormatException) {
+                return YearWeekParseError.WeekMustBeANumber(
+                    weekPart,
+                    text,
+                ).left()
+            }
+
+            return YearWeek(year, week).right()
+        }
+
         private val mondaysInWeeksOfYear = LazyMap<Int, List<LocalDate>> {
             val firstDayOfYear = LocalDate.parse("${it-1}-12-29")
             val firstDayOfNextYear = LocalDate.parse("$it-12-29")
@@ -106,7 +156,6 @@ data class YearWeek(
         }
     }
 
-
     class InvalidWeekOfYear(
         val yearGiven: Int,
         val weekGiven: Int,
@@ -116,5 +165,22 @@ data class YearWeek(
          * This cannot be null barring a faulty implementation of IndexOutOfBoundsException
          */
         override val message = super.message!!
+    }
+
+    object YearWeekSearlizer : KSerializer<YearWeek> {
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("YearWeek", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: YearWeek) {
+            val string = "${value.year}-W${value.week}"
+            encoder.encodeString(string)
+            TODO("not implemented")
+        }
+
+        override fun deserialize(decoder: Decoder): YearWeek {
+            val t = decoder.decodeString()
+            // // TODO: 28/05/2024 rohdef - where the fuck is my parser xD
+//            return YearWeek()
+            TODO()
+        }
     }
 }

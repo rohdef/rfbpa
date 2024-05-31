@@ -32,6 +32,7 @@ class RfBpa(
                         UnbookedShifts(get()),
                         BookShift(get(), get(named("helpers"))),
                         CreateShift(get()),
+                        ApplyTemplate(),
                     )
             }
         }
@@ -54,10 +55,18 @@ fun RawArgument.toYearWeekRange(): ProcessedArgument<YearWeekRange, YearWeekRang
         if (first.isBlank()) { fail("$durationFormat. First week specification is empty.") }
         if (last.isBlank()) { fail("$durationFormat. Last week specification is empty.") }
 
+        // // TODO: 31/05/2024 rohdef - format handling must handle the either
+//        val firstFormat = YearWeek.YearWeekFormat.formatMatch(first)
+//        val lastFormat = YearWeek.YearWeekFormat.formatMatch(last)
+//
+//        if (firstFormat != lastFormat) {
+//            fail("$durationFormat. First and last part specification must mach. Last part was [$last] which has specification [${lastFormat::class.simpleName}] and first part was [$first] which has specification [[${firstFormat::class.simpleName}]].")
+//        }
+
         val fullSpec = "^[0-9]{4}-W[0-9]{2}(-[0-9])?$".toRegex()
         val shortSpec = "^[0-9]{4}-W[0-9]{2}$".toRegex()
         if (first.matches(fullSpec)) {
-            if (!last.matches(fullSpec)) { fail("$durationFormat. Last part must be in full yyyy-Www specification when the first is. Last part was [$last] and first part was [$first].") }
+            if (!last.matches(fullSpec)) { fail("Last must match full spec when first does") }
 
             val firstParts = first.split("-")
                 .map { it.trim() }

@@ -13,6 +13,8 @@ configureCommon()
 kotest()
 application {
     mainClass.set("dk.rohdef.rfbpa.MainKt")
+
+    tasks.run.get().workingDir = rootProject.projectDir
 }
 kotlin {
     sourceSets {

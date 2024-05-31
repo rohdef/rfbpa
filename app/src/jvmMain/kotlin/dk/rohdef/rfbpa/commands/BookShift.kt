@@ -21,7 +21,7 @@ class BookShift(
 
     private val shiftId by argument()
         .convert { ShiftId(it) }
-        .help("ID of the shift")
+        .help { "ID of the shift" }
 
     private val helper by argument()
         .convert { HelperBooking.PermanentHelper(helpers[it]!!) }

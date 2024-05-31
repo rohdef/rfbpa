@@ -49,7 +49,7 @@ fun Project.configureCommon() {
 fun Project.kotest() {
     apply(plugin = "io.kotest.multiplatform")
 
-    val kotestVersion = "5.8.1"
+    val kotestVersion = "5.9.0"
     val arrowKtVersionKotest = "1.4.0"
 
     kotlin {

@@ -5,6 +5,7 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.rfweeks.YearWeekFormat
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.mamoe.yamlkt.Yaml
 import org.koin.core.component.KoinComponent
@@ -31,15 +32,7 @@ fun main(cliArguments: Array<String>) {
         single<Map<String, String>>(named("helpers")) {
             Yaml.decodeMapFromString(helpers)
                 .mapKeys { it.key!! }
-                .mapValues {
-                    it.value.let {
-                        if (it is String) {
-                            it
-                        } else {
-                            throw IllegalArgumentException("No way hose")
-                        }
-                    }
-                }
+                .mapValues { it.value.toString() }
         }
 
         single<AxpConfiguration> {
@@ -67,7 +60,9 @@ fun main(cliArguments: Array<String>) {
         )
     }
 
-    RfBpaApplication().main(cliArguments)
+    YearWeekFormat.formatMatch("yay")
+
+//    RfBpaApplication().main(cliArguments)
 }
 
 class RfBpaApplication : KoinComponent {

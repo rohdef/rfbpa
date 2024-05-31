@@ -1,5 +1,7 @@
 package dk.rohdef.rfweeks
 
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -268,31 +270,67 @@ class YearWeekTest : FunSpec({
     }
 
     context("Parsing") {
-//        DayOfWeek.MONDAY
-//
-//        val input = listOf(
-//            "2024-W12",
-//            "2024-W12-3",
-//            "2023W04",
-//            "2023W045",
-//        )
-//        val inputWithTime = listOf(
-//            "2024-W12-3T11:53",
-//            "2023W045T09:18",
-//        )
-//        val inputRelaxed = listOf(
-//            "2023-w02",
-//            "2023-w02-1",
-//            "2022w01",
-//            "2022w012",
-//        )
-//        val badInput = listOf(
-//            "24-W11",
-//            "2024-W11-0",
-//            "2024-W11-8",
-//            "2024-W1",
-//            "2024-W1-3",
-//        )
+        test("full notation") {
+            val text = "2024-W12"
+            val yearWeek = YearWeek.parse(text)
+            yearWeek shouldBeRight YearWeek(2024, 12)
+        }
+
+        test("short notation") {
+            val text = "2022W08"
+            val yearWeek = YearWeek.parse(text)
+            yearWeek shouldBeRight YearWeek(2022, 8)
+        }
+
+        test("year must be a number") {
+            val text = "2x22-W08"
+            val yearWeek = YearWeek.parse(text)
+            yearWeek shouldBeLeft YearWeekParseError.YearMustBeANumber(
+                "2x22",
+                text,
+            )
+        }
+
+        test("week part must be prefixed with W") {
+            val noPrefix = "2022-08"
+            val yearWeekNoPrefix = YearWeek.parse(noPrefix)
+            yearWeekNoPrefix shouldBeLeft YearWeekParseError.WeekMustBePrefixedWithW(
+                "",
+                noPrefix,
+            )
+
+            val wrongPrefix = "2022-T08"
+            val yearWeekWrongPrefix = YearWeek.parse(wrongPrefix)
+            yearWeekWrongPrefix shouldBeLeft YearWeekParseError.WeekMustBePrefixedWithW(
+                "T",
+                wrongPrefix,
+            )
+
+            val longWrongPrefix = "2022-WT08"
+            val yearWeekLongWrongPrefix = YearWeek.parse(longWrongPrefix)
+            yearWeekLongWrongPrefix shouldBeLeft YearWeekParseError.WeekMustBePrefixedWithW(
+                "WT",
+                longWrongPrefix,
+            )
+        }
+
+        test("Week must be a number") {
+            val text = "2024-W3F"
+            val yearWeek = YearWeek.parse(text)
+            yearWeek shouldBeLeft YearWeekParseError.WeekMustBeANumber(
+                "3F",
+                text,
+            )
+        }
+
+        xtest("Week must be two digits") {
+            val text = "2022W8"
+            val yearWeek = YearWeek.parse(text)
+            yearWeek shouldBeLeft YearWeekParseError.WeekNumberMustBeTwoDigits(
+                "8",
+                text
+            )
+        }
     }
 
     context("To LocalDate") {
