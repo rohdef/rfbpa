@@ -1,6 +1,7 @@
 package dk.rohdef.rfweeks
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
 
 data class YearWeekInterval(
     override val start: YearWeek,
@@ -13,7 +14,7 @@ data class YearWeekInterval(
         )
 
     companion object {
-        fun parse(string: String): Either<Unit, YearWeekInterval> {
+        fun parse(text: String): Either<NonEmptyList<YearWeekIntervalParseError>, YearWeekInterval> {
             TODO()
         }
     }

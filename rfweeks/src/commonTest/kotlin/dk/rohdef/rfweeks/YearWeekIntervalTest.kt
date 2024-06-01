@@ -1,5 +1,6 @@
 package dk.rohdef.rfweeks
 
+import arrow.core.nonEmptyListOf
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
@@ -27,20 +28,69 @@ class YearWeekIntervalTest : FunSpec({
     }
 
     context("invalid specifications") {
-        test("start and end doesn't follow thhe same specification") {
-            val shortFirstLongLast = ""
-            val parsedShortFirst = YearWeekInterval.parse(shortFirstLongLast)
-            parsedShortFirst shouldBeLeft TODO()
+        context("start and end doesn't follow a year week specification") {
+            test("wrong first") {
+                val first = "2x04-W13"
+                val second = "2022-W01"
+                val text = "${first}/${second}"
+                val parsed = YearWeekInterval.parse(text)
+                parsed shouldBeLeft nonEmptyListOf(
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        text,
+                        YearWeekIntervalParseError.IntervalPart.START,
+                        YearWeekParseError.YearMustBeANumber(
+                            "2x04",
+                            first,
+                        ),
+                    ),
+                )
+            }
 
-            val longFirstShortLast = ""
-            val parsedLongFirst = YearWeekInterval.parse(longFirstShortLast)
-            parsedLongFirst shouldBeRight TODO()
-        }
+            test("wrong last") {
+                val first = "2017-W43"
+                val second = "2018-X33"
+                val text = "${first}/${second}"
+                val parsed = YearWeekInterval.parse(text)
+                parsed shouldBeRight nonEmptyListOf(
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        text,
+                        YearWeekIntervalParseError.IntervalPart.END,
+                        YearWeekParseError.WeekMustBePrefixedWithW(
+                            "X33",
+                            second,
+                        ),
+                    ),
+                )
+            }
 
-        context("duration end doesn't follow specs") {
-        }
+            test("both wrong") {
+                val first = "1912-W4E"
+                val second = "1915-X21"
+                val text = "${first}/${second}"
+                val parsed = YearWeekInterval.parse(text)
+                parsed shouldBeRight nonEmptyListOf(
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        text,
+                        YearWeekIntervalParseError.IntervalPart.START,
+                        YearWeekParseError.WeekMustBeANumber(
+                            "X33",
+                            first,
+                        ),
+                    ),
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        text,
+                        YearWeekIntervalParseError.IntervalPart.END,
+                        YearWeekParseError.WeekMustBePrefixedWithW(
+                            "X21",
+                            second,
+                        ),
+                    ),
+                )
+            }
 
-        context("start isn't right") {
+            xtest("separator not found") {}
+
+            xtest("start must be before end") {}
         }
     }
 })
