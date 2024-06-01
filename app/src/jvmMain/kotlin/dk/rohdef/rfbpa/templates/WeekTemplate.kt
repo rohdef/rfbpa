@@ -1,6 +1,5 @@
 package dk.rohdef.rfbpa.templates
 
-import kotlinx.datetime.DayOfWeek
 import kotlinx.serialization.Serializable
 
 @Serializable

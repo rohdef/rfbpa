@@ -1,5 +1,7 @@
 package dk.rohdef.rfweeks
 
+import arrow.core.Either
+
 data class YearWeekRange(
     override val start: YearWeek,
     override val endInclusive: YearWeek,
@@ -9,4 +11,10 @@ data class YearWeekRange(
             start,
             endInclusive,
         )
+
+    companion object {
+        fun parse(string: String): Either<Unit, YearWeekRange> {
+            TODO()
+        }
+    }
 }

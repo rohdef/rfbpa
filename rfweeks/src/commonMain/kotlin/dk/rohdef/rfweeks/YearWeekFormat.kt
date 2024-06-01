@@ -8,23 +8,27 @@ enum class YearWeekFormat(
     val regex: Regex,
     val matches: (String) -> Boolean,
 ) {
-    // TODO: 28/05/2024 rohdef - currently not supported
-//        ISO_8601_SHORT(
-//            "YYYYWww",
-//            "^[0-9]{4}W[0-9]{2}$".toRegex(),
-//        )
+    ISO_8601_SHORT(
+        "YYYYWww",
+        "^[0-9]{4}W[0-9]{2}$".toRegex(),
+        { it.matches(ISO_8601_SHORT.regex) },
+    ),
 
     ISO_8601_LONG(
         "YYYY-Www",
         "^[0-9]{4}-W[0-9]{2}$".toRegex(),
-        { it.isBlank() },
+        { it.matches(ISO_8601_LONG.regex) },
     );
 
     companion object {
-        fun formatMatch(text: String): Either<Unit, YearWeekFormat> {
+        fun formatMatch(text: String): Either<FormatMatchError, YearWeekFormat> {
             return YearWeekFormat.entries
                 .firstOrNone { it.matches(text) }
-                .toEither { }
+                .toEither { FormatMatchError.NoFormatMatches(text) }
         }
+    }
+
+    sealed interface FormatMatchError {
+        data class NoFormatMatches(val text: String) : FormatMatchError
     }
 }
