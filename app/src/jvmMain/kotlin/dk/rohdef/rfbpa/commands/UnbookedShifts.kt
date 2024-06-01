@@ -13,14 +13,14 @@ class UnbookedShifts(
 ) : CliktCommand() {
     private val log = KotlinLogging.logger { }
 
-    private val yearWeekRange by argument()
-        .toYearWeekRange()
+    private val yearWeekInterval by argument()
+        .toYearWeekInterval()
         .help(durationFormat)
 
     override fun run(): Unit = runBlocking {
         log.info { "Reading unbooked shifts" }
 
-        shiftsReader.unbookedShifts(yearWeekRange)
+        shiftsReader.unbookedShifts(yearWeekInterval)
 
         currentContext.parent?.command.let {
             if (it is Closeable) it.close()

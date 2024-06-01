@@ -36,12 +36,12 @@ data class YearWeek(
         }
     }
 
-    operator fun rangeTo(other: YearWeek): YearWeekRange {
+    operator fun rangeTo(other: YearWeek): YearWeekInterval {
         if (this > other) {
             throw IllegalArgumentException("Other must be later than current")
         }
 
-        return YearWeekRange(this, other)
+        return YearWeekInterval(this, other)
     }
 
     override fun compareTo(other: YearWeek): Int {

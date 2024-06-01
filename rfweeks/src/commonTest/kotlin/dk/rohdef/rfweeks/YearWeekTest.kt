@@ -263,10 +263,10 @@ class YearWeekTest : FunSpec({
     }
 
     test("range to") {
-        val yearWeekRange = YearWeek(2023, 16)..YearWeek(2023, 19)
+        val yearWeekInterval = YearWeek(2023, 16)..YearWeek(2023, 19)
 
-        yearWeekRange.start shouldBe YearWeek(2023, 16)
-        yearWeekRange.endInclusive shouldBe YearWeek(2023, 19)
+        yearWeekInterval.start shouldBe YearWeek(2023, 16)
+        yearWeekInterval.endInclusive shouldBe YearWeek(2023, 19)
     }
 
     context("Parsing") {

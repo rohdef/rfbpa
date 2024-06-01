@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekRange
+import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.Instant
 
 interface WeekPlanRepository {
@@ -12,7 +12,7 @@ interface WeekPlanRepository {
         helper: HelperBooking.PermanentHelper,
     ): Either<Unit, ShiftId>
 
-    suspend fun shifts(yearWeeks: YearWeekRange): Either<ShiftsError, WeekPlans> = either {
+    suspend fun shifts(yearWeeks: YearWeekInterval): Either<ShiftsError, WeekPlans> = either {
         val weeks = yearWeeks.map { shifts(it).bind() }
         WeekPlans(weeks)
     }

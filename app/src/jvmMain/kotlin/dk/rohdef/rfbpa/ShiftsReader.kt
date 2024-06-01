@@ -3,7 +3,7 @@ package dk.rohdef.rfbpa
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
-import dk.rohdef.rfweeks.YearWeekRange
+import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
@@ -14,11 +14,11 @@ import java.util.*
 class ShiftsReader(private val weekPlansRepository: WeekPlanRepository) {
     private val log = KotlinLogging.logger { }
 
-    suspend fun unbookedShifts(range: YearWeekRange) = either {
+    suspend fun unbookedShifts(interval: YearWeekInterval) = either {
         log.info { "Reading shifts" }
 
         val weekPlans = weekPlansRepository
-            .shifts(range)
+            .shifts(interval)
             .bind()
 
         printShifts(weekPlans.nonBookedShiftsByDate)

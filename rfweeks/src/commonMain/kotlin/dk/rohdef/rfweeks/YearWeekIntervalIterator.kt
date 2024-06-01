@@ -1,6 +1,6 @@
 package dk.rohdef.rfweeks
 
-class YearWeekRangeIterator(
+class YearWeekIntervalIterator(
     first: YearWeek,
     private val endInclusive: YearWeek,
 ): Iterator<YearWeek> {

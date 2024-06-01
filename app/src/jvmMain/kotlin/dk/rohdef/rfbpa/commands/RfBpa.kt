@@ -10,7 +10,7 @@ import com.github.ajalt.clikt.parameters.arguments.RawArgument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekRange
+import dk.rohdef.rfweeks.YearWeekInterval
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.io.Closeable
@@ -41,7 +41,7 @@ class RfBpa(
 
 const val durationSeparator = "/"
 const val durationFormat = "The duration should be in the format yyyy-Www${durationSeparator}yyyy-Www, where yyyy is a year such as [2023] and ww is a week number such as [31]"
-fun RawArgument.toYearWeekRange(): ProcessedArgument<YearWeekRange, YearWeekRange> {
+fun RawArgument.toYearWeekInterval(): ProcessedArgument<YearWeekInterval, YearWeekInterval> {
     return this.convert {
         if (!it.contains(durationSeparator)) { fail("$durationFormat. The separator [$durationSeparator] was not found.") }
 

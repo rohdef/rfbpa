@@ -2,18 +2,18 @@ package dk.rohdef.rfweeks
 
 import arrow.core.Either
 
-data class YearWeekRange(
+data class YearWeekInterval(
     override val start: YearWeek,
     override val endInclusive: YearWeek,
 ) : ClosedRange<YearWeek>, Iterable<YearWeek> {
     override fun iterator() =
-        YearWeekRangeIterator(
+        YearWeekIntervalIterator(
             start,
             endInclusive,
         )
 
     companion object {
-        fun parse(string: String): Either<Unit, YearWeekRange> {
+        fun parse(string: String): Either<Unit, YearWeekInterval> {
             TODO()
         }
     }
