@@ -8,7 +8,7 @@ import kotlinx.datetime.Instant
 
 interface WeekPlanRepository {
     suspend fun bookShift(
-        booking: ShiftId,
+        shiftId: ShiftId,
         helper: HelperBooking.PermanentHelper,
     ): Either<Unit, ShiftId>
 

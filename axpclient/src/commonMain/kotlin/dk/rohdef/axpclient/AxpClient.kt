@@ -94,7 +94,7 @@ internal class AxpClient(
             }
         )
         val body: String = response.body()
-        log.warn { "saveBooking: [$body]" }
+        log.debug { "saveBooking: [$body]" }
 
         booking
     }
@@ -203,7 +203,7 @@ internal class AxpClient(
             }
         )
         val body: String = response.body()
-        log.warn { "saveShift: [$body]" }
+        log.debug { "saveShift: [$body]" }
 
         return when {
             body.lowercase().startsWith("ok") ->

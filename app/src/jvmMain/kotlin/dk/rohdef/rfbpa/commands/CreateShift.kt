@@ -18,7 +18,7 @@ import java.io.Closeable
 
 class CreateShift(
     // TODO: 23/04/2024 rohdef - don't use repository directly
-    private val weekPlansRepository: WeekPlanRepository,
+    private val weekPlanRepository: WeekPlanRepository,
 ): CliktCommand() {
     private val log = KotlinLogging.logger {}
 
@@ -40,7 +40,7 @@ class CreateShift(
 
     override fun run() = runBlocking {
         log.info { "Creating a new shift" }
-        val bookingId = weekPlansRepository.createShift(start, end, type)
+        val bookingId = weekPlanRepository.createShift(start, end, type)
 
         when (bookingId) {
             is Either.Right -> {

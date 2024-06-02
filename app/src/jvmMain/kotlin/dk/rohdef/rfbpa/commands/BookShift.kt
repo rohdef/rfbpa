@@ -41,9 +41,7 @@ class BookShift(
                 log.info { "Helper: $helper" }
                 log.info { "${bookingId.value}" }
             }
-            is Either.Left -> {
-                log.error { "Could not book shift" }
-            }
+            is Either.Left -> log.error { "Could not book shift" }
         }
 
         currentContext.parent?.command.let {

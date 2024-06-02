@@ -30,7 +30,7 @@ class RfBpa(
                         UnbookedShifts(get()),
                         BookShift(get(), get(named("helpers"))),
                         CreateShift(get()),
-                        ApplyTemplate(),
+                        ApplyTemplate(get(), get(named("helpers"))),
                     )
             }
         }
