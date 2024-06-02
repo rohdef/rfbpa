@@ -9,9 +9,7 @@ import dk.rohdef.rfbpa.templates.Template
 import dk.rohdef.rfbpa.templates.WeekTemplate
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.atTime
-import kotlinx.datetime.plus
+import kotlinx.datetime.*
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 
@@ -57,11 +55,20 @@ class ApplyTemplate(
                 }
                 it.value.forEach {
                     val start = localDate.atTime(it.start)
-                    val x = if (it.end < it.start) localDate.plus(1, DateTimeUnit.DAY) else localDate
-                    val end = x.atTime(it.end)
+                    val end = start.untilTime(it.end)
                     log.info { "\t${it.helper} - ${start}--${end}" }
                 }
             }
         }
+    }
+
+    private fun LocalDateTime.untilTime(time: LocalTime): LocalDateTime {
+        val correctedDate = if (time < this.time) {
+            this.date.plus(1, DateTimeUnit.DAY)
+        } else {
+            this.date
+        }
+
+        return correctedDate.atTime(time)
     }
 }
