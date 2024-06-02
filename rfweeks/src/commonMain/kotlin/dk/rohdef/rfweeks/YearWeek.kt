@@ -71,7 +71,7 @@ data class YearWeek(
         }
     }
 
-    fun atDayOfWeek(dayOfWeek: DayOfWeek) = YearWeekDay(year, week, dayOfWeek)
+    fun atDayOfWeek(dayOfWeek: DayOfWeek) = YearWeekDay(this, dayOfWeek)
 
     companion object {
         fun parse(text: String): Either<YearWeekParseError, YearWeek> {
