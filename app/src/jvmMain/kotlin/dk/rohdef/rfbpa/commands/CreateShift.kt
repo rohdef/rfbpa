@@ -44,7 +44,7 @@ class CreateShift(
 
         when (bookingId) {
             is Either.Right -> {
-                log.info { "Successfully booked" }
+                log.info { "Successfully created" }
                 log.info { "$start -- $end" }
                 log.info { "${bookingId.value}" }
             }

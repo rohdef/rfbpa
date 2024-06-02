@@ -9,6 +9,7 @@ import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
@@ -333,10 +334,12 @@ class YearWeekTest : FunSpec({
         }
     }
 
-    context("To LocalDate") {
-        test("hey") {
-            val lt = LocalTime.parse("11:53")
-            println(lt)
-        }
+    test("at day of week") {
+        val yearWeek = YearWeek(1992, 7)
+        val yearWeekDay = yearWeek.atDayOfWeek(DayOfWeek.SUNDAY)
+
+        yearWeekDay.year shouldBe 1992
+        yearWeekDay.week shouldBe 7
+        yearWeekDay.dayOfWeek shouldBe DayOfWeek.SUNDAY
     }
 })

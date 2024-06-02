@@ -71,6 +71,8 @@ data class YearWeek(
         }
     }
 
+    fun atDayOfWeek(dayOfWeek: DayOfWeek) = YearWeekDay(year, week, dayOfWeek)
+
     companion object {
         fun parse(text: String): Either<YearWeekParseError, YearWeek> {
             // TODO: 01/06/2024 rohdef - deal with substring sections IndexOutOfBoundsExceptions
