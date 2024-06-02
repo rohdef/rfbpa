@@ -27,7 +27,17 @@ class YearWeekIntervalTest : FunSpec({
         }
     }
 
-    context("invalid specifications") {
+    context("Invalid separators") {
+        xtest("separator not found") {}
+
+        xtest("too many separators found") {}
+
+        xtest("mixed usage of separators (too many separators variation)") {}
+    }
+
+    xtest("start must be before end") {}
+
+    context("invalid component specifications") {
         context("start and end doesn't follow a year week specification") {
             test("wrong first") {
                 val first = "2x04-W13"
@@ -51,12 +61,12 @@ class YearWeekIntervalTest : FunSpec({
                 val second = "2018-X33"
                 val text = "${first}/${second}"
                 val parsed = YearWeekInterval.parse(text)
-                parsed shouldBeRight nonEmptyListOf(
+                parsed shouldBeLeft nonEmptyListOf(
                     YearWeekIntervalParseError.YearWeekComponentParseError(
                         text,
                         YearWeekIntervalParseError.IntervalPart.END,
                         YearWeekParseError.WeekMustBePrefixedWithW(
-                            "X33",
+                            "X",
                             second,
                         ),
                     ),
@@ -68,12 +78,12 @@ class YearWeekIntervalTest : FunSpec({
                 val second = "1915-X21"
                 val text = "${first}/${second}"
                 val parsed = YearWeekInterval.parse(text)
-                parsed shouldBeRight nonEmptyListOf(
+                parsed shouldBeLeft nonEmptyListOf(
                     YearWeekIntervalParseError.YearWeekComponentParseError(
                         text,
                         YearWeekIntervalParseError.IntervalPart.START,
                         YearWeekParseError.WeekMustBeANumber(
-                            "X33",
+                            "4E",
                             first,
                         ),
                     ),
@@ -81,16 +91,12 @@ class YearWeekIntervalTest : FunSpec({
                         text,
                         YearWeekIntervalParseError.IntervalPart.END,
                         YearWeekParseError.WeekMustBePrefixedWithW(
-                            "X21",
+                            "X",
                             second,
                         ),
                     ),
                 )
             }
-
-            xtest("separator not found") {}
-
-            xtest("start must be before end") {}
         }
     }
 })

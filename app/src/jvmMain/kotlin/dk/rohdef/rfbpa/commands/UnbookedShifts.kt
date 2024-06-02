@@ -15,7 +15,6 @@ class UnbookedShifts(
 
     private val yearWeekInterval by argument()
         .toYearWeekInterval()
-        .help(durationFormat)
 
     override fun run(): Unit = runBlocking {
         log.info { "Reading unbooked shifts" }

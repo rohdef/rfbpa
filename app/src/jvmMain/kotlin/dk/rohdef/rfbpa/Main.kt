@@ -5,7 +5,6 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import dk.rohdef.rfweeks.YearWeekFormat
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.mamoe.yamlkt.Yaml
 import org.koin.core.component.KoinComponent
@@ -60,9 +59,7 @@ fun main(cliArguments: Array<String>) {
         )
     }
 
-    YearWeekFormat.formatMatch("yay")
-
-//    RfBpaApplication().main(cliArguments)
+    RfBpaApplication().main(cliArguments)
 }
 
 class RfBpaApplication : KoinComponent {
