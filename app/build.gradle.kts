@@ -23,6 +23,9 @@ kotlin {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
                 implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
                 implementation("io.insert-koin:koin-core:3.6.0-Beta2")

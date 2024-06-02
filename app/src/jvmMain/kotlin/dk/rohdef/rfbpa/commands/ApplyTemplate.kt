@@ -5,9 +5,11 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.rfbpa.templates.Template
+import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.mamoe.yamlkt.Yaml
 import java.io.File
+import java.time.DayOfWeek
 
 class ApplyTemplate(
 ): CliktCommand() {
@@ -18,9 +20,20 @@ class ApplyTemplate(
         .help { "File with yaml formatted shift template" }
 
     override fun run() {
-        val template = templateFile.readText()
+        val rawTemplate = templateFile.readText()
 
-        val q = Yaml.decodeFromString(Template.serializer(), template)
-        log.error { q }
+        val template = Yaml.decodeFromString(Template.serializer(), rawTemplate)
+
+        val weekStart = YearWeek(2024, 24)
+        val weekEnd = YearWeek(2024, 33) // three rolls in new
+
+        // TODO implement start/end rules
+        log.info { "Applying template" }
+        template.weeks.forEach {
+            log.info { it.name }
+            // TODO: 02/06/2024 rohdef - use map with default value instead
+            val mondayShifts = it.shifts.getOrDefault(DayOfWeek.MONDAY, emptyList())
+            log.info { "Monday: " + mondayShifts }
+        }
     }
 }

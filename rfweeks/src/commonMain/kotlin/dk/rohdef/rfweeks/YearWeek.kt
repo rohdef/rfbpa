@@ -5,18 +5,22 @@ import arrow.core.left
 import arrow.core.right
 import kotlinx.datetime.*
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+@Serializable(YearWeek.YearWeekSearlizer::class)
 data class YearWeek(
     val year: Int,
     val week: Int,
 ) : Comparable<YearWeek> {
     val firstDayOfWeek: LocalDate
-        get() { return mondaysInWeeksOfYear(year).get(week-1) }
+        get() {
+            return mondaysInWeeksOfYear(year).get(week - 1)
+        }
     private val maxWeekForYear = mondaysInWeeksOfYear(year).size
 
     init {
@@ -110,7 +114,7 @@ data class YearWeek(
         }
 
         private val mondaysInWeeksOfYear = LazyMap<Int, List<LocalDate>> {
-            val firstDayOfYear = LocalDate.parse("${it-1}-12-29")
+            val firstDayOfYear = LocalDate.parse("${it - 1}-12-29")
             val firstDayOfNextYear = LocalDate.parse("$it-12-29")
             val firstMondayOfYear = firstDayOfYear.nextOrSame(DayOfWeek.MONDAY)
 
@@ -160,7 +164,7 @@ data class YearWeek(
         val yearGiven: Int,
         val weekGiven: Int,
         val maximumValidWeekNumber: Int,
-    ): IndexOutOfBoundsException("Invalid week number given [$weekGiven] for year [$yearGiven].  Valid weeks are [1-$maximumValidWeekNumber].") {
+    ) : IndexOutOfBoundsException("Invalid week number given [$weekGiven] for year [$yearGiven].  Valid weeks are [1-$maximumValidWeekNumber].") {
         /**
          * This cannot be null barring a faulty implementation of IndexOutOfBoundsException
          */
@@ -168,19 +172,21 @@ data class YearWeek(
     }
 
     object YearWeekSearlizer : KSerializer<YearWeek> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("YearWeek", PrimitiveKind.STRING)
+        override val descriptor = PrimitiveSerialDescriptor("YearWeek", PrimitiveKind.STRING)
 
         override fun serialize(encoder: Encoder, value: YearWeek) {
             val string = "${value.year}-W${value.week}"
             encoder.encodeString(string)
-            TODO("not implemented")
         }
 
         override fun deserialize(decoder: Decoder): YearWeek {
-            val t = decoder.decodeString()
-            // // TODO: 28/05/2024 rohdef - where the fuck is my parser xD
-//            return YearWeek()
-            TODO()
+            val text = decoder.decodeString()
+            val yearWeek = parse(text)
+
+            when (yearWeek) {
+                is Either.Right -> return yearWeek.value
+                is Either.Left -> throw IllegalArgumentException("Could not deserialize year and week: ${yearWeek.value}")
+            }
         }
     }
 }

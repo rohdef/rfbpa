@@ -83,7 +83,7 @@ fun Project.nativeTarget() {
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     kotlin {
-        targetHierarchy.default()
+        kotlin.applyDefaultHierarchyTemplate()
 
         jvm {
             withJava()
