@@ -10,6 +10,9 @@ data class YearWeekDay(
     val yearWeek: YearWeek,
     val dayOfWeek: DayOfWeek,
 ) {
+    constructor(year: Int, week: Int, dayOfWeek: DayOfWeek)
+            : this(YearWeek(year, week), dayOfWeek)
+
     val year = yearWeek.year
     val week = yearWeek.week
 

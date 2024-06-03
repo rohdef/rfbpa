@@ -28,4 +28,14 @@ class YearWeekDayTest : FunSpec({
 //            "2024-W1",
 //            "2024-W1-3",
 //        )
+    xcontext("Comparisons")
+
+    xcontext("Parsing") {
+    }
+
+    context("from other types") {
+        context("LocalDate") {
+
+        }
+    }
 })

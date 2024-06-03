@@ -10,9 +10,9 @@ import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
-import dk.rohdef.rfbpa.templates.HelperReservation
-import dk.rohdef.rfbpa.templates.Template
-import dk.rohdef.rfbpa.templates.WeekTemplate
+import dk.rohdef.helperplanning.templates.HelperReservation
+import dk.rohdef.helperplanning.templates.Template
+import dk.rohdef.helperplanning.templates.WeekTemplate
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking

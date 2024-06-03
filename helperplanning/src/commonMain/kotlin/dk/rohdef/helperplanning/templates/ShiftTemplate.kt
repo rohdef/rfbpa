@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa.templates
+package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.shifts.ShiftType
 import kotlinx.datetime.LocalTime

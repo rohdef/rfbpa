@@ -3,6 +3,7 @@ import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 description = "Models how a helper plan is represented"

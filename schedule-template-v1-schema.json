@@ -39,9 +39,6 @@
     "start": {
       "type": "string"
     },
-    "end": {
-      "type": "string"
-    },
     "weeks": {
       "description": "List of week schedule templates",
       "type": "array",
@@ -51,16 +48,6 @@
         "properties": {
           "name": {
             "description": "Optional name for the week template",
-            "type": "string"
-          },
-
-          "start": {
-            "description": "ISO 8601 week specification, e.g. 2024-W22 for week 22 in 2024",
-            "type": "string"
-          },
-
-          "repeat": {
-            "description": "Specification of repetition pattern, can be none for not repeating, 1W for weekly, 2W for every second week and so on.",
             "type": "string"
           },
 
@@ -80,7 +67,7 @@
           }
         },
 
-        "required": ["start", "shifts"]
+        "required": ["shifts"]
       },
 
       "required": ["start", "weeks"]
