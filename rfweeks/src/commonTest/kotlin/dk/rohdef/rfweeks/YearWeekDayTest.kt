@@ -1,6 +1,9 @@
 package dk.rohdef.rfweeks
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import kotlinx.datetime.LocalDate
+import java.time.DayOfWeek
 
 class YearWeekDayTest : FunSpec({
     //        DayOfWeek.MONDAY
@@ -35,7 +38,11 @@ class YearWeekDayTest : FunSpec({
 
     context("from other types") {
         context("LocalDate") {
+            test("Monday") {
+                val date = LocalDate(2024, 6, 3)
 
+                YearWeekDay.from(date) shouldBe YearWeekDay(2024, 23, DayOfWeek.MONDAY)
+            }
         }
     }
 })

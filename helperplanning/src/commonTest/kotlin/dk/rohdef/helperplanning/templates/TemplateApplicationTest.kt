@@ -5,6 +5,7 @@ import dk.rohdef.helperplanning.TestWeekPlanRepository
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
+import dk.rohdef.rfweeks.toYearWeekDay
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
@@ -45,13 +46,13 @@ class TemplateApplicationTest : FunSpec({
                 val firstShift = weekPlanRepository.sortedByStartShifts.first()
                 val lastShift = weekPlanRepository.sortedByStartShifts.last()
                 val firstStart = firstShift.start
-                    // TODO use application
+                    // TODO use application time zone
                     .toLocalDateTime(TimeZone.UTC)
-                    .date.toYearWeekDay
+                    .date.toYearWeekDay()
                 firstStart shouldBe YearWeekDay(1919, 12, DayOfWeek.MONDAY)
                 val lastStart = lastShift.start // note datecrossing shift is possible and valid
                     .toLocalDateTime(TimeZone.UTC)
-                    .date.toYearWeekDay
+                    .date.toYearWeekDay()
                 lastStart shouldBe YearWeekDay(1919, 15, DayOfWeek.SUNDAY)
             }
 

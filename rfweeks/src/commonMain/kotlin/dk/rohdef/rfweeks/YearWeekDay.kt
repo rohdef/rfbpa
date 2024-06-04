@@ -31,4 +31,10 @@ data class YearWeekDay(
             SATURDAY -> 5
             SUNDAY -> 6
         }
+
+    companion object {
+        fun from(date: LocalDate): YearWeekDay {
+            TODO()
+        }
+    }
 }
