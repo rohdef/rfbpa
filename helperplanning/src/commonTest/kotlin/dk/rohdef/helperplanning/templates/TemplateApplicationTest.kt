@@ -1,66 +1,78 @@
 package dk.rohdef.helperplanning.templates
 
-import arrow.core.none
 import dk.rohdef.helperplanning.TestWeekPlanRepository
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.toYearWeekDay
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
-import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 
 class TemplateApplicationTest : FunSpec({
+    val timezone = TimeZone.of("Europe/Copenhagen")
     val weekPlanRepository = TestWeekPlanRepository()
     val templateApplication = TemplateApplication(weekPlanRepository)
+
+    fun Instant.toYearWeekDay() : YearWeekDay {
+        return this.toLocalDateTime(timezone)
+            .date
+            .toYearWeekDay()
+    }
+
+    fun TestWeekPlanRepository.firstShiftStart() {
+        this.sortedByStartShifts
+            .first()
+            .start
+            .toYearWeekDay()
+    }
+
+    fun TestWeekPlanRepository.lastShiftStart() {
+        this.sortedByStartShifts
+            .last()
+            .start
+            .toYearWeekDay()
+    }
 
     context("Template cutting dates") {
         val schedulingStart = YearWeek(1919, 12)
         val schedulingEnd = YearWeek(1919, 15)
 
-        val weekTemplates = listOf(
-            WeekTemplate(
-                "", mapOf(
-                    DayOfWeek.FRIDAY to listOf(TemplateTestData.ShiftTemplates.shift6_30to22_30)
-                )
-            )
-        )
-
         context("start date") {
             test("template is before scheduling") {
                 val template = Template(
                     YearWeek(1919, 3),
-                    weekTemplates,
+                    TemplateTestData.WeekTemplates.week,
                 )
 
-                templateApplication.performThisBitch(
-                    schedulingStart,
-                    schedulingEnd,
-                    listOf(template),
+                templateApplication.applyTemplate(schedulingStart, schedulingEnd, template)
+
+                weekPlanRepository.firstShiftStart() shouldBe YearWeekDay(schedulingStart, DayOfWeek.MONDAY)
+                weekPlanRepository.lastShiftStart() shouldBe YearWeekDay(schedulingEnd, DayOfWeek.SUNDAY)
+            }
+
+            test("template in between scheduling") {
+                val template = Template(
+                    YearWeek(1919, 13),
+                    TemplateTestData.WeekTemplates.week,
                 )
 
-                // check first shift is monday of week 12
-                val firstShift = weekPlanRepository.sortedByStartShifts.first()
-                val lastShift = weekPlanRepository.sortedByStartShifts.last()
-                val firstStart = firstShift.start
-                    // TODO use application time zone
-                    .toLocalDateTime(TimeZone.UTC)
-                    .date.toYearWeekDay()
-                firstStart shouldBe YearWeekDay(1919, 12, DayOfWeek.MONDAY)
-                val lastStart = lastShift.start // note datecrossing shift is possible and valid
-                    .toLocalDateTime(TimeZone.UTC)
-                    .date.toYearWeekDay()
-                lastStart shouldBe YearWeekDay(1919, 15, DayOfWeek.SUNDAY)
+                templateApplication.applyTemplate(schedulingStart, schedulingEnd, template)
+
+                weekPlanRepository.firstShiftStart() shouldBe YearWeekDay(1919, 13, DayOfWeek.MONDAY)
+                weekPlanRepository.lastShiftStart() shouldBe YearWeekDay(schedulingEnd, DayOfWeek.SUNDAY)
             }
 
             test("template is after scheduling") {
                 val template = Template(
-                    YearWeek(1919, 3),
-                    weekTemplates,
+                    YearWeek(1919, 16),
+                    TemplateTestData.WeekTemplates.week,
                 )
+
+                templateApplication.applyTemplate(schedulingStart, schedulingEnd, template)
+
+                weekPlanRepository.shifts.shouldBeEmpty()
             }
         }
 
@@ -69,14 +81,14 @@ class TemplateApplicationTest : FunSpec({
             test("two templates, schduling start is after second start") {
                 val template = Template(
                     YearWeek(1919, 3),
-                    weekTemplates,
+                    TemplateTestData.WeekTemplates.week,
                 )
             }
 
             test("none applied if scheduling end is before only start") {
                 val template = Template(
                     YearWeek(1919, 3),
-                    weekTemplates,
+                    TemplateTestData.WeekTemplates.week,
                 )
             }
 

@@ -1,9 +1,6 @@
 package dk.rohdef.rfweeks
 
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.plus
+import kotlinx.datetime.*
 import java.time.DayOfWeek.*
 
 data class YearWeekDay(
@@ -16,10 +13,7 @@ data class YearWeekDay(
     val year = yearWeek.year
     val week = yearWeek.week
 
-    fun toLocalDate(): LocalDate {
-        // TODO: 02/06/2024 rohdef - icky... only manual test for now :(
-        return yearWeek.firstDayOfWeek.plus(dayOfWeek.daysFromMonday(), DateTimeUnit.DAY)
-    }
+    val date = yearWeek.firstDayOfWeek.plus(dayOfWeek.daysFromMonday(), DateTimeUnit.DAY)
 
     private fun DayOfWeek.daysFromMonday() =
         when (this) {
@@ -34,7 +28,11 @@ data class YearWeekDay(
 
     companion object {
         fun from(date: LocalDate): YearWeekDay {
-            TODO()
+            val firstWeekInYear = YearWeekDay(date.year, 1, date.dayOfWeek)
+            val firstWeekdayInYear = firstWeekInYear.date
+            val daysFromFirstWeekday = firstWeekdayInYear.daysUntil(date)
+            val week = daysFromFirstWeekday/7 + 1
+            return YearWeekDay(date.year, week, date.dayOfWeek)
         }
     }
 }

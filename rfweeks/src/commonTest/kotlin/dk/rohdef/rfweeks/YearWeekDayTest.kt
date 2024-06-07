@@ -38,11 +38,23 @@ class YearWeekDayTest : FunSpec({
 
     context("from other types") {
         context("LocalDate") {
-            test("Monday") {
+            test("a Monday") {
                 val date = LocalDate(2024, 6, 3)
 
                 YearWeekDay.from(date) shouldBe YearWeekDay(2024, 23, DayOfWeek.MONDAY)
             }
+
+            test("a Thursday") {
+                val date = LocalDate(2024, 6, 6)
+
+                YearWeekDay.from(date) shouldBe YearWeekDay(2024, 23, DayOfWeek.THURSDAY)
+            }
+        }
+    }
+
+    context("to other types") {
+        context("LocalDate") {
+            // TODO test date val
         }
     }
 })

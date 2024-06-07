@@ -34,18 +34,15 @@ class ApplyTemplate(
 
     override fun run(): Unit = runBlocking {
         val rawTemplate = templateFile.readText()
-
         val template = Yaml.decodeFromString(Template.serializer(), rawTemplate)
 
         // TODO: 02/06/2024 rohdef - this part is quite testable
         val weekStart = YearWeek(2024, 25)
         val weekEnd = YearWeek(2024, 33) // three rolls in new
 
-
         val templateStart = maxOf(template.start, weekStart)
-        val templateEnd = template.end
-            .map { minOf(it, weekEnd) }
-            .getOrElse { weekEnd }
+        // TODO make sure end is exclusive!!!
+        val templateEnd = weekEnd // or date of next template
         log.info { "Applying template in interval ${templateStart}--${templateEnd}" }
 
         (templateStart..templateEnd).forEach {
@@ -63,7 +60,7 @@ class ApplyTemplate(
             val shifts = weekTemplate.shifts
             shifts.forEach {
                 val yearWeekDay = week.atDayOfWeek(it.key)
-                val localDate = yearWeekDay.toLocalDate()
+                val localDate = yearWeekDay.date
 
                 it.value.forEach {
                     val start = localDate.atTime(it.start)
@@ -111,15 +108,5 @@ class ApplyTemplate(
             }
             HelperReservation.NoReservation -> log.info { "No helper specified" }
         }
-    }
-
-    private fun LocalDateTime.untilTime(time: LocalTime): LocalDateTime {
-        val correctedDate = if (time < this.time) {
-            this.date.plus(1, DateTimeUnit.DAY)
-        } else {
-            this.date
-        }
-
-        return correctedDate.atTime(time)
     }
 }
