@@ -6,22 +6,18 @@ import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import dk.rohdef.rfweeks.toYearWeekDay
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 
 class TestWeekPlanRepository : WeekPlanRepository {
-    internal val timezone = TimeZone.of("Europe/Copenhagen")
-
     internal fun reset() {
         _shifts.clear()
         _bookings.clear()
     }
 
     private val _shifts = mutableMapOf<ShiftId, Shift>()
+    private val _bookings = mutableMapOf<ShiftId, HelperBooking>().withDefault { HelperBooking.NoBooking }
+
     internal val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
     internal val shiftList: List<Shift>
@@ -35,14 +31,12 @@ class TestWeekPlanRepository : WeekPlanRepository {
 
     internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
         return shiftsOnDay(yearWeekDay).keys
-            .map { _bookings.get(it)!! }
+            .map { _bookings.getValue(it) }
     }
 
     internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {
         return  _shifts.filter { it.value.start.yearWeekDay == yearWeekDay }
     }
-
-    private val _bookings = mutableMapOf<ShiftId, HelperBooking>().withDefault { HelperBooking.NoBooking }
 
     internal fun firstShiftStart(): YearWeekDay {
         return this.sortedByStartShifts

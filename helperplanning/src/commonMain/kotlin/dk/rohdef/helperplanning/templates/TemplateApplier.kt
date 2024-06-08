@@ -71,10 +71,10 @@ class TemplateApplier(
         }
     }
 
-    private suspend fun bookHelper(shiftId: ShiftId, helper: HelperReservation) {
-        when (helper) {
+    private suspend fun bookHelper(shiftId: ShiftId, helperReservation: HelperReservation) {
+        when (helperReservation) {
             is HelperReservation.Helper -> {
-                val helper = HelperBooking.PermanentHelper(helpers[helper.id]!!)
+                val helper = HelperBooking.PermanentHelper(helpers[helperReservation.id]!!)
 
                 val bookingId = weekPlanRepository.bookShift(
                     shiftId,
