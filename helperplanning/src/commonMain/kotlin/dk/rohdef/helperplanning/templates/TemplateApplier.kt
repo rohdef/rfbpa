@@ -17,6 +17,10 @@ class TemplateApplier(
         schedulingEndExclusive: YearWeek,
         template: Template,
     ) {
+        if (template.start >= schedulingEndExclusive) {
+            return // Template is for later than current scheduling
+        }
+
         val templateStart = maxOf(template.start, schedulingStart)
         // TODO date of next template
         val templateEnd = schedulingEndExclusive.previousWeek()
