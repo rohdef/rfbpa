@@ -1,29 +1,43 @@
 package dk.rohdef.helperplanning.templates
 
 import arrow.core.Either
+import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeek
+import dk.rohdef.rfweeks.YearWeekDayAtTime
+import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.datetime.*
+import kotlinx.datetime.LocalTime
 
 class TemplateApplier(
     val weekPlanRepository: WeekPlanRepository,
+    private val helpers: Map<String, String>,
 ) {
     private val log = KotlinLogging.logger {}
 
+    suspend fun applyTemplates(
+        yearWeekInterval: YearWeekInterval,
+        templates: List<Template>,
+    ) {
+        // TODO: 08/06/2024 rohdef - temporary implementation due to expected method signature
+        val schedulingStart: YearWeek = yearWeekInterval.start
+        val schedulingEnd: YearWeek = yearWeekInterval.endInclusive
+        applyTemplate(schedulingStart, schedulingEnd, templates.first())
+    }
+
     suspend fun applyTemplate(
         schedulingStart: YearWeek,
-        schedulingEndExclusive: YearWeek,
+        schedulingEnd: YearWeek,
         template: Template,
     ) {
-        if (template.start >= schedulingEndExclusive) {
+        if (template.start > schedulingEnd) {
             return // Template is for later than current scheduling
         }
 
         val templateStart = maxOf(template.start, schedulingStart)
         // TODO date of next template
-        val templateEnd = schedulingEndExclusive.previousWeek()
+        val templateEnd = schedulingEnd
         log.info { "Applying template in interval ${templateStart}--${templateEnd}" }
 
         (templateStart..templateEnd).forEach {
@@ -37,17 +51,12 @@ class TemplateApplier(
 
         weekTemplate.shifts.forEach {
             val yearWeekDay = week.atDayOfWeek(it.key)
-            val localDate = yearWeekDay.date
 
             it.value.forEach {
-                val start = localDate.atTime(it.start)
+                val start = yearWeekDay.atTime(it.start)
                 val end = start.untilTime(it.end)
 
-                // TODO: 02/06/2024 rohdef - deal with time zones somehow, not fond of hard code
-                val startInstant = start.toInstant(TimeZone.of("Europe/Copenhagen"))
-                val endInstant = end.toInstant(TimeZone.of("Europe/Copenhagen"))
-
-                val shiftId = weekPlanRepository.createShift(startInstant, endInstant, it.type)
+                val shiftId = weekPlanRepository.createShift(start, end, it.type)
                 log.info { "\tcreated shift: ${start}--${end}" }
 
                 when (shiftId) {
@@ -63,13 +72,29 @@ class TemplateApplier(
     }
 
     private suspend fun bookHelper(shiftId: ShiftId, helper: HelperReservation) {
+        when (helper) {
+            is HelperReservation.Helper -> {
+                val helper = HelperBooking.PermanentHelper(helpers[helper.id]!!)
+
+                val bookingId = weekPlanRepository.bookShift(
+                    shiftId,
+                    helper,
+                )
+
+                when (bookingId) {
+                    is Either.Right -> log.info { "Successfully booked ${helper}" }
+                    is Either.Left -> log.error { "Could not book helper for shift ${shiftId}" }
+                }
+            }
+            HelperReservation.NoReservation -> log.info { "No helper specified" }
+        }
     }
 
-    private fun LocalDateTime.untilTime(time: LocalTime): LocalDateTime {
+    private fun YearWeekDayAtTime.untilTime(time: LocalTime): YearWeekDayAtTime {
         val correctedDate = if (time < this.time) {
-            this.date.plus(1, DateTimeUnit.DAY)
+            this.yearWeekDay.nextDay()
         } else {
-            this.date
+            this.yearWeekDay
         }
 
         return correctedDate.atTime(time)

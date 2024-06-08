@@ -2,10 +2,9 @@ package dk.rohdef.rfbpa.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.rfbpa.ShiftsReader
-import kotlinx.coroutines.runBlocking
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import java.io.Closeable
 
 class UnbookedShifts(

@@ -101,7 +101,7 @@ data class YearWeek(
             }
 
             val prefixRegex = "^([^0-9]*).*".toRegex()
-            val weekPrefix = prefixRegex.find(wAndWeekPart)!!.groupValues.get(1)!!
+            val weekPrefix = prefixRegex.find(wAndWeekPart)!!.groupValues[1]
             if (weekPrefix != "W") {
                 return YearWeekParseError.WeekMustBePrefixedWithW(
                     weekPrefix,

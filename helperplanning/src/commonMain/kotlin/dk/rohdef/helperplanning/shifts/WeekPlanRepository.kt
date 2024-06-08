@@ -3,6 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.rfweeks.YearWeek
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.Instant
 
@@ -19,5 +20,5 @@ interface WeekPlanRepository {
 
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, ShiftId>
+    suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime, type: ShiftType): Either<Unit, ShiftId>
 }

@@ -15,6 +15,21 @@ data class YearWeekDay(
 
     val date = yearWeek.firstDayOfWeek.plus(dayOfWeek.daysFromMonday(), DateTimeUnit.DAY)
 
+    fun atTime(time: LocalTime) =
+        YearWeekDayAtTime(this, time)
+
+    fun nextDay(): YearWeekDay {
+        return when (dayOfWeek) {
+            MONDAY -> YearWeekDay(yearWeek, DayOfWeek.TUESDAY)
+            TUESDAY -> YearWeekDay(yearWeek, DayOfWeek.WEDNESDAY)
+            WEDNESDAY -> YearWeekDay(yearWeek, DayOfWeek.THURSDAY)
+            THURSDAY -> YearWeekDay(yearWeek, DayOfWeek.FRIDAY)
+            FRIDAY -> YearWeekDay(yearWeek, DayOfWeek.SATURDAY)
+            SATURDAY -> YearWeekDay(yearWeek, DayOfWeek.SUNDAY)
+            SUNDAY -> YearWeekDay(yearWeek.nextWeek(), DayOfWeek.MONDAY)
+        }
+    }
+
     private fun DayOfWeek.daysFromMonday() =
         when (this) {
             MONDAY -> 0

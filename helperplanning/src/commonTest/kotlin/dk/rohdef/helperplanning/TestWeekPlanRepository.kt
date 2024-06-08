@@ -5,6 +5,7 @@ import arrow.core.right
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.toYearWeekDay
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -26,10 +27,11 @@ class TestWeekPlanRepository : WeekPlanRepository {
     internal val shiftList: List<Shift>
         get() = _shifts.values.toList()
     internal val sortedByStartShifts: List<Shift>
-        get() = shiftList.sortedBy { it.start }
+        // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
+        get() = shiftList.sortedBy { it.start.localDateTime }
 
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
-        shiftList.filter { it.start.toYearWeekDay() == yearWeekDay }
+        shiftList.filter { it.start.yearWeekDay == yearWeekDay }
 
     internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
         return shiftsOnDay(yearWeekDay).keys
@@ -37,29 +39,23 @@ class TestWeekPlanRepository : WeekPlanRepository {
     }
 
     internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {
-        return  _shifts.filter { it.value.start.toYearWeekDay() == yearWeekDay }
+        return  _shifts.filter { it.value.start.yearWeekDay == yearWeekDay }
     }
 
     private val _bookings = mutableMapOf<ShiftId, HelperBooking>().withDefault { HelperBooking.NoBooking }
-
-    fun Instant.toYearWeekDay() : YearWeekDay {
-        return this.toLocalDateTime(timezone)
-            .date
-            .toYearWeekDay()
-    }
 
     internal fun firstShiftStart(): YearWeekDay {
         return this.sortedByStartShifts
             .first()
             .start
-            .toYearWeekDay()
+            .yearWeekDay
     }
 
     internal fun lastShiftStart(): YearWeekDay {
         return this.sortedByStartShifts
             .last()
             .start
-            .toYearWeekDay()
+            .yearWeekDay
     }
 
     override suspend fun bookShift(shiftId: ShiftId, helper: HelperBooking.PermanentHelper): Either<Unit, ShiftId> {
@@ -72,7 +68,7 @@ class TestWeekPlanRepository : WeekPlanRepository {
         TODO("not implemented")
     }
 
-    override suspend fun createShift(start: Instant, end: Instant, type: ShiftType): Either<Unit, ShiftId> {
+    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime, type: ShiftType): Either<Unit, ShiftId> {
         val uuid = UUID.generateUUID()
         val shiftId = ShiftId(uuid.toString())
         val shift = Shift(start, end, type)
@@ -83,8 +79,8 @@ class TestWeekPlanRepository : WeekPlanRepository {
     }
 
     data class Shift(
-        val start: Instant,
-        val end: Instant,
+        val start: YearWeekDayAtTime,
+        val end: YearWeekDayAtTime,
         val type: ShiftType,
     )
 }
