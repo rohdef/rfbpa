@@ -8,12 +8,11 @@ import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.types.enum
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.rfweeks.YearWeekDay
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import java.io.Closeable
 
 class CreateShift(
@@ -25,18 +24,20 @@ class CreateShift(
     private val type: ShiftType by argument()
         .enum()
 
-    private val start: Instant by argument()
+    private val start: YearWeekDayAtTime by argument()
         .convert {
-            // // TODO: 28/04/2024 rohdef - these should be kept in local date time it seems
-            LocalDateTime.parse(it).toInstant(TimeZone.of("Europe/Copenhagen"))
+            // TODO: 28/04/2024 rohdef - these should use YearWeekDayAtTime once parsing is added
+            val x = LocalDateTime.parse(it)
+            YearWeekDayAtTime(YearWeekDay.from(x.date), x.time)
         }
-        .help("Start date of shift in ISO w.o. timezone (assumes Europe/Copenhagen)")
-    private val end: Instant by argument()
+        .help("Start date of shift in ISO w.o. timezone")
+    private val end: YearWeekDayAtTime by argument()
         .convert {
-            // // TODO: 28/04/2024 rohdef - these should be kept in local date time it seems
-            LocalDateTime.parse(it).toInstant(TimeZone.of("Europe/Copenhagen"))
+            // TODO: 28/04/2024 rohdef - these should use YearWeekDayAtTime once parsing is added
+            val x = LocalDateTime.parse(it)
+            YearWeekDayAtTime(YearWeekDay.from(x.date), x.time)
         }
-        .help("End date of shift in ISO w.o. timezone (assumes Europe/Copenhagen)")
+        .help("End date of shift in ISO w.o. timezone")
 
     override fun run() = runBlocking {
         log.info { "Creating a new shift" }

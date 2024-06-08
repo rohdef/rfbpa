@@ -3,8 +3,8 @@ package dk.rohdef.axpclient
 import arrow.core.*
 import arrow.core.raise.either
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.HelperBooking
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
@@ -29,7 +29,7 @@ internal class AxpClient(
 ) {
     private val customerId = AxpShift.CustomerId("1366")
 
-    private val urls = AxpUrls(configuration.url)
+    private val urls = AxpUrls(configuration.url, configuration.timeZone)
 
     suspend fun login(): LoginResult {
         log.info { "Logging in with user ${configuration.username}" }
@@ -126,17 +126,17 @@ internal class AxpClient(
 
     private fun ParametersBuilder.shiftTimes(start: Instant, end: Instant, type: AxpShift.ShiftType) {
         start
-            .let { DDate(it) }
+            .let { DDate(it, configuration.timeZone) }
             .let { Json.encodeToString(it) }
             .let {
                 append("from_date", it)
                 append("to_date", it)
                 append("date", it)
             }
-        start.toLocalDateTime(TimeZone.of("Europe/Copenhagen"))
+        start.toLocalDateTime(configuration.timeZone)
             .let { "${it.hour}:${it.minute}" }
             .let { append("from_time", it) }
-        end.toLocalDateTime(TimeZone.of("Europe/Copenhagen"))
+        end.toLocalDateTime(configuration.timeZone)
             .let { "${it.hour}:${it.minute}" }
             .let { append("to_time", it) }
 
@@ -241,8 +241,8 @@ internal class AxpClient(
         val month: String,
         val day: String,
     ) {
-        constructor(instant: Instant) :
-                this(instant.toLocalDateTime(TimeZone.of("Europe/Copenhagen")))
+        constructor(instant: Instant, timeZone: TimeZone) :
+                this(instant.toLocalDateTime(timeZone))
 
         private constructor(date: LocalDateTime) :
                 this(

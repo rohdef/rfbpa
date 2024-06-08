@@ -3,9 +3,11 @@ package dk.rohdef.rfbpa
 import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.datetime.TimeZone
 import net.mamoe.yamlkt.Yaml
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -39,6 +41,7 @@ fun main(cliArguments: Array<String>) {
             val axp = config.client.axp
 
             AxpConfiguration(
+                TimeZone.of("Europe/Copenhagen"),
                 axp.url,
                 axp.username,
                 axp.password,
@@ -48,6 +51,7 @@ fun main(cliArguments: Array<String>) {
 
     val appModule = module {
         singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+        single { TemplateApplier(get(), get(named("helpers"))) }
         singleOf(::ShiftsReader)
     }
 

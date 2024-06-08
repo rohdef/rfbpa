@@ -2,15 +2,14 @@ package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.TestWeekPlanRepository
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalTime
 
 class TemplateApplierTest : FunSpec({
     val weekPlanRepository = TestWeekPlanRepository()
@@ -24,11 +23,11 @@ class TemplateApplierTest : FunSpec({
     context("Template cutting dates") {
         val schedulingStart = YearWeek(1919, 12)
         val schedulingEnd = YearWeek(1919, 15)
-        val weekShiftCount = TemplateTestData.WeekTemplates.week.sumOf { it.shifts.size }
+        val weekShiftCount = TemplateTestData.WeekTemplates.complexWeek.shifts.size
 
         context("start date") {
             test("template is before scheduling") {
-                val template = TemplateTestData.Templates.template
+                val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 3))
 
                 templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
@@ -41,7 +40,7 @@ class TemplateApplierTest : FunSpec({
             }
 
             test("template in between scheduling") {
-                val template = TemplateTestData.Templates.template
+                val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 13))
 
                 templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
@@ -54,7 +53,7 @@ class TemplateApplierTest : FunSpec({
             }
 
             test("template is after scheduling") {
-                val template = TemplateTestData.Templates.template
+                val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 16))
 
                 templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
@@ -66,11 +65,11 @@ class TemplateApplierTest : FunSpec({
         // TODO don't test old logic, but move to newest when possible
         xcontext("switches to the correct template") {
             test("two templates, schduling start is after second start") {
-                val template = TemplateTestData.Templates.template
+                val template = TemplateTestData.Templates.template_single_week_template_complex
             }
 
             test("none applied if scheduling end is before only start") {
-                val template = TemplateTestData.Templates.template
+                val template = TemplateTestData.Templates.template_single_week_template_complex
             }
 
             test("scheduling touches two templates") {
@@ -79,12 +78,12 @@ class TemplateApplierTest : FunSpec({
         }
     }
 
-    context("context apply week templates") {
+    context("context apply week template") {
         test("Has correct schedule") {
-            val schedulingStart = TemplateTestData.Templates.template.start
+            val schedulingStart = TemplateTestData.Templates.template_single_week_template_complex.start
             val schedulingEnd = schedulingStart
 
-            templateApplier.applyTemplate(schedulingStart, schedulingEnd, TemplateTestData.Templates.template)
+            templateApplier.applyTemplate(schedulingStart, schedulingEnd, TemplateTestData.Templates.template_single_week_template_complex)
 
             val mondayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.MONDAY))
             val tuesdayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.TUESDAY))
@@ -94,21 +93,21 @@ class TemplateApplierTest : FunSpec({
             val saturdayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.SATURDAY))
             val sundayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.SUNDAY))
 
-            val expecteedShifts = TemplateTestData.TestRepositoryShifts(schedulingStart)
-            mondayShifts shouldBe listOf(expecteedShifts.monday_day)
-            tuesdayShifts shouldBe listOf(expecteedShifts.tuesday_day, expecteedShifts.tueday_night)
-            wednesdayShifts shouldBe listOf(expecteedShifts.wednesday_day)
-            thurdayShifts shouldBe listOf(expecteedShifts.thursday_night)
+            val expectedShifts = TemplateTestData.TestRepositoryShifts(schedulingStart)
+            mondayShifts shouldBe listOf(expectedShifts.monday_day)
+            tuesdayShifts shouldBe listOf(expectedShifts.tuesday_day, expectedShifts.tueday_night)
+            wednesdayShifts shouldBe listOf(expectedShifts.wednesday_day)
+            thurdayShifts shouldBe listOf(expectedShifts.thursday_night)
             fridayShifts shouldBe listOf()
-            saturdayShifts shouldBe listOf(expecteedShifts.saturday_day)
-            sundayShifts shouldBe listOf(expecteedShifts.sunday_day)
+            saturdayShifts shouldBe listOf(expectedShifts.saturday_day)
+            sundayShifts shouldBe listOf(expectedShifts.sunday_day)
         }
 
         test("Book correct helper") {
-            val schedulingStart = TemplateTestData.Templates.template.start
+            val schedulingStart = TemplateTestData.Templates.template_single_week_template_complex.start
             val schedulingEnd = schedulingStart
 
-            templateApplier.applyTemplate(schedulingStart, schedulingEnd, TemplateTestData.Templates.template)
+            templateApplier.applyTemplate(schedulingStart, schedulingEnd, TemplateTestData.Templates.template_single_week_template_complex)
 
             val mondayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.MONDAY))
             val tuesdayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.TUESDAY))
@@ -129,50 +128,56 @@ class TemplateApplierTest : FunSpec({
     }
 
     context("repeating week templates") {
-        val template1 = WeekTemplate(
-            "",
-            mapOf(
-                DayOfWeek.MONDAY to listOf(
-                    ShiftTemplate(
-                        HelperReservation.Helper(""),
-                        ShiftType.DAY,
-                        LocalTime(6, 15),
-                        LocalTime(12, 45),
-                    )
-                ),
-                DayOfWeek.TUESDAY to listOf(),
-                DayOfWeek.WEDNESDAY to listOf(),
-                DayOfWeek.THURSDAY to listOf(),
-                DayOfWeek.FRIDAY to listOf(),
-                DayOfWeek.SATURDAY to listOf(),
-                DayOfWeek.SUNDAY to listOf(),
-            ),
-        )
+        val template = TemplateTestData.Templates.template_three_week_rotation_simple
+        val rotations = 3
+        val weeksNeeded = rotations * template.weeks.size
 
-        val template2 = WeekTemplate(
-            "",
-            mapOf(
-                DayOfWeek.MONDAY to listOf(),
-                DayOfWeek.TUESDAY to listOf(),
-                DayOfWeek.WEDNESDAY to listOf(),
-                DayOfWeek.THURSDAY to listOf(),
-                DayOfWeek.FRIDAY to listOf(),
-                DayOfWeek.SATURDAY to listOf(),
-                DayOfWeek.SUNDAY to listOf(),
-            ),
-        )
+        val schedulingStart = YearWeek(1931, 12)
+        val endWeek = schedulingStart.week + weeksNeeded - 1
+        val schedulingEnd = YearWeek(schedulingStart.year, endWeek)
 
-        val template3 = WeekTemplate(
-            "",
-            mapOf(
-                DayOfWeek.MONDAY to listOf(),
-                DayOfWeek.TUESDAY to listOf(),
-                DayOfWeek.WEDNESDAY to listOf(),
-                DayOfWeek.THURSDAY to listOf(),
-                DayOfWeek.FRIDAY to listOf(),
-                DayOfWeek.SATURDAY to listOf(),
-                DayOfWeek.SUNDAY to listOf(),
-            ),
-        )
+        test("Scheduling starts at same date as template start") {
+            val template = template.copy(start = schedulingStart)
+
+            templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
+
+            val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
+            val expectedMondays = listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.monday_day }
+            val expectedWednesdays = listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.wednesday_day }
+            val expectedSaturdays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.saturday_day }
+
+            val expectedShifts = expectedMondays + expectedWednesdays + expectedSaturdays
+            weekPlanRepository.shiftList shouldContainExactlyInAnyOrder expectedShifts
+        }
+
+        test("Scheduling starts after template start") {
+            val weekStart = schedulingStart.week - template.weeks.size + 1
+            val template = template.copy(start = schedulingStart.copy(week = weekStart))
+
+            templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
+
+            val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
+            val expectedMondays = listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.monday_day }
+            val expectedWednesdays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.wednesday_day }
+            val expectedSaturdays = listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.saturday_day }
+
+            val expectedShifts = expectedMondays + expectedWednesdays + expectedSaturdays
+            weekPlanRepository.shiftList shouldContainExactlyInAnyOrder expectedShifts
+        }
+
+        test("Scheduling starts before template start") {
+            val weekStart = schedulingStart.week + template.weeks.size - 1
+            val template = template.copy(start = schedulingStart.copy(week = weekStart))
+
+            templateApplier.applyTemplate(schedulingStart, schedulingEnd, template)
+
+            val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
+            val expectedMondays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.monday_day }
+            val expectedWednesdays = listOf(weeksInInterval[3], weeksInInterval[6]).map { it.wednesday_day }
+            val expectedSaturdays = listOf(weeksInInterval[4], weeksInInterval[7]).map { it.saturday_day }
+
+            val expectedShifts = expectedMondays + expectedWednesdays + expectedSaturdays
+            weekPlanRepository.shiftList shouldContainExactlyInAnyOrder expectedShifts
+        }
     }
 })

@@ -113,9 +113,8 @@ object TemplateTestData {
     }
 
     object WeekTemplates {
-        val week = listOf(
-            WeekTemplate(
-                "",
+        val complexWeek = WeekTemplate(
+                "complex week bookings",
                 mapOf(
                     DayOfWeek.MONDAY to listOf(
                         ShiftTemplates.monday_day,
@@ -145,13 +144,67 @@ object TemplateTestData {
                     ),
                 )
             )
+
+        val template_week1_monday = WeekTemplate(
+            "week 1",
+
+            mapOf(
+                DayOfWeek.MONDAY to listOf(
+                    ShiftTemplates.monday_day,
+                ),
+                DayOfWeek.TUESDAY to listOf(),
+                DayOfWeek.WEDNESDAY to listOf(),
+                DayOfWeek.THURSDAY to listOf(),
+                DayOfWeek.FRIDAY to listOf(),
+                DayOfWeek.SATURDAY to listOf(),
+                DayOfWeek.SUNDAY to listOf(),
+            ),
+        )
+
+        val template_week2_wednesday = WeekTemplate(
+            "week 2",
+            mapOf(
+                DayOfWeek.MONDAY to listOf(),
+                DayOfWeek.TUESDAY to listOf(),
+                DayOfWeek.WEDNESDAY to listOf(
+                    ShiftTemplates.wednesday_day
+                ),
+                DayOfWeek.THURSDAY to listOf(),
+                DayOfWeek.FRIDAY to listOf(),
+                DayOfWeek.SATURDAY to listOf(),
+                DayOfWeek.SUNDAY to listOf(),
+            ),
+        )
+
+        val template_week3_saturday = WeekTemplate(
+            "week 3",
+            mapOf(
+                DayOfWeek.MONDAY to listOf(),
+                DayOfWeek.TUESDAY to listOf(),
+                DayOfWeek.WEDNESDAY to listOf(),
+                DayOfWeek.THURSDAY to listOf(),
+                DayOfWeek.FRIDAY to listOf(),
+                DayOfWeek.SATURDAY to listOf(
+                    ShiftTemplates.saturday_day,
+                ),
+                DayOfWeek.SUNDAY to listOf(),
+            ),
         )
     }
 
     object Templates {
-        val template = Template(
+        val template_single_week_template_complex = Template(
             YearWeek(1919, 3),
-            WeekTemplates.week,
+            listOf(WeekTemplates.complexWeek),
+        )
+
+        val template_three_week_rotation_simple = Template(
+            YearWeek(1919, 3),
+            listOf(
+                WeekTemplates.template_week1_monday,
+                WeekTemplates.template_week2_wednesday,
+                WeekTemplates.template_week3_saturday,
+            ),
         )
     }
 }

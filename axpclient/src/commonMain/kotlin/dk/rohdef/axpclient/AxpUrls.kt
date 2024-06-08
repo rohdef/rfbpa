@@ -4,7 +4,10 @@ import dk.rohdef.rfweeks.YearWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 
-internal class AxpUrls(host: String) {
+internal class AxpUrls(
+    val host: String,
+    private val timeZone: TimeZone,
+) {
     val base = "https://$host/citizen_web"
     val index = "$base/index.php"
     val indexUWeb = "https://$host/index.php"
@@ -14,7 +17,7 @@ internal class AxpUrls(host: String) {
             "?act=shift_plan"
     fun shiftsForWeek(yearWeek: YearWeek): String {
         val weekStart = yearWeek
-            .firstDayEpoch(TimeZone.of("Europe/Copenhagen"))
+            .firstDayEpoch(timeZone)
         val shifts = shiftsBase + "&axp_startdate=$weekStart"
 
         return shifts
