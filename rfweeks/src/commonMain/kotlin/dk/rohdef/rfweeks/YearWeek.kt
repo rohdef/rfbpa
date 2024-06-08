@@ -8,7 +8,6 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
@@ -42,7 +41,7 @@ data class YearWeek(
 
     operator fun rangeTo(other: YearWeek): YearWeekInterval {
         if (this > other) {
-            throw IllegalArgumentException("Other must be later than current")
+            throw IllegalArgumentException("Other [$other] must be later than or equal to current [$this]")
         }
 
         return YearWeekInterval(this, other)
@@ -63,11 +62,19 @@ data class YearWeek(
      *
      * This does not implement `operator fun inc()` because that motivates (forces if used) mutability.
      */
-    fun increment(): YearWeek {
+    fun nextWeek(): YearWeek {
         return if (this.week >= maxWeekForYear) {
             YearWeek(year + 1, 1)
         } else {
             YearWeek(year, week + 1)
+        }
+    }
+
+    fun previousWeek(): YearWeek {
+        return if (this.week == 1) {
+            YearWeek(year-1, mondaysInWeeksOfYear(year-1).size)
+        } else {
+            YearWeek(year, week - 1)
         }
     }
 

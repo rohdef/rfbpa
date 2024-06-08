@@ -11,7 +11,6 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
 
 class YearWeekTest : FunSpec({
     context("Constructor") {
@@ -233,7 +232,7 @@ class YearWeekTest : FunSpec({
         test("Week in the middle of the year") {
             val yearWeek = YearWeek(2023, 6)
 
-            val nextYearWeek = yearWeek.increment()
+            val nextYearWeek = yearWeek.nextWeek()
 
             nextYearWeek shouldBe YearWeek(2023, 7)
         }
@@ -241,7 +240,7 @@ class YearWeekTest : FunSpec({
         test("Last week in year with 52 weeks") {
             val yearWeek = YearWeek(2014, 52)
 
-            val nextYearWeek = yearWeek.increment()
+            val nextYearWeek = yearWeek.nextWeek()
 
             nextYearWeek shouldBe YearWeek(2015, 1)
         }
@@ -249,7 +248,7 @@ class YearWeekTest : FunSpec({
         test("Week 52 in year with 53 weeks") {
             val yearWeek = YearWeek(2015, 52)
 
-            val nextYearWeek = yearWeek.increment()
+            val nextYearWeek = yearWeek.nextWeek()
 
             nextYearWeek shouldBe YearWeek(2015, 53)
         }
@@ -257,7 +256,7 @@ class YearWeekTest : FunSpec({
         test("Last week in year with 53 weeks") {
             val yearWeek = YearWeek(2020, 53)
 
-            val nextYearWeek = yearWeek.increment()
+            val nextYearWeek = yearWeek.nextWeek()
 
             nextYearWeek shouldBe YearWeek(2021, 1)
         }

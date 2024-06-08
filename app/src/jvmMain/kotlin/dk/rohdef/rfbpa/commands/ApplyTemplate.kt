@@ -1,7 +1,6 @@
 package dk.rohdef.rfbpa.commands
 
 import arrow.core.Either
-import arrow.core.getOrElse
 import arrow.core.right
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -12,6 +11,7 @@ import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanRepository
 import dk.rohdef.helperplanning.templates.HelperReservation
 import dk.rohdef.helperplanning.templates.Template
+import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.helperplanning.templates.WeekTemplate
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -24,6 +24,7 @@ import java.io.File
 class ApplyTemplate(
     // TODO: 23/04/2024 rohdef - don't use repository directly
     private val weekPlanRepository: WeekPlanRepository,
+    private val templateApplier: TemplateApplier,
     private val helpers: Map<String, String>,
 ) : CliktCommand() {
     private val log = KotlinLogging.logger {}
@@ -40,14 +41,7 @@ class ApplyTemplate(
         val weekStart = YearWeek(2024, 25)
         val weekEnd = YearWeek(2024, 33) // three rolls in new
 
-        val templateStart = maxOf(template.start, weekStart)
-        // TODO make sure end is exclusive!!!
-        val templateEnd = weekEnd // or date of next template
-        log.info { "Applying template in interval ${templateStart}--${templateEnd}" }
-
-        (templateStart..templateEnd).forEach {
-            applyWeekTemplates(it, template.weeks)
-        }
+        templateApplier.applyTemplate(weekStart, weekEnd, template)
 
         currentContext.parent?.command.let {
             if (it is Closeable) it.close()
@@ -56,37 +50,7 @@ class ApplyTemplate(
 
     suspend fun applyWeekTemplates(week: YearWeek, weekTemplates: List<WeekTemplate>) {
         weekTemplates.forEach { weekTemplate ->
-            log.info { weekTemplate.name }
-            val shifts = weekTemplate.shifts
-            shifts.forEach {
-                val yearWeekDay = week.atDayOfWeek(it.key)
-                val localDate = yearWeekDay.date
 
-                it.value.forEach {
-                    val start = localDate.atTime(it.start)
-                    val end = start.untilTime(it.end)
-
-                    // TODO: 02/06/2024 rohdef - deal with time zones somehow, not fond of hard code
-                    val startInstant = start.toInstant(TimeZone.of("Europe/Copenhagen"))
-                    val endInstant = end.toInstant(TimeZone.of("Europe/Copenhagen"))
-
-                    // TODO: 02/06/2024 rohdef - re-introduce once better test
-//                    val shiftId = weekPlanRepository.createShift(startInstant, endInstant, it.type)
-                    val shiftId = ShiftId("Dummy").right()
-                    log.info { "\tcreated shift: ${start}--${end}" }
-
-                    when (shiftId) {
-                        is Either.Right -> {
-                            log.info { "\t\t${shiftId.value}" }
-
-                            bookHelper(shiftId.value, it.helper)
-                        }
-                        is Either.Left -> {
-                            log.error { "Could not book ${shiftId.value} shift: $start -- $end" }
-                        }
-                    }
-                }
-            }
         }
     }
 

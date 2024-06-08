@@ -11,7 +11,7 @@ class YearWeekIntervalIterator(
 
     override fun next(): YearWeek {
         val current = next
-        next = next.increment()
+        next = next.nextWeek()
         return current
     }
 }

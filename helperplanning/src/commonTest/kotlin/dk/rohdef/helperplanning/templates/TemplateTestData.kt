@@ -1,6 +1,7 @@
 package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.shifts.ShiftType
+import dk.rohdef.rfweeks.YearWeek
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 
@@ -13,8 +14,15 @@ object TemplateTestData {
             LocalTime(22, 30),
         )
 
-        val shift5_00to19_00 = ShiftTemplate(
+        val shift5_00to19_00_unbooked = ShiftTemplate(
             HelperReservation.NoReservation,
+            ShiftType.DAY,
+            LocalTime(5, 0),
+            LocalTime(19, 0),
+        )
+
+        val shift5_00to19_00_booked = ShiftTemplate(
+            HelperReservation.Helper("hiphop"),
             ShiftType.DAY,
             LocalTime(5, 0),
             LocalTime(19, 0),
@@ -43,12 +51,16 @@ object TemplateTestData {
 
         val monday_day = shift6_30to22_30
 
-        val tuesday_day = shift5_00to19_00
+        val tuesday_day = shift5_00to19_00_unbooked
         val tueday_night = shiftCrossingDate
 
         val wednesday_day = shift14_15to22_15
 
         val thursday_night = shift1_00to6_00
+
+        val saturday_day = shift5_00to19_00_unbooked
+
+        val sunday_day = shift5_00to19_00_booked
     }
 
     object WeekTemplates {
@@ -73,19 +85,24 @@ object TemplateTestData {
                         ShiftTemplates.thursday_night
                     ),
 
-                    DayOfWeek.FRIDAY to listOf(
-                        ShiftTemplates.shift6_30to22_30
-                    ),
+                    DayOfWeek.FRIDAY to listOf(),
 
                     DayOfWeek.SATURDAY to listOf(
-                        ShiftTemplates.shift6_30to22_30
+                        ShiftTemplates.saturday_day
                     ),
 
                     DayOfWeek.SUNDAY to listOf(
-                        ShiftTemplates.shift6_30to22_30
+                        ShiftTemplates.sunday_day
                     ),
                 )
             )
+        )
+    }
+
+    object Templates {
+        val template = Template(
+            YearWeek(1919, 3),
+            WeekTemplates.week,
         )
     }
 }
