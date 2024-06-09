@@ -35,14 +35,16 @@ class TemplateApplier(
             return // Template is for later than current scheduling
         }
 
+        val weeksUntilTemplate = schedulingStart.weeksUntil(template.start)
+        val indexAdjustmentModifier = -(weeksUntilTemplate % template.weeks.size)
+        val indexAdjustment = maxOf(0, indexAdjustmentModifier)
         val templateStart = maxOf(template.start, schedulingStart)
-        // TODO date of next template
-        val templateEnd = schedulingEnd
-        log.info { "Applying template in interval ${templateStart}--${templateEnd}" }
 
-        (templateStart..templateEnd).forEach {
-            // TODO deal with looping templates!
-            applyWeekTemplates(it, template.weeks.first())
+        log.info { "Applying template in interval ${templateStart}--${schedulingEnd}" }
+        (templateStart..schedulingEnd).forEachIndexed { index, yearWeek ->
+            val weekIndex = (index + indexAdjustment) % template.weeks.size
+            val weekTemplate = template.weeks[weekIndex]
+            applyWeekTemplates(yearWeek, weekTemplate)
         }
     }
 
@@ -63,6 +65,7 @@ class TemplateApplier(
                     is Either.Right -> {
                         bookHelper(shiftId.value, it.helper)
                     }
+
                     is Either.Left -> {
                         log.error { "Could not book ${shiftId.value}" }
                     }
@@ -86,6 +89,7 @@ class TemplateApplier(
                     is Either.Left -> log.error { "Could not book helper for shift ${shiftId}" }
                 }
             }
+
             HelperReservation.NoReservation -> log.info { "No helper specified" }
         }
     }

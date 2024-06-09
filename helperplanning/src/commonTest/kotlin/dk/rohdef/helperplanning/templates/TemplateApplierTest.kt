@@ -127,7 +127,7 @@ class TemplateApplierTest : FunSpec({
         }
     }
 
-    context("repeating week templates") {
+    context("rotating week templates") {
         val template = TemplateTestData.Templates.template_three_week_rotation_simple
         val rotations = 3
         val weeksNeeded = rotations * template.weeks.size

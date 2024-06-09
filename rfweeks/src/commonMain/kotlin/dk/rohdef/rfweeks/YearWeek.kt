@@ -78,6 +78,10 @@ data class YearWeek(
         }
     }
 
+    fun weeksUntil(other: YearWeek): Int {
+        return (firstDayOfWeek.daysUntil(other.firstDayOfWeek) / 7)
+    }
+
     fun atDayOfWeek(dayOfWeek: DayOfWeek) = YearWeekDay(this, dayOfWeek)
 
     companion object {
