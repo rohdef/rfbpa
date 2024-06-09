@@ -1,11 +1,11 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.raise.either
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
-import kotlinx.datetime.Instant
 
 interface WeekPlanRepository {
     suspend fun bookShift(

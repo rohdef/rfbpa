@@ -5,6 +5,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.parsing.WeekPlanParser
+import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime

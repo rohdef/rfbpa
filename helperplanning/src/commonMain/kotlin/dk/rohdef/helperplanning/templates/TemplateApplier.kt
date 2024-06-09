@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning.templates
 import arrow.core.Either
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -59,7 +59,7 @@ class TemplateApplier(
                 val end = start.untilTime(it.end)
 
                 val shiftId = weekPlanRepository.createShift(start, end, it.type)
-                log.info { "\tcreated shift: ${start}--${end}" }
+                log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
 
                 when (shiftId) {
                     is Either.Right -> {

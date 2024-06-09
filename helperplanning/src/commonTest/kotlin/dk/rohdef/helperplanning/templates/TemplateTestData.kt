@@ -1,6 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.TestWeekPlanRepository
+import dk.rohdef.helperplanning.MemoryWeekPlanRepository
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
@@ -84,14 +84,14 @@ object TemplateTestData {
     }
 
     class TestRepositoryShifts(yearWeek: YearWeek) {
-        fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): TestWeekPlanRepository.Shift {
+        fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): MemoryWeekPlanRepository.MemoryShift {
             val end = if (this.end < this.start) {
                 yearWeekDay.nextDay()
             } else {
                 yearWeekDay
             }.atTime(this.end)
 
-            return TestWeekPlanRepository.Shift(
+            return MemoryWeekPlanRepository.MemoryShift(
                 yearWeekDay.atTime(this.start),
                 end,
                 this.type,
@@ -114,36 +114,36 @@ object TemplateTestData {
 
     object WeekTemplates {
         val complexWeek = WeekTemplate(
-                "complex week bookings",
-                mapOf(
-                    DayOfWeek.MONDAY to listOf(
-                        ShiftTemplates.monday_day,
-                    ),
+            "complex week bookings",
+            mapOf(
+                DayOfWeek.MONDAY to listOf(
+                    ShiftTemplates.monday_day,
+                ),
 
-                    DayOfWeek.TUESDAY to listOf(
-                        ShiftTemplates.tuesday_day,
-                        ShiftTemplates.tueday_night,
-                    ),
+                DayOfWeek.TUESDAY to listOf(
+                    ShiftTemplates.tuesday_day,
+                    ShiftTemplates.tueday_night,
+                ),
 
-                    DayOfWeek.WEDNESDAY to listOf(
-                        ShiftTemplates.wednesday_day,
-                    ),
+                DayOfWeek.WEDNESDAY to listOf(
+                    ShiftTemplates.wednesday_day,
+                ),
 
-                    DayOfWeek.THURSDAY to listOf(
-                        ShiftTemplates.thursday_night
-                    ),
+                DayOfWeek.THURSDAY to listOf(
+                    ShiftTemplates.thursday_night
+                ),
 
-                    DayOfWeek.FRIDAY to listOf(),
+                DayOfWeek.FRIDAY to listOf(),
 
-                    DayOfWeek.SATURDAY to listOf(
-                        ShiftTemplates.saturday_day
-                    ),
+                DayOfWeek.SATURDAY to listOf(
+                    ShiftTemplates.saturday_day
+                ),
 
-                    DayOfWeek.SUNDAY to listOf(
-                        ShiftTemplates.sunday_day
-                    ),
-                )
+                DayOfWeek.SUNDAY to listOf(
+                    ShiftTemplates.sunday_day
+                ),
             )
+        )
 
         val template_week1_monday = WeekTemplate(
             "week 1",

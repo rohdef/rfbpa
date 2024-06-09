@@ -6,7 +6,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.ProcessedArgument
 import com.github.ajalt.clikt.parameters.arguments.RawArgument
 import com.github.ajalt.clikt.parameters.arguments.convert
-import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import org.koin.core.qualifier.named

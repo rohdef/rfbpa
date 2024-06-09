@@ -2,7 +2,7 @@ package dk.rohdef.rfbpa
 
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.LocalDate

@@ -2,7 +2,8 @@ package dk.rohdef.rfbpa
 
 import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.shifts.WeekPlanRepository
+import dk.rohdef.helperplanning.MemoryWeekPlanRepository
+import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
@@ -50,7 +51,8 @@ fun main(cliArguments: Array<String>) {
     }
 
     val appModule = module {
-        singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+        single<WeekPlanRepository> { LoggingWeekPlanRepository(MemoryWeekPlanRepository()) }
+//        singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
         single { TemplateApplier(get(), get(named("helpers"))) }
         singleOf(::ShiftsReader)
     }
