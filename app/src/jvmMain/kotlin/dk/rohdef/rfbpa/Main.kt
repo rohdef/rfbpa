@@ -7,6 +7,7 @@ import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.rfbpa.configuration.RuntimeMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.TimeZone
 import net.mamoe.yamlkt.Yaml
@@ -22,15 +23,22 @@ fun main(cliArguments: Array<String>) {
     val log = KotlinLogging.logger { }
     log.info { "Reading shifts from system - awesomeness upcoming" }
 
-    val configurationModule = module {
-        val configuration = object {}::class.java
-            .getResource("/rfbpa.yaml")!!
-            .readText()
-        val helpers = object {}::class.java
-            .getResource("/helpers.yaml")!!
-            .readText()
+    val configurationFile = object {}::class.java
+        .getResource("/rfbpa.yaml")!!
+        .readText()
+    val helpers = object {}::class.java
+        .getResource("/helpers.yaml")!!
+        .readText()
 
-        single<RfBpaConfig> { Yaml.decodeFromString(RfBpaConfig.serializer(), configuration) }
+    val configuration = Yaml.decodeFromString(RfBpaConfig.serializer(), configurationFile)
+
+    when(configuration.runtimeMode) {
+        RuntimeMode.DEVELOPMENT -> log.warn { "Running in development mode" }
+        RuntimeMode.PRODUCTION -> log.info { "Running in production mode" }
+    }
+
+    val configurationModule = module {
+        single<RfBpaConfig> { configuration }
         single<Map<String, String>>(named("helpers")) {
             Yaml.decodeMapFromString(helpers)
                 .mapKeys { it.key!! }
@@ -51,8 +59,11 @@ fun main(cliArguments: Array<String>) {
     }
 
     val appModule = module {
-        single<WeekPlanRepository> { LoggingWeekPlanRepository(MemoryWeekPlanRepository()) }
-//        singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+        when (configuration.runtimeMode) {
+            RuntimeMode.DEVELOPMENT ->  single<WeekPlanRepository> { LoggingWeekPlanRepository(MemoryWeekPlanRepository()) }
+            RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+        }
+
         single { TemplateApplier(get(), get(named("helpers"))) }
         singleOf(::ShiftsReader)
     }
