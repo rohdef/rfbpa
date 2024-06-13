@@ -10,19 +10,17 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
           java-version: 17
           distribution: "temurin"
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
       - name: let us also build
         run: ./gradlew clean build
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
+               - name: Build image
+      - name: fds
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: echo "🍏 This job's status is ${{ job.status }}."

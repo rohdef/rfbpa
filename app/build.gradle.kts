@@ -34,13 +34,6 @@ kotlin {
                 implementation("com.github.ajalt.clikt:clikt:4.3.0")
 
                 implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
-
-                val ktor_version = "3.0.0-beta-1"
-                implementation("io.ktor:ktor-server-core:$ktor_version")
-                implementation("io.ktor:ktor-server-cors:$ktor_version")
-                implementation("io.ktor:ktor-server-auth:$ktor_version")
-                implementation("io.ktor:ktor-server-netty:$ktor_version")
-                implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
             }
         }
         val commonTest by getting

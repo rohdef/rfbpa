@@ -31,7 +31,7 @@ class YearWeekDayTest : FunSpec({
 //            "2024-W1",
 //            "2024-W1-3",
 //        )
-    xcontext("Comparisons")
+    xcontext("Comparisons") {}
 
     xcontext("Parsing") {
     }

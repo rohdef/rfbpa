@@ -7,13 +7,6 @@ import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.helperplanning.WeekPlanRepository
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
 import java.io.Closeable
 
@@ -32,38 +25,6 @@ class ICal(
 
     override fun run() = runBlocking {
         log.info { "Creating ical" }
-
-
-        embeddedServer(Netty, port = 8080) {
-            install(CORS)
-            install(Authentication) {
-                basic("calendar") {
-                    realm = "RF BPA calendar function"
-                    validate { credentials ->
-                        if (credentials.name == "rff" && credentials.password == "rff") {
-                            UserIdPrincipal(credentials.name)
-                        } else {
-                            null
-                        }
-                    }
-                }
-            }
-
-            routing {
-                get("/") {
-                    call.respondText("Hello, world!")
-                }
-                authenticate("calendar") {
-                    get("/calendar") {
-                        call.respondText("Calendar!")
-                    }
-                }
-                get("/health") {
-                    call.respondText("I am healthy!")
-                }
-            }
-        }.start(wait = true)
-
 
 //        val calendar = Calendar()
 //            // TODO how free is this? Ugly format so far
