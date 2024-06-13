@@ -7,6 +7,9 @@ env:
 
 jobs:
   Build-and-distribute:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
