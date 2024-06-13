@@ -1,16 +1,17 @@
-name: Building this fellow
-run-name: ${{ github.actor }} is having fun
+name: Building and distributing RF-BPA
+run-name: RF-BPA build triggered by ${{ github.actor }} on branch ${{ github.ref }}
 on: [ push ]
+
+env:
+  IMAGE_NAME: rf-bpa
+
 jobs:
   Explore-this:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
+      - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
@@ -18,9 +19,8 @@ jobs:
           distribution: "temurin"
       - name: let us also build
         run: ./gradlew clean build
-               - name: Build image
-      - name: fds
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+      - name: Build image
+        run: docker build . --file web/Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: echo "🍏 This job's status is ${{ job.status }}."
