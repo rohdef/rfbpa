@@ -34,11 +34,7 @@ fun main(): Unit = runBlocking {
                 call.respondText("Hello, world!")
             }
 
-            authenticate("calendar") {
-                get("/calendar") {
-                    call.respondText("Calendar!")
-                }
-            }
+            calendar()
 
             get("/health") {
                 call.respondText("I am healthy!")
