@@ -13,7 +13,7 @@ import net.fortuna.ical4j.util.RandomUidGenerator
 
 private val log = KotlinLogging.logger {}
 fun Route.calendar() {
-    authenticate("calendar") {
+//    authenticate("calendar") {
         get("/calendar") {
             log.info { "Reading calendar details" }
             val calendar = Calendar()
@@ -57,5 +57,5 @@ fun Route.calendar() {
 
             call.respondText(updCAl.toString())
         }
-    }
+//    }
 }

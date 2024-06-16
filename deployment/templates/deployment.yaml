@@ -14,11 +14,8 @@ spec:
     metadata:
       labels:
         {{- include "rfbpa.labels" . | nindent 8 }}
+        revision: "2"
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
