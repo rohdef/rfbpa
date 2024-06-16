@@ -16,7 +16,7 @@ fun main(): Unit = runBlocking {
     log.info { "Running web interface" }
 
     embeddedServer(Netty, port = 8080) {
-        install(CallLogging)
+//        install(CallLogging)
         install(CORS)
         install(Authentication) {
             basic("calendar") {
