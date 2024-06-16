@@ -16,6 +16,7 @@ fun Route.calendar() {
 //    authenticate("calendar") {
         get("/calendar") {
             log.info { "Reading calendar details" }
+            log.info { "${call.request.queryParameters["key"]}" }
             val calendar = Calendar()
                 .withProdId("-//Rohde Fischer//RF-BPA//DA")
                 .withDefaults()
@@ -43,17 +44,6 @@ fun Route.calendar() {
                     calendar.withComponent(event)
                 }
                 .fluentTarget
-
-            val start = LocalDateTime.parse("2024-06-15T11:46:00")
-            val end = LocalDateTime.parse("2024-06-16T08:11:00")
-
-            val event = VEvent(
-                start.toJavaLocalDateTime(),
-                end.toJavaLocalDateTime(),
-                "Arbejde"
-            )
-                .withProperty(uidGenerator.generateUid())
-                .getFluentTarget<VEvent>()
 
             call.respondText(updCAl.toString())
         }
