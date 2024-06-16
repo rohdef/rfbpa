@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rfbpa.fullname" . }}
+  labels:
+    {{- include "rfbpa.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-production
+spec:
+  ingressClassName: nginx
+  rules:
+{{/*     - host: rfbpa.northeurope.cloudapp.azure.com*/}}
+     - http:
+         paths:
+           - path: /
+             pathType: Prefix
+             backend:
+               service:
+                 name: {{ include "rfbpa.fullname" . }}
+                 port:
+                   number: 80
+  tls:
+    - hosts:
+        - rfbpa.northeurope.cloudapp.azure.com
+      secretName: rfbpa-ingress-cert

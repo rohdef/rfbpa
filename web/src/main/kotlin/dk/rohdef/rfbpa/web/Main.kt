@@ -10,8 +10,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
 
-private val log = KotlinLogging.logger {}
 fun main(): Unit = runBlocking {
+    val log = KotlinLogging.logger {}
     log.info { "Running web interface" }
 
     embeddedServer(Netty, port = 8080) {
@@ -20,9 +20,13 @@ fun main(): Unit = runBlocking {
             basic("calendar") {
                 realm = "RF BPA calendar function"
                 validate { credentials ->
+                    log.info { "checking credentials: ${credentials.name}" }
                     if (credentials.name == "rff" && credentials.password == "rff") {
+                        log.info { "Permission granted" }
                         UserIdPrincipal(credentials.name)
                     } else {
+                        log.warn { "Rejected credentials" }
+                        log.warn { "Rejected credentials" }
                         null
                     }
                 }

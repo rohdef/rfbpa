@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rfbpa.fullname" . }}
+  labels:
+    {{- include "rfbpa.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: rfbpa-web
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "rfbpa.selectorLabels" . | nindent 4 }}
