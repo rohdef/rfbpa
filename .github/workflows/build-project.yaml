@@ -12,7 +12,6 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
         with:
@@ -26,11 +25,12 @@ jobs:
         run: |
           cd rfbpa
           ./gradlew build
+
       - name: Build image
         run: docker build --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" ./rfbpa/web/
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Log in to docker registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
@@ -48,6 +48,10 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
+          DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
+          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> $GITHUB_OUTPUT
+          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_ENV"
+
       - name: Check out gitops repository
         uses: actions/checkout@v4
         with:
@@ -56,6 +60,10 @@ jobs:
           ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
       - name: Update deployment
         run: |
+          DOCKER_DIGEST=${{ steps.vars.outputs.docker_digest }}
+          echo $DOCKER_DIGEST
+          echo "DOCKER_DIGEST"
+          echo $docker_digest
           rm -rf ./rfbpa-deploy/rfbpa
           cp -r ./rfbpa/deployment/ ./rfbpa-deploy/rfbpa
           cd rfbpa-deploy
@@ -64,5 +72,3 @@ jobs:
           git add .
           git commit --allow-empty -m "Updating deployment"
           git push
-
-      - run: echo "🍏 This job's status is ${{ job.status }}."
