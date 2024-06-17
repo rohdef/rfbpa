@@ -1,9 +1,6 @@
 replicaCount: 1
 
-image:
-  repository: ghcr.io/rohdef/rfbpa
-  hash: ""
-  tag: latest
+image: ghcr.io/rohdef/rfbpa:latest
 
 livenessProbe:
   httpGet:

@@ -49,7 +49,6 @@ jobs:
           docker push $IMAGE_ID:$VERSION
 
           DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
-          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> $GITHUB_OUTPUT
           echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_ENV"
 
       - name: Check out gitops repository
@@ -60,12 +59,9 @@ jobs:
           ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
       - name: Update deployment
         run: |
-          DOCKER_DIGEST=${{ steps.vars.outputs.docker_digest }}
-          echo $DOCKER_DIGEST
-          echo "DOCKER_DIGEST"
-          echo $docker_digest
           rm -rf ./rfbpa-deploy/rfbpa
           cp -r ./rfbpa/deployment/ ./rfbpa-deploy/rfbpa
+          yq e -i ".image=\"$docker_digest\"" ./rfbpa-deploy/rfbpa/values.yaml
           cd rfbpa-deploy
           git config user.email "rohdef+rfbpa@rohdef.dk"
           git config user.name "${{ github.actor }}"
