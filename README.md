@@ -4,11 +4,18 @@
 
 * Setup AKS with minimal setu
 
+Make sure to set ingress load balancer health, probably in service annotations
+
+```yaml
+service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+```
+
 https://kubernetes.github.io/ingress-nginx/deploy/
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
     --repo https://kubernetes.github.io/ingress-nginx \
-    --namespace ingress-nginx --create-namespace
+    --namespace ingress-nginx --create-namespace \
+    -f nginx-ingress-values.yaml
 ```
 
 https://cert-manager.io/docs/installation/helm/

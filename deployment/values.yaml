@@ -4,8 +4,6 @@ image:
   repository: ghcr.io/rohdef/rf-bpa
   tag: latest
 
-imagePullSecrets: []
-
 livenessProbe:
   httpGet:
     path: /

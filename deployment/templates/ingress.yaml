@@ -12,7 +12,8 @@ spec:
   ingressClassName: nginx
   rules:
 {{/*     - host: rfbpa.northeurope.cloudapp.azure.com*/}}
-     - http:
+     - host: rfbpa.rohdef.dk
+       http:
          paths:
            - path: /
              pathType: Prefix
@@ -23,5 +24,5 @@ spec:
                    number: 80
   tls:
     - hosts:
-        - rfbpa.northeurope.cloudapp.azure.com
+        - rfbpa.rohdef.dk
       secretName: rfbpa-ingress-cert
