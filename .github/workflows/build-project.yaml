@@ -53,6 +53,7 @@ jobs:
         with:
           path: rfbpa-gitops
           repository: rohdef/rfbpa-deploy
+          ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
       - name: List gitops
         run: |
           ls ./rfbpa
