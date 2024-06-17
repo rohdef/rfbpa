@@ -31,7 +31,6 @@ class RfBpa(
                         BookShift(get(), get(named("helpers"))),
                         CreateShift(get()),
                         ApplyTemplate(get()),
-                        ICal(get(), get(named("helpers"))),
                     )
             }
         }

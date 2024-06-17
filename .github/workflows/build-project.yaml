@@ -1,9 +1,9 @@
 name: Building and distributing rf-bpa
-run-name: rf-bpa build triggered by ${{ github.actor }} on branch ${{ github.ref }}
+run-name: rfbpa build triggered by ${{ github.actor }} on branch ${{ github.ref }}
 on: [ push ]
 
 env:
-  IMAGE_NAME: rf-bpa
+  IMAGE_NAME: rfbpa
 
 jobs:
   Build-and-distribute:

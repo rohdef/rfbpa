@@ -1,5 +1,5 @@
 apiVersion: v2
-name: rf-bpa
+name: rfbpa
 description: Management tool for BPA users at Handicapformidlingen
 
 type: application

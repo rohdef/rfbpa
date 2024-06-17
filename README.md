@@ -1,4 +1,4 @@
-# rf-bpa
+# rfbpa
 
 ## Cluster setup AKS (quick and dirty test)
 
