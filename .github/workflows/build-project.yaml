@@ -51,13 +51,18 @@ jobs:
       - name: Check out gitops repository
         uses: actions/checkout@v4
         with:
-          path: rfbpa-gitops
+          path: rfbpa-deploy
           repository: rohdef/rfbpa-deploy
           ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
-      - name: List gitops
+      - name: Update deployment
         run: |
-          ls ./rfbpa
-          echo ==============
-          ls ./rfbpa-gitops/
+          rm -rf ./rfbpa-deploy/rfbpa
+          cp -r ./rfbpa/deployment/ ./rfbpa-deploy/rfbpa
+          cd rfbpa-deploy
+          git config user.email "rohdef+rfbpa@rohdef.dk"
+          git config user.name "${{ github.actor }}"
+          git add .
+          git commit --allow-empty -m "Updating deployment"
+          git push
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
