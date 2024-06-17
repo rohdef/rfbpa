@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         {{- include "rfbpa.labels" . | nindent 8 }}
-        revision: "5"
+        revision: "6"
     spec:
       containers:
         - name: {{ .Chart.Name }}

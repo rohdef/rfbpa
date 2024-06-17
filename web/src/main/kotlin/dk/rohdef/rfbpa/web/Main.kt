@@ -37,7 +37,7 @@ fun main(): Unit = runBlocking {
 
         routing {
             get("/") {
-                call.respondText("Hello, world!")
+                call.respondText("Hello, Jona!")
             }
 
             calendar()
