@@ -2,7 +2,7 @@ rootProject.name = "rfbpa"
 
 include(
     "app",
-    "web",
+    "rest-api",
 
     "helperplanning",
 

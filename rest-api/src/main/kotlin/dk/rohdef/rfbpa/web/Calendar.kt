@@ -1,6 +1,8 @@
 package dk.rohdef.rfbpa.web
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.LocalDateTime
@@ -13,6 +15,10 @@ import net.fortuna.ical4j.util.RandomUidGenerator
 private val log = KotlinLogging.logger {}
 fun Route.calendar() {
     get("/calendar") {
+        val principal = call.principal<JWTPrincipal>()
+        val username = principal!!.payload.subject
+        val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
+
         log.info { "Reading calendar details" }
         log.info { "${call.request.queryParameters["key"]}" }
         call.request.headers.forEach { name, values ->

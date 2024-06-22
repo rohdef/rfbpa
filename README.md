@@ -50,3 +50,31 @@ spec:
 ```bash
 az aks approuting enable --resource-group rf-bpa-test --name rf-bpa-test-2
 ```
+
+
+```bash
+helm install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak
+```
+
+```bash
+Keycloak can be accessed through the following DNS name from within your cluster:
+
+    keycloak.default.svc.cluster.local (port 80)
+
+To access Keycloak from outside the cluster execute the following commands:
+
+1. Get the Keycloak URL by running these commands:
+
+    export HTTP_SERVICE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[?(@.name=='http')].port}" services keycloak)
+    kubectl port-forward --namespace default svc/keycloak ${HTTP_SERVICE_PORT}:${HTTP_SERVICE_PORT} &
+
+    echo "http://127.0.0.1:${HTTP_SERVICE_PORT}/"
+
+2. Access Keycloak using the obtained URL.
+
+WARNING: There are "resources" sections in the chart not set. Using "resourcesPreset" is not recommended for production. For production installations, please set the following values according to your workload needs:
+  - resources
++info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+```
+
+Useful keycloak tidbits, allow change password and remember me

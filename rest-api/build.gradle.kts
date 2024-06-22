@@ -63,12 +63,16 @@ dependencies {
     implementation("io.insert-koin:koin-core:3.6.0-Beta2")
 
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
+    implementation("io.ktor:ktor-client-apache:3.0.0-beta-1")
 
     val ktor_version = "3.0.0-beta-1"
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-cors:$ktor_version")
     implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
