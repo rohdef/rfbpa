@@ -2,7 +2,7 @@ package dk.rohdef.axpclient.parsing
 
 import arrow.core.*
 import dk.rohdef.axpclient.helper.AxpMetadataRepository
-import dk.rohdef.axpclient.helper.HelperTID
+import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.Shift
 import dk.rohdef.rfsimplejs.JavaScriptParser
 import dk.rohdef.rfsimplejs.ast.*
@@ -32,7 +32,7 @@ internal class ShiftParser {
             when (it) {
                 "60621" -> AxpMetadataRepository.VacancyBooking
                 else -> AxpMetadataRepository.PermanentHelper(
-                    HelperTID(it),
+                    HelperNumber(it),
                 )
             }
         }

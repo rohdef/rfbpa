@@ -64,11 +64,7 @@ class AxpWeekPlans(
     ): Either<Unit, ShiftId> {
         ensureLoggedIn()
 
-        fun findHelper(helperId: Helper.ID): HelperTID {
-            TODO()
-        }
-
-        val helperTid = findHelper(helperId)
+        val helperTid = helpers.helperById(helperId).axpTid
         return axpClient.bookHelper(shiftId, helperTid)
             .mapLeft {
                 // TODO improve

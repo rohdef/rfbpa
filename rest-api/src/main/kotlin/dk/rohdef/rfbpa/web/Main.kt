@@ -1,6 +1,8 @@
 package dk.rohdef.rfbpa.web
 
 import com.auth0.jwk.JwkProviderBuilder
+import dk.rohdef.rfbpa.HelperDataBaseItem
+import dk.rohdef.rfbpa.MemoryAxpRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -14,7 +16,10 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import net.mamoe.yamlkt.Yaml
+import org.koin.core.qualifier.named
 
 fun main(): Unit = runBlocking {
     val log = KotlinLogging.logger {}
@@ -24,6 +29,11 @@ fun main(): Unit = runBlocking {
     val helpers = object {}::class.java
         .getResource("/helpers.yaml")!!
         .readText()
+
+    val helpersParsed = Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
+    val forRepository = helpersParsed
+        .map { it.value }
+    val axpRepository = MemoryAxpRepository(forRepository)
 
     embeddedServer(Netty, port = 8080) {
 //        install(CallLogging)

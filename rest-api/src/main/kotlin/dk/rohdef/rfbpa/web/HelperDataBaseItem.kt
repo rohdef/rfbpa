@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa
+package dk.rohdef.rfbpa.web
 
 import kotlinx.serialization.Serializable
 import kotlinx.uuid.UUID

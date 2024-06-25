@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa
 
+import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.MemoryWeekPlanRepository
@@ -45,6 +46,12 @@ fun main(cliArguments: Array<String>) {
             Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
 //                .mapKeys { it.key!! }
 //                .mapValues { it.value.toString() }
+        }
+
+        single<AxpRepository> {
+            val helpers = get<Map<String, HelperDataBaseItem>>(named("helpers"))
+                .map { it.value }
+            MemoryAxpRepository(helpers)
         }
 
         single<AxpConfiguration> {
