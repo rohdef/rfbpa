@@ -6,7 +6,24 @@
   "type": "object",
   "patternProperties": {
     "": {
-      "type": "string",
+      "type": "object",
+
+      "properties": {
+        "helperTid": {
+          "description": "",
+          "type": "string"
+        },
+        "helperNumber": {
+          "description": "",
+          "type": "string"
+        },
+        "id": {
+          "description": "UUID for internal identification of a helper",
+          "type": "string"
+        }
+      },
+
+      "required": ["helperTid", "helperNumber", "id"]
     }
-  }
+  },
 }
