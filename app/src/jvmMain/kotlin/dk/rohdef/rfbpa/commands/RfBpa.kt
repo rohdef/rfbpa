@@ -7,6 +7,8 @@ import com.github.ajalt.clikt.parameters.arguments.ProcessedArgument
 import com.github.ajalt.clikt.parameters.arguments.RawArgument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.rfbpa.HelperDataBaseItem
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import org.koin.core.qualifier.named
@@ -25,10 +27,13 @@ class RfBpa(
     companion object {
         val module = module {
             single {
+                val helpers = get<Map<String, HelperDataBaseItem>>(named("helpers"))
+                    .mapValues { Helper.ID(it.value.id) }
+
                 RfBpa(get())
                     .subcommands(
                         UnbookedShifts(get()),
-                        BookShift(get(), get(named("helpers"))),
+                        BookShift(get(), helpers),
                         CreateShift(get()),
                         ApplyTemplate(get()),
                     )

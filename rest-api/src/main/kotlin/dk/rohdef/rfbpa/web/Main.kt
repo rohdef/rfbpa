@@ -19,8 +19,11 @@ import kotlinx.serialization.json.Json
 fun main(): Unit = runBlocking {
     val log = KotlinLogging.logger {}
 
+    log.info { "Starting web interface" }
 
-    log.info { "Running web interface" }
+    val helpers = object {}::class.java
+        .getResource("/helpers.yaml")!!
+        .readText()
 
     embeddedServer(Netty, port = 8080) {
 //        install(CallLogging)

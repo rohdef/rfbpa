@@ -4,12 +4,14 @@ import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.MemoryWeekPlanRepository
 import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.commands.RfBpa
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.TimeZone
+import kotlinx.serialization.decodeFromString
 import net.mamoe.yamlkt.Yaml
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -39,10 +41,10 @@ fun main(cliArguments: Array<String>) {
 
     val configurationModule = module {
         single<RfBpaConfig> { configuration }
-        single<Map<String, String>>(named("helpers")) {
-            Yaml.decodeMapFromString(helpers)
-                .mapKeys { it.key!! }
-                .mapValues { it.value.toString() }
+        single<Map<String, HelperDataBaseItem>>(named("helpers")) {
+            Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
+//                .mapKeys { it.key!! }
+//                .mapValues { it.value.toString() }
         }
 
         single<AxpConfiguration> {
@@ -64,7 +66,11 @@ fun main(cliArguments: Array<String>) {
             RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
         }
 
-        single { TemplateApplier(get(), get(named("helpers"))) }
+        single {
+            val helpers = get<Map<String, HelperDataBaseItem>>(named("helpers"))
+                .mapValues { Helper.ID(it.value.id) }
+            TemplateApplier(get(), helpers)
+        }
         singleOf(::ShiftsReader)
     }
 
