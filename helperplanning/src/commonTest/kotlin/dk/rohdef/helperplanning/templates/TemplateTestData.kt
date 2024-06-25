@@ -1,11 +1,14 @@
 package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.MemoryWeekPlanRepository
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 
 object TemplateTestData {
     object Helpers {
@@ -23,7 +26,10 @@ object TemplateTestData {
             rockabilly
         )
 
-        val helpersMap = allHelpers.associate { it.id to it.id }
+        private val appNamespace = UUID("cd92be03-4d25-47dc-8c97-7b553968c284")
+        val helpersMap = allHelpers
+            .associate { it.id to UUID.generateUUID(appNamespace, it.id) }
+            .mapValues { Helper.ID(it.value) }
     }
 
     object ShiftTemplates {
