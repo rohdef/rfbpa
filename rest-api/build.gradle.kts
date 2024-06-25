@@ -76,6 +76,16 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
+    val exposed_version = "0.51.1"
+    val h2_version = "2.2.224"
+    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
+    implementation("com.h2database:h2:$h2_version")
+    implementation("org.flywaydb:flyway-core:10.15.0")
+
+
     // Test=
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")

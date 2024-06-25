@@ -2,6 +2,7 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.right
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -22,9 +23,11 @@ class MemoryWeekPlanRepository : WeekPlanRepository {
     val bookings: Map<ShiftId, HelperBooking>
         get() = _bookings.toMap().withDefault { HelperBooking.NoBooking }
 
-        override suspend fun bookShift(shiftId: ShiftId, helper: HelperBooking.PermanentHelper): Either<Unit, ShiftId> {
-        if (!_shifts.containsKey(shiftId)) { TODO("Missing shift is currently not handled") }
-        _bookings.put(shiftId, helper)
+    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<Unit, ShiftId> {
+        if (!_shifts.containsKey(shiftId)) {
+            TODO("Missing shift is currently not handled")
+        }
+        _bookings.put(shiftId, HelperBooking.PermanentHelper(helper))
 
         return shiftId.right()
     }

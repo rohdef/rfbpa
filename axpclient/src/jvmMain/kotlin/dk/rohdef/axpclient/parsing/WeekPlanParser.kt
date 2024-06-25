@@ -1,12 +1,15 @@
 package dk.rohdef.axpclient.parsing
 
-import dk.rohdef.helperplanning.shifts.ShiftData
+import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.helper.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.Weekday
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
-class WeekPlanParser {
+internal class WeekPlanParser(
+    val helperRepository: AxpRepository,
+) {
     fun parse(body: String): WeekPlan {
         val shiftTable = Jsoup.parse(body)
             .body()
@@ -23,36 +26,43 @@ class WeekPlanParser {
             weekday(shiftTable, WeekdayTable.Sunday),
         )
     }
-}
 
-private fun weekday(shiftTable: Element, weekday: WeekdayTable): Weekday {
-    val day = shiftTable
-        .shiftData(ShiftsField.Day, weekday)
-    val evening = shiftTable
-        .shiftData(ShiftsField.Evening, weekday)
-    val night = shiftTable
-        .shiftData(ShiftsField.Night, weekday)
-    val allDay = shiftTable
-        .shiftData(ShiftsField.AllDay, weekday)
-    val long = shiftTable
-        .shiftData(ShiftsField.Long, weekday)
-    // TODO illness needs to be treated differently, for instance illness does not have a booking id it seems
+    fun weekday(shiftTable: Element, weekday: WeekdayTable): Weekday {
+        val day = shiftTable
+            .shiftData(ShiftsField.Day, weekday)
+            .map { it.shift(helperRepository) }
+        val evening = shiftTable
+            .shiftData(ShiftsField.Evening, weekday)
+            .map { it.shift(helperRepository) }
+        val night = shiftTable
+            .shiftData(ShiftsField.Night, weekday)
+            .map { it.shift(helperRepository) }
+        val allDay = shiftTable
+            .shiftData(ShiftsField.AllDay, weekday)
+            .map { it.shift(helperRepository) }
+        val long = shiftTable
+            .shiftData(ShiftsField.Long, weekday)
+            .map { it.shift(helperRepository) }
+        // TODO illness needs to be treated differently, for instance illness does not have a booking id it seems
 //    val illness = shiftTable
 //        .shiftData(ShiftsField.Illness, weekday)
-    val illness = ShiftData.NoData
+        val illness = emptyList<Shift>()
+            .map { it.shift(helperRepository) }
 
-    return Weekday(
-        day,
-        evening,
-        night,
-        allDay,
-        long,
-        illness,
-    )
+        return Weekday(
+            day,
+            evening,
+            night,
+            allDay,
+            long,
+            illness,
+        )
+    }
 }
 
+
 private val shiftDataParser = ShiftDataParser()
-private fun Element.shiftData(shiftsField: ShiftsField, weekday: WeekdayTable): ShiftData =
+private fun Element.shiftData(shiftsField: ShiftsField, weekday: WeekdayTable): List<Shift> =
     this
         .select("tr:eq(${shiftsField.index}) > td:eq(${weekday.index})")
         .first()

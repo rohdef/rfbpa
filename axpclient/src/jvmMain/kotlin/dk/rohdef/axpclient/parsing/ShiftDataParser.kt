@@ -1,14 +1,14 @@
 package dk.rohdef.axpclient.parsing
 
-import dk.rohdef.helperplanning.shifts.ShiftData
+import dk.rohdef.axpclient.helper.Shift
 import org.jsoup.select.Elements
 
-class ShiftDataParser {
+internal class ShiftDataParser {
     private val shiftParser = ShiftParser()
 
-    fun parse(elements: Elements): ShiftData {
+    fun parse(elements: Elements): List<Shift> {
         return if (elements.isEmpty()) {
-            ShiftData.NoData
+            emptyList()
         } else {
             shiftParser.parse(elements)
         }

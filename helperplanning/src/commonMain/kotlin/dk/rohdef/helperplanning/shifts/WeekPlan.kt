@@ -21,10 +21,5 @@ data class WeekPlan(
 
     val allShifts =
         allDays
-            .map { it.allShifts }
-            .fold(ShiftData.NoData as ShiftData) { accumulator, shiftData ->
-                accumulator + shiftData
-            }
-
-    companion object
+            .flatMap { it.allShifts }
 }

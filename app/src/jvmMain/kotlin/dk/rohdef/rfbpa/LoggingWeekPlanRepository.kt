@@ -2,6 +2,7 @@ package dk.rohdef.rfbpa
 
 import arrow.core.Either
 import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -12,8 +13,8 @@ class LoggingWeekPlanRepository(
 ) : WeekPlanRepository {
     private val log = KotlinLogging.logger {}
 
-    override suspend fun bookShift(shiftId: ShiftId, helper: HelperBooking.PermanentHelper): Either<Unit, ShiftId> {
-        log.debug { "Booking shift $shiftId to helper ${helper.axpId}" }
+    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<Unit, ShiftId> {
+        log.debug { "Booking shift $shiftId to helper ${helper}" }
         return weekPlanRepository.bookShift(shiftId, helper)
     }
 

@@ -1,8 +1,6 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.axpclient.helper
 
-import arrow.core.NonEmptyList
-
-sealed interface ShiftData {
+internal sealed interface ShiftData {
     operator fun plus(shiftData: ShiftData): ShiftData
 
     object NoData : ShiftData {
@@ -10,7 +8,7 @@ sealed interface ShiftData {
             shiftData
     }
 
-    data class Shifts(val shifts: NonEmptyList<Shift>) : ShiftData {
+    data class Shifts(val shifts: List<Shift>) : ShiftData {
         override operator fun plus(shiftData: ShiftData): Shifts {
             return when (shiftData) {
                 is NoData -> this

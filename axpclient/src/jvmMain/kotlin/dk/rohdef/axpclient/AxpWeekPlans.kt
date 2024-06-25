@@ -4,9 +4,14 @@ import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
+import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.helperplanning.WeekPlanRepository
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftType
+import dk.rohdef.helperplanning.shifts.ShiftsError
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,7 +24,8 @@ import java.io.Closeable
 
 class AxpWeekPlans(
     private val configuration: AxpConfiguration,
-): WeekPlanRepository, Closeable {
+    private val helpers: AxpRepository,
+) : WeekPlanRepository, Closeable {
     private val log = KotlinLogging.logger { }
     private val client = HttpClient(OkHttp) {
         install(HttpCookies)
@@ -35,9 +41,13 @@ class AxpWeekPlans(
         client,
         configuration,
     )
-    private val weekPlanParser = WeekPlanParser()
+    private val weekPlanParser = WeekPlanParser(helpers)
 
-    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime, type: ShiftType): Either<Unit, ShiftId> = either {
+    override suspend fun createShift(
+        start: YearWeekDayAtTime,
+        end: YearWeekDayAtTime,
+        type: ShiftType
+    ): Either<Unit, ShiftId> = either {
         ensureLoggedIn()
 
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
@@ -50,11 +60,16 @@ class AxpWeekPlans(
 
     override suspend fun bookShift(
         shiftId: ShiftId,
-        helper: HelperBooking.PermanentHelper,
+        helperId: Helper.ID,
     ): Either<Unit, ShiftId> {
         ensureLoggedIn()
 
-        return axpClient.bookHelper(shiftId, helper)
+        fun findHelper(helperId: Helper.ID): HelperTID {
+            TODO()
+        }
+
+        val helperTid = findHelper(helperId)
+        return axpClient.bookHelper(shiftId, helperTid)
             .mapLeft {
                 // TODO improve
                 log.error { it }

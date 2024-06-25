@@ -1,32 +1,20 @@
 package dk.rohdef.axpclient.parsing
 
 import arrow.core.*
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftData
+import dk.rohdef.axpclient.helper.AxpMetadataRepository
+import dk.rohdef.axpclient.helper.HelperTID
+import dk.rohdef.axpclient.helper.Shift
 import dk.rohdef.rfsimplejs.JavaScriptParser
 import dk.rohdef.rfsimplejs.ast.*
 import kotlinx.datetime.LocalDateTime
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
-class ShiftParser {
+internal class ShiftParser {
     private val jsParser = JavaScriptParser()
 
-    fun parse(elements: Elements): ShiftData {
-        return if (elements.isEmpty()) {
-            ShiftData.NoData
-        } else {
-            parseShifts(elements)
-        }
-    }
-
-    private fun parseShifts(elements: Elements): ShiftData.Shifts {
-        return ShiftData.Shifts(
-            elements
-                .map { parseShift(it) }
-                .toNonEmptyListOrNull()!!
-        )
+    fun parse(elements: Elements): List<Shift> {
+        return elements.map { parseShift(it) }
     }
 
     private fun parseShift(element: Element): Shift {
@@ -39,12 +27,30 @@ class ShiftParser {
 
         val shiftData = parseTooltip(tooltipParameter.text)
 
+        // TODO replace with AXP model
+        val helperBooking = shiftData.getValue(AxpField.HELPER_ID).map {
+            when (it) {
+                "60621" -> AxpMetadataRepository.VacancyBooking
+                else -> AxpMetadataRepository.PermanentHelper(
+                    HelperTID(it),
+                )
+            }
+        }
+            .getOrElse { AxpMetadataRepository.NoBooking }
+        val axpShiftId = shiftData.getValue(AxpField.SHIFT_ID)
+            .map { Shift.AxpShiftId(it) }
+            .getOrElse { throw IllegalStateException("Shift ID is missing in $shiftData\n$tooltipParameter") }
+        val start = shiftData.getValue(AxpField.SHIFT_START)
+            .map { toLocalDateTime(it) }
+            .getOrElse { TODO() }
+        val end = shiftData.getValue(AxpField.SHIFT_END)
+            .map { toLocalDateTime(it) }
+            .getOrElse { TODO() }
         return Shift(
-            shiftData.getValue(AxpField.HELPER_ID).map { HelperBooking.PermanentHelper(it) }
-                .getOrElse { HelperBooking.NoBooking },
-            shiftData.getValue(AxpField.SHIFT_ID).getOrElse { throw IllegalStateException("Shift ID is missing in $shiftData\n$tooltipParameter") },
-            shiftData.getValue(AxpField.SHIFT_START).getOrElse { TODO() }.let { toLocalDateTime(it) },
-            shiftData.getValue(AxpField.SHIFT_END).getOrElse { TODO() }.let { toLocalDateTime(it) },
+            helperBooking,
+            axpShiftId,
+            start,
+            end,
         )
     }
 }

@@ -3,7 +3,7 @@ package dk.rohdef.axpclient
 import arrow.core.*
 import arrow.core.raise.either
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.shifts.HelperBooking
+import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -81,7 +81,7 @@ internal class AxpClient(
 
     suspend fun bookHelper(
         booking: ShiftId,
-        helper: HelperBooking.PermanentHelper
+        helper: HelperTID,
     ): Either<BookShiftError, ShiftId> = either {
         val response = client.submitForm(
             urls.index,
@@ -90,7 +90,7 @@ internal class AxpClient(
 
                 append("booking", booking.id)
                 // TODO deal with helper in a good way
-                append("book_temp", helper.axpId)
+                append("book_temp", helper.id)
             }
         )
         val body: String = response.body()
@@ -150,12 +150,8 @@ internal class AxpClient(
         append("repeat_to", "{\"year\":\"\",\"month\":\"\",\"day\":\"\"}")
     }
 
-    private fun ParametersBuilder.forHelper(helper: HelperBooking) {
-        when (helper) {
-            HelperBooking.NoBooking -> TODO()
-            is HelperBooking.PermanentHelper -> append("axp_tid", helper.axpId)
-            is HelperBooking.VacancyHelper -> TODO()
-        }
+    private fun ParametersBuilder.forHelper(helper: HelperTID) {
+        append("axp_tid", helper.id)
     }
 
     private suspend fun checkCustomerContract(

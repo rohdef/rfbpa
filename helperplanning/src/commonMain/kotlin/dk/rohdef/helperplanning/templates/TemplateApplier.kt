@@ -4,6 +4,7 @@ import arrow.core.Either
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -12,7 +13,7 @@ import kotlinx.datetime.LocalTime
 
 class TemplateApplier(
     val weekPlanRepository: WeekPlanRepository,
-    private val helpers: Map<String, String>,
+    private val helpers: Map<String, Helper.ID>,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -74,6 +75,7 @@ class TemplateApplier(
         }
     }
 
+    // TODO: 25/06/2024 rohdef - this probably needs a bit of rework
     private suspend fun bookHelper(shiftId: ShiftId, helperReservation: HelperReservation) {
         when (helperReservation) {
             is HelperReservation.Helper -> {
@@ -81,7 +83,7 @@ class TemplateApplier(
 
                 val bookingId = weekPlanRepository.bookShift(
                     shiftId,
-                    helper,
+                    helper.helperId,
                 )
 
                 when (bookingId) {

@@ -2,8 +2,6 @@ package dk.rohdef.rfbpa.web
 
 import com.auth0.jwk.JwkProviderBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -20,6 +18,8 @@ import kotlinx.serialization.json.Json
 
 fun main(): Unit = runBlocking {
     val log = KotlinLogging.logger {}
+
+
     log.info { "Running web interface" }
 
     embeddedServer(Netty, port = 8080) {
