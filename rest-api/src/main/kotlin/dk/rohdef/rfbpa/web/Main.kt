@@ -30,8 +30,6 @@ fun main(): Unit = runBlocking {
                 }
             }
 
-            calendar()
-
             get("/health") {
                 call.respondText("I am healthy!")
             }

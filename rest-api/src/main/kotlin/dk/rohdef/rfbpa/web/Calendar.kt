@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web
 
+import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -12,9 +13,12 @@ import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.FluentCalendar
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.util.RandomUidGenerator
+import org.koin.ktor.ext.inject
 
 private val log = KotlinLogging.logger {}
 fun Route.calendar() {
+    val config: RfBpaConfig by inject()
+
     get("/calendar") {
         val principal = call.principal<JWTPrincipal>()
         val username = principal!!.payload.subject
@@ -43,7 +47,7 @@ fun Route.calendar() {
             VEvent(
                 it.first.toJavaLocalDateTime(),
                 it.second.toJavaLocalDateTime(),
-                "Arbejde hos Rohde"
+                "Arbejde hos Rohde ${config.runtimeMode}"
             )
                 .withProperty(uidGenerator.generateUid())
                 .getFluentTarget<VEvent>()
