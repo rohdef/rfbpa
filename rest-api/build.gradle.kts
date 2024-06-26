@@ -61,6 +61,7 @@ dependencies {
     implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
     implementation("io.insert-koin:koin-core:3.6.0-Beta2")
+    implementation("io.insert-koin:koin-ktor:3.6.0-Beta2")
 
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
     implementation("io.ktor:ktor-client-apache:3.0.0-beta-1")
@@ -84,7 +85,6 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
     implementation("com.h2database:h2:$h2_version")
     implementation("org.flywaydb:flyway-core:10.15.0")
-
 
     // Test=
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
