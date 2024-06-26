@@ -55,9 +55,6 @@ internal class AxpClient(
             }
 
             None -> LoginResult.InvalidResult("Location header is missing in the login response from AXP")
-            else -> {
-                TODO()
-            }
         }
     }
 
