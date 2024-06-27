@@ -18,7 +18,10 @@
         <Logger name="dk.rohdef.rfbpa.LoggingWeekPlanRepository" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="io.ktor" additivity="false" level="debug">
+        <Logger name="io.ktor" additivity="false" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="io.ktor.server.engine.ApplicationEngineEnvironmentReloading" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
         <Logger name="io.netty" additivity="false" level="info">

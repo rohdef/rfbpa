@@ -24,14 +24,12 @@ import org.koin.dsl.bind
 fun Application.dependencyInjection() {
     val log = KotlinLogging.logger {}
 
-    val configurationFile = object {}::class.java
-        .getResource("/rfbpa.yaml")!!
-        .readText()
-    val helpers = object {}::class.java
-        .getResource("/helpers.yaml")!!
-        .readText()
+//    val helpers = object {}::class.java
+//        .getResource("/helpers.yaml")!!
+//        .readText()
 
-    val configuration = Yaml.decodeFromString(RfBpaConfig.serializer(), configurationFile)
+    val configurationRaw = environment.config.toMap()["rfbpa"]!! as Map<String, Any>
+    val configuration = RfBpaConfig.fromMap(configurationRaw)
 
     when (configuration.runtimeMode) {
         RuntimeMode.DEVELOPMENT -> log.warn { "Running in development mode" }
@@ -44,7 +42,8 @@ fun Application.dependencyInjection() {
             single<RfBpaConfig> { configuration }
 
             single<Map<String, HelperDataBaseItem>>(named("helpers")) {
-                Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
+//                Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
+                emptyMap()
             }
 
             single<AxpRepository> {
@@ -55,13 +54,12 @@ fun Application.dependencyInjection() {
 
             single<AxpConfiguration> {
                 val config: RfBpaConfig = get()
-                val axp = config.client.axp
 
                 AxpConfiguration(
                     TimeZone.of("Europe/Copenhagen"),
-                    axp.url,
-                    axp.username,
-                    axp.password,
+                    config.axp.host,
+                    config.axp.username,
+                    config.axp.password,
                 )
             }
         }

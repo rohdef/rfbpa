@@ -20,6 +20,13 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{ quote .Values.image }}
           imagePullPolicy: Always
+          env:
+            - name: RFBPA_AXP_USER
+              value: "foo"
+            - name: RFBPA_AXP_PASSWORD
+              value: "foo"
+            - name: RFBPA_ENVIRONMENT
+              value: production
           ports:
             - name: rfbpa-web
               containerPort: 8080

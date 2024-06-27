@@ -1,6 +1,18 @@
+rfbpa:
+  environment: "$RFBPA_ENVIRONMENT:development"
+
+  axp:
+    host: "$RFBPA_AXP_HOST:https://www.handicapformidlingen.axp.dk"
+    username: $RFBPA_AXP_USER
+    password: $RFBPA_AXP_PASSWORD
+
 ktor:
   development: true
   deployment:
     watch:
       - classes
       - resources
+    port: 8080
+  application:
+    modules:
+      - dk.rohdef.rfbpa.web.MainKt.main
