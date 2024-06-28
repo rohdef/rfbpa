@@ -22,9 +22,12 @@ spec:
           imagePullPolicy: Always
           env:
             - name: RFBPA_AXP_USER
-              value: "foo"
+              value: "rohdef"
             - name: RFBPA_AXP_PASSWORD
-              value: "foo"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rfbpa.fullname" . }}
+                  key: axpPassword
             - name: RFBPA_ENVIRONMENT
               value: production
           ports:
