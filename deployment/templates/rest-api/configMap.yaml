@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  jwksEndpoint: {{ quote .Values.auth.jwksEndpoint }}
+  jwtIssuer: {{ quote .Values.auth.jwtIssuer }}
+  jwtRealm: {{ quote .Values.auth.jwtRealm }}
+metadata:
+  name: {{ include "rfbpa.fullname" . }}
+  labels:
+    component: backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/name: {{ include "rfbpa.fullname" . }}
+    {{- include "rfbpa.labels" . | nindent 4 }}

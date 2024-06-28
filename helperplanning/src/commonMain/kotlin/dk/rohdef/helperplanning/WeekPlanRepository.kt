@@ -11,7 +11,7 @@ import dk.rohdef.rfweeks.YearWeekInterval
 interface WeekPlanRepository {
     suspend fun bookShift(
         shiftId: ShiftId,
-        helper: Helper.ID,
+        helperId: Helper.ID,
     ): Either<Unit, ShiftId>
 
     suspend fun shifts(yearWeeks: YearWeekInterval): Either<ShiftsError, WeekPlans> = either {

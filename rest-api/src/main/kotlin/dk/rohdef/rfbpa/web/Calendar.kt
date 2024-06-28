@@ -13,11 +13,13 @@ import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.FluentCalendar
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.util.RandomUidGenerator
+import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
 
 private val log = KotlinLogging.logger {}
 fun Route.calendar() {
     val config: RfBpaConfig by inject()
+    val helpers: Map<String, HelperDataBaseItem> by inject(named("helpers"))
 
     get("/calendar") {
         val principal = call.principal<JWTPrincipal>()
@@ -26,9 +28,8 @@ fun Route.calendar() {
 
         log.info { "Reading calendar details" }
         log.info { "${call.request.queryParameters["key"]}" }
-        call.request.headers.forEach { name, values ->
-            log.info { "${name}: ${values.joinToString(", ")}" }
-        }
+        log.info { "${helpers}" }
+
         val calendar = Calendar()
             .withProdId("-//Rohde Fischer//RF-BPA//DA")
             .withDefaults()

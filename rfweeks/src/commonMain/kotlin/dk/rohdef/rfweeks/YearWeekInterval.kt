@@ -53,8 +53,8 @@ data class YearWeekInterval(
                         }
                         .bind()
                 },
-            ) { start, end ->
-                start..end
+            ) { firstWeek, lastWeek ->
+                firstWeek..lastWeek
             }
         }
     }

@@ -12,21 +12,19 @@ import dk.rohdef.rfbpa.web.LoggingWeekPlanRepository
 import dk.rohdef.rfbpa.web.MemoryAxpRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
+import kotlinx.datetime.TimeZone
 import kotlinx.serialization.decodeFromString
 import net.mamoe.yamlkt.Yaml
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
-import kotlinx.datetime.TimeZone
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
+import java.nio.file.Paths
+import kotlin.io.path.readText
 
 fun Application.dependencyInjection() {
     val log = KotlinLogging.logger {}
-
-//    val helpers = object {}::class.java
-//        .getResource("/helpers.yaml")!!
-//        .readText()
 
     val configurationRaw = environment.config.toMap()["rfbpa"]!! as Map<String, Any>
     val configuration = RfBpaConfig.fromMap(configurationRaw)
@@ -42,8 +40,9 @@ fun Application.dependencyInjection() {
             single<RfBpaConfig> { configuration }
 
             single<Map<String, HelperDataBaseItem>>(named("helpers")) {
-//                Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
-                emptyMap()
+                val helpers = Paths.get("helpers.yaml")
+                    .readText()
+                Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
             }
 
             single<AxpRepository> {
@@ -67,7 +66,12 @@ fun Application.dependencyInjection() {
         // web module
         val web = module {
             when (configuration.runtimeMode) {
-                RuntimeMode.DEVELOPMENT ->  single<WeekPlanRepository> { LoggingWeekPlanRepository(MemoryWeekPlanRepository()) }
+                RuntimeMode.DEVELOPMENT -> single<WeekPlanRepository> {
+                    LoggingWeekPlanRepository(
+                        MemoryWeekPlanRepository()
+                    )
+                }
+
                 RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
             }
         }

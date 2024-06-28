@@ -2,11 +2,7 @@ replicaCount: 1
 
 image: ghcr.io/rohdef/rfbpa:latest
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+auth:
+  jwksEndpoint: "https://keycloak-admin.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/certs"
+  jwtIssuer: "https://keycloak-admin.rfbpa.rohdef.dk/realms/rfbpa"
+  jwtRealm: rfbpa-web

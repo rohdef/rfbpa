@@ -1,6 +1,11 @@
 rfbpa:
   environment: "$RFBPA_ENVIRONMENT:development"
 
+  auth:
+    jwkEndpoint: "$RFBPA_AUTH_JWKS_ENDPOINT:http://localhost:8383/realms/rfbpa/protocol/openid-connect/certs"
+    jwtIssuer: "$RFBPA_JWT_ISSUER:http://localhost:8383/realms/rfbpa"
+    jwtRealm: "$RFBPA_JWT_REALM:rfbpa"
+
   axp:
     host: "$RFBPA_AXP_HOST:https://www.handicapformidlingen.axp.dk"
     username: $RFBPA_AXP_USER

@@ -30,6 +30,21 @@ spec:
                   key: axpPassword
             - name: RFBPA_ENVIRONMENT
               value: production
+            - name: RFBPA_AUTH_JWKS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "rfbpa.fullname" . }}
+                  key: jwksEndpoint
+            - name: RFBPA_JWT_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "rfbpa.fullname" . }}
+                  key: jwtIssuer
+            - name: RFBPA_JWT_REALM
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "rfbpa.fullname" . }}
+                  key: jwtRealm
           ports:
             - name: rfbpa-web
               containerPort: 8080

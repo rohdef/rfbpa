@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web.plugins
 
 import com.auth0.jwk.JwkProviderBuilder
+import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -8,19 +9,18 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
+import org.koin.ktor.ext.inject
 
 fun Application.security() {
     val log = KotlinLogging.logger {}
 
     install(Authentication) {
+        val config: RfBpaConfig by inject()
         jwt {
-            val jwkEndpointUrl = URLBuilder(
-                "http://localhost:8383/realms/rfbpa/protocol/openid-connect/certs"
-            ).build().toURI().toURL()
-            val jwkProvider = JwkProviderBuilder(jwkEndpointUrl).build()
+            val jwkProvider = JwkProviderBuilder(config.auth.jwkEndpoint).build()
 
             realm = "rfbpa"
-            verifier(jwkProvider, "http://localhost:8383/realms/rfbpa")
+            verifier(jwkProvider, config.auth.jwtIssuer)
             validate { jwtCredential ->
                 JWTPrincipal(jwtCredential.payload)
 //                    if (jwtCredential.payload.issuer != null) {
