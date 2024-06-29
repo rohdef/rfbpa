@@ -28,6 +28,7 @@ fun Route.calendar() {
 
         log.info { "Reading calendar details" }
         log.info { "${call.request.queryParameters["key"]}" }
+        log.info { "${username}" }
         log.info { "${helpers}" }
 
         val calendar = Calendar()

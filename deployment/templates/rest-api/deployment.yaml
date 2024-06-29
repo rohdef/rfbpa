@@ -45,6 +45,10 @@ spec:
                 configMapKeyRef:
                   name: {{ include "rfbpa.fullname" . }}
                   key: jwtRealm
+          volumeMounts:
+            - mountPath: /helpers.yaml
+              name: rfbpa-temp
+              subPath: helpers.yaml
           ports:
             - name: rfbpa-web
               containerPort: 8080
@@ -59,3 +63,8 @@ spec:
               port: 8080
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: rfbpa-temp
+          configMap:
+            defaultMode: 420
+            name: rbpa-temp-config
