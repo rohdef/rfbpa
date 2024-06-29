@@ -15,7 +15,7 @@ spec:
      - host: rfbpa.rohdef.dk
        http:
          paths:
-           - path: /
+           - path: /api/public
              pathType: Prefix
              backend:
                service:
