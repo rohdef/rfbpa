@@ -22,11 +22,11 @@ fun Application.main() {
     serialization()
 
     routing {
-        authenticate {
+//        authenticate {
             route("/api/public") {
                 calendar()
             }
-        }
+//        }
 
         get("/health") {
             call.respondText("I am healthy!")

@@ -23,12 +23,12 @@ fun Route.calendar() {
 
     get("/calendar") {
         val principal = call.principal<JWTPrincipal>()
-        val username = principal!!.payload.subject
-        val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
+//        val username = principal!!.payload.subject
+//        val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
 
         log.info { "Reading calendar details" }
         log.info { "${call.request.queryParameters["key"]}" }
-        log.info { "${username}" }
+//        log.info { "${username}" }
         log.info { "${helpers}" }
 
         val calendar = Calendar()
