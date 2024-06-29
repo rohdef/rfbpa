@@ -12,6 +12,14 @@
 {{- end }}
 {{- end }}
 
+{{- define "rfbpa.rest-api.name" -}}
+{{ print "rest-api-" (include "rfbpa.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rfbpa.webApp.name" -}}
+{{ print "web-app-" (include "rfbpa.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 
 {{- define "rfbpa.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}

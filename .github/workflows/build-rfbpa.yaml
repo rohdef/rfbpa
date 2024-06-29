@@ -1,12 +1,21 @@
-name: Building and distributing rf-bpa
-run-name: rfbpa build triggered by ${{ github.actor }} on branch ${{ github.ref }}
+name: Building and distributing rfbpa
+run-name: rfbpa - ${{ github.actor }} on ${{ github.ref }}
 on: [ push ]
 
 env:
-  IMAGE_NAME: rfbpa
+  IMAGE_NAME: rfbpa-rest-api
 
 jobs:
-  Build-and-distribute:
+  web-app:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repository: ${{ github.repository }}"
+        uses: actions/checkout@v4
+
+  rest-api:
     permissions:
       contents: read
       packages: write

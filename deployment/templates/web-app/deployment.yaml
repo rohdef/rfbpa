@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rfbpa.rest-api.name" . }}
+  name: {{ include "rfbpa.webApp.name" . }}
   labels:
-    component: rest-api
-    app.kubernetes.io/component: rest-api
+    component: web-app
+    app.kubernetes.io/component: web-app
     {{- include "rfbpa.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -19,16 +19,9 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: {{ quote .Values.restApi.image }}
+          image: {{ quote .Values.webApp.image }}
           imagePullPolicy: Always
           env:
-            - name: RFBPA_AXP_USER
-              value: "rohdef"
-            - name: RFBPA_AXP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
-                  key: axpPassword
             - name: RFBPA_ENVIRONMENT
               value: production
             - name: RFBPA_AUTH_JWKS_ENDPOINT
@@ -46,13 +39,9 @@ spec:
                 configMapKeyRef:
                   name: {{ include "rfbpa.rest-api.name" . }}
                   key: jwtRealm
-          volumeMounts:
-            - mountPath: /helpers.yaml
-              name: rfbpa-temp
-              subPath: helpers.yaml
           ports:
-            - name: {{ include "rfbpa.rest-api.name" . }}
-              containerPort: 8080
+            - name: {{ include "rfbpa.webApp.name" . }}
+              containerPort: 3000
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -64,8 +53,3 @@ spec:
               port: 8080
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      volumes:
-        - name: rfbpa-temp
-          configMap:
-            defaultMode: 420
-            name: rbpa-temp-config

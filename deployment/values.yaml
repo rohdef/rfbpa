@@ -1,6 +1,10 @@
 replicaCount: 1
 
-image: ghcr.io/rohdef/rfbpa:latest
+webApp:
+  image: ghcr.io/rohdef/rfbpa-web-app:latest
+
+restApi:
+  image: ghcr.io/rohdef/rfbpa-rest-api:latest
 
 auth:
   jwksEndpoint: "https://keycloak-admin.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/certs"
