@@ -20,6 +20,7 @@ jobs:
           node-version: '18'
       - name: Build web-app
         run: |
+          cd rfbpa/web-app
           npm ci
           npm run build
 

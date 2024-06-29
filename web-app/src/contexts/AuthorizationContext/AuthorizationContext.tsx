@@ -1,5 +1,6 @@
 import {ReactNode} from "react";
 import {Authentication, NoAuthentication, useAuthentication} from "../AuthenticationContext/AuthenticationContext";
+import configuration from "../../configuration.ts";
 
 enum Authorization {
     AUTHORIZED = "authorized",
@@ -23,10 +24,10 @@ const AuthorizationContext = ({children}: { children: ReactNode }) => {
 
     switch (authorization) {
         case Authorization.NOT_LOGGED_IN:
-            const authBaseUrl = "http://localhost:8383"
-            const realm = "rfbpa"
+            const authBaseUrl = configuration.auth.url
+            const realm = configuration.auth.realm
             const authUrl = `${authBaseUrl}/realms/${realm}/protocol/openid-connect/auth`
-            const client = "rfbpa"
+            const client = configuration.auth.client
             const callbackUrl = `${window.location.href}/`
             const redirect = `redirect_uri=${encodeURIComponent(callbackUrl)}`;
             const responseTyep = `response_type=token`;

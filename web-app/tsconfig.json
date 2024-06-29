@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "types": ["src/rfbpa.lib.d.ts"]
+  },
   "files": [],
   "references": [
     {

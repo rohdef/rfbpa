@@ -24,7 +24,7 @@ function App() {
             <CssBaseline/>
             <NavigationBar/>
             <AuthenticationProvider>
-                <RouterProvider router={routes} />
+                <RouterProvider router={routes}/>
             </AuthenticationProvider>
         </ThemeProvider>
     )
