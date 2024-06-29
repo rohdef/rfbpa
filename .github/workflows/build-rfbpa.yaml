@@ -14,6 +14,14 @@ jobs:
     steps:
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
+      - name: Set up NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Build web-app
+        run: |
+          npm ci
+          npm run build
 
   rest-api:
     permissions:
@@ -30,7 +38,7 @@ jobs:
         with:
           java-version: 17
           distribution: "temurin"
-      - name: Build rf-bpa
+      - name: Build rest-api
         run: |
           cd rfbpa
           ./gradlew build

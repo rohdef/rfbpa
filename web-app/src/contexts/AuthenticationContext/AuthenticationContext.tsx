@@ -88,13 +88,14 @@ interface AuthenticationValues {
     resetAuthentication: () => void,
 }
 
+// @ts-ignore
+// @ts-ignore
 export const AuthenticationContext = React.createContext<AuthenticationValues>(
     {
         authentication: NoAuthentication.instance(),
-        setAuthentication: (authentication: Authentication) => {
-        },
-        resetAuthentication: () => {
-        },
+        // @ts-ignore
+        setAuthentication: (authentication: Authentication) => {},
+        resetAuthentication: () => {},
     },
 )
 

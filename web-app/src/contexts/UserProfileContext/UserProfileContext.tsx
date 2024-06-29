@@ -1,7 +1,7 @@
 "use client"
 
-import React, {ReactNode, useEffect, useState} from "react";
-import {AuthorizationContext} from "../AuthorizationContext/AuthorizationContext";
+import React, {ReactNode, useState} from "react";
+import AuthorizationContext from "../AuthorizationContext/AuthorizationContext.tsx";
 
 interface UserProfileValues {
     userData?: any
@@ -12,7 +12,7 @@ export const UserProfileContext = React.createContext<UserProfileValues>(
 )
 
 export function UserProfileProvider({children}: { children: ReactNode }) {
-    const [userData, setUserData] = useState<string>("null")
+    const [userData] = useState<string>("null")
 
     return <AuthorizationContext>
         <UserProfileContext.Provider value={{userData}}>
