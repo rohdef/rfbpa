@@ -3,7 +3,8 @@ run-name: rfbpa - ${{ github.actor }} on ${{ github.ref }}
 on: [ push ]
 
 env:
-  IMAGE_NAME: rfbpa-rest-api
+  REST_API_IMAGE_NAME: rfbpa-rest-api
+  WEB_APP_IMAGE_NAME: rfbpa-web-app
 
 jobs:
   web-app:
@@ -11,6 +12,8 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-latest
+    outputs:
+      docker_digest: ${{ steps.push_image.outputs.docker_digest }}
     steps:
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
@@ -18,40 +21,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+
       - name: Build web-app
         run: |
-          cd rfbpa/web-app
+          cd web-app
           npm ci
           npm run build
 
-  rest-api:
-    permissions:
-      contents: read
-      packages: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Check out repository: ${{ github.repository }}"
-        uses: actions/checkout@v4
-        with:
-          path: rfbpa
-      - name: Set up Java
-        uses: actions/setup-java@v2
-        with:
-          java-version: 17
-          distribution: "temurin"
-      - name: Build rest-api
-        run: |
-          cd rfbpa
-          ./gradlew build
-
       - name: Build image
-        run: docker build --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" ./rfbpa/rest-api/
+        run: docker build --tag $WEB_APP_IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" ./web-app/
 
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Push image
+        id: push_image
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$WEB_APP_IMAGE_NAME
 
           # This changes all uppercase characters to lowercase.
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -63,12 +48,74 @@ jobs:
           [ "$VERSION" == "main" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $WEB_APP_IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
           DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
-          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_ENV"
+          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_OUTPUT"
 
+  rest-api:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    outputs:
+      docker_digest: ${{ steps.push_image.outputs.docker_digest }}
+    steps:
+      - name: "Check out repository: ${{ github.repository }}"
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: "temurin"
+
+      - name: Build rest-api
+        run: |
+          ./gradlew build
+
+      - name: Build image
+        run: docker build --tag $REST_API_IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" ./rest-api/
+
+      - name: Log in to docker registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Push image
+        id: push_image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$REST_API_IMAGE_NAME
+
+          # This changes all uppercase characters to lowercase.
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # This strips the git ref prefix from the version.
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # This strips the "v" prefix from the tag name.
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # This uses the Docker `latest` tag convention.
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $REST_API_IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+
+          DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
+          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_OUTPUT"
+
+  deployment:
+    needs:
+      - rest-api
+      - web-app
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    env:
+      REST_API_DIGEST: ${{ needs.rest-api.outputs.docker_digest }}
+      WEB_APP_DIGIEST: ${{ needs.web-app.outputs.docker_digest }}
+    steps:
+      - name: "Check out repository: ${{ github.repository }}"
+        uses: actions/checkout@v4
+        with:
+          path: rfbpa
       - name: Check out gitops repository
         uses: actions/checkout@v4
         with:
@@ -77,9 +124,14 @@ jobs:
           ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
       - name: Update deployment
         run: |
+          echo "rest api:"
+          echo ${REST_API_DIGEST}
+          echo "web app:"
+          echo ${WEB_APP_DIGIEST}
           rm -rf ./rfbpa-deploy/rfbpa
           cp -r ./rfbpa/deployment/ ./rfbpa-deploy/rfbpa
-          yq e -i ".image=\"$docker_digest\"" ./rfbpa-deploy/rfbpa/values.yaml
+          yq e -i ".restApi.image=\"${REST_API_DIGEST}\"" ./rfbpa-deploy/rfbpa/values.yaml
+          yq e -i ".webApp.image=\"${WEB_APP_DIGIEST}\"" ./rfbpa-deploy/rfbpa/values.yaml
           cd rfbpa-deploy
           git config user.email "rohdef+rfbpa@rohdef.dk"
           git config user.name "${{ github.actor }}"
