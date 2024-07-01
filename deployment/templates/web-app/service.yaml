@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "rfbpa.restApi.name" . }}
+  name: {{ include "rfbpa.webApp.name" . }}
   labels:
-    component: rest-api
-    app.kubernetes.io/component: rest-api
+    component: web-app
+    app.kubernetes.io/component: web-app
     {{- include "rfbpa.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
     - port: 80
-      targetPort: {{ include "rfbpa.restApi.name" . }}
+      targetPort: {{ include "rfbpa.webApp.name" . }}
       protocol: TCP
-      name: {{ include "rfbpa.restApi.name" . }}-service
+      name: {{ include "rfbpa.webApp.name" . }}-service
   selector:
     {{- include "rfbpa.selectorLabels" . | nindent 4 }}

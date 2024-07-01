@@ -12,7 +12,7 @@
 {{- end }}
 {{- end }}
 
-{{- define "rfbpa.rest-api.name" -}}
+{{- define "rfbpa.restApi.name" -}}
 {{ print "rest-api-" (include "rfbpa.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 

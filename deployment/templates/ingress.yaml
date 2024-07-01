@@ -1,12 +1,12 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "rfbpa.rest-api.name" . }}
+  name: {{ include "rfbpa.restApi.name" . }}
   labels:
     {{- include "rfbpa.labels" . | nindent 4 }}
   annotations:
-    component: rest-api
-    app.kubernetes.io/component: rest-api
+    component: rfbpa
+    app.kubernetes.io/component: rfbpa
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: letsencrypt-production
@@ -20,9 +20,14 @@ spec:
              pathType: Prefix
              backend:
                service:
-                 name: {{ include "rfbpa.rest-api.name" . }}
-                 port:
-                   number: 80
+                 name: {{ include "rfbpa.restApi.name" . }}
+                 port: {{ include "rfbpa.restApi.name" . }}-service
+           - path: /
+             pathType: Prefix
+             backend:
+               service:
+                 name: {{ include "rfbpa.webApp.name" . }}
+                 port: {{ include "rfbpa.webApp.name" . }}-service
   tls:
     - hosts:
         - rfbpa.rohdef.dk

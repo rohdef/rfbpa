@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rfbpa.rest-api.name" . }}
+  name: {{ include "rfbpa.restApi.name" . }}
   labels:
     component: rest-api
     app.kubernetes.io/component: rest-api
@@ -27,31 +27,31 @@ spec:
             - name: RFBPA_AXP_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: axpPassword
             - name: RFBPA_ENVIRONMENT
               value: production
             - name: RFBPA_AUTH_JWKS_ENDPOINT
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwksEndpoint
             - name: RFBPA_JWT_ISSUER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwtIssuer
             - name: RFBPA_JWT_REALM
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwtRealm
           volumeMounts:
             - mountPath: /helpers.yaml
               name: rfbpa-temp
               subPath: helpers.yaml
           ports:
-            - name: {{ include "rfbpa.rest-api.name" . }}
+            - name: {{ include "rfbpa.restApi.name" . }}
               containerPort: 8080
               protocol: TCP
           livenessProbe:

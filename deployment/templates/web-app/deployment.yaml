@@ -27,17 +27,17 @@ spec:
             - name: RFBPA_AUTH_JWKS_ENDPOINT
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwksEndpoint
             - name: RFBPA_JWT_ISSUER
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwtIssuer
             - name: RFBPA_JWT_REALM
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.rest-api.name" . }}
+                  name: {{ include "rfbpa.restApi.name" . }}
                   key: jwtRealm
           ports:
             - name: {{ include "rfbpa.webApp.name" . }}

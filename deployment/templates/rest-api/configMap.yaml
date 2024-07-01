@@ -5,9 +5,9 @@ data:
   jwtIssuer: {{ quote .Values.auth.jwtIssuer }}
   jwtRealm: {{ quote .Values.auth.jwtRealm }}
 metadata:
-  name: {{ include "rfbpa.rest-api.name" . }}
+  name: {{ include "rfbpa.restApi.name" . }}
   labels:
     component: rest-api
     app.kubernetes.io/component: rest-api
-    app.kubernetes.io/name: {{ include "rfbpa.rest-api.name" . }}
+    app.kubernetes.io/name: {{ include "rfbpa.restApi.name" . }}
     {{- include "rfbpa.labels" . | nindent 4 }}
