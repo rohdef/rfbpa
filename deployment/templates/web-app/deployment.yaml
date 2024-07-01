@@ -39,6 +39,10 @@ spec:
                 configMapKeyRef:
                   name: {{ include "rfbpa.restApi.name" . }}
                   key: jwtRealm
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html/env-config.js
+              name: web-config
+              subPath: env-config.js
           ports:
             - name: {{ include "rfbpa.webApp.name" . }}
               containerPort: 80
@@ -53,3 +57,8 @@ spec:
               port: {{ include "rfbpa.webApp.name" . }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: web-config
+          configMap:
+            defaultMode: 420
+            name: {{ include "rfbpa.webApp.name" . }}

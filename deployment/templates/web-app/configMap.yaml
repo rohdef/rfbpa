@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  env-config.js: |
+    window._env_ = {
+      apiUrl: "{{ .Values.host }}/",
+
+      auth: {
+        url: "{{ .Values.auth.jwksEndpoint }}",
+        realm: "{{ .Values.auth.jwtRealm }}",
+        client: "{{ .Values.auth.jwtRealm }}"
+      }
+    }
+metadata:
+  name: {{ include "rfbpa.webApp.name" . }}
+  labels:
+    component: rest-api
+    app.kubernetes.io/component: rest-api
+    app.kubernetes.io/name: {{ include "rfbpa.restApi.name" . }}
+    {{- include "rfbpa.labels" . | nindent 4 }}

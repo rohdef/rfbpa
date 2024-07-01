@@ -1,5 +1,7 @@
 replicaCount: 1
 
+host: rfbpa.rohdef.dk
+
 webApp:
   image: ghcr.io/rohdef/rfbpa-web-app:latest
 
@@ -7,6 +9,7 @@ restApi:
   image: ghcr.io/rohdef/rfbpa-rest-api:latest
 
 auth:
-  jwksEndpoint: "https://keycloak-admin.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/certs"
-  jwtIssuer: "https://keycloak-admin.rfbpa.rohdef.dk/realms/rfbpa"
-  jwtRealm: rfbpa-web
+  jwksEndpoint: "https://keycloak.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/certs"
+  jwtIssuer: "https://keycloak.rfbpa.rohdef.dk/realms/rfbpa"
+  jwtRealm: rfbpa
+  jwtClient: rfbpa-web
