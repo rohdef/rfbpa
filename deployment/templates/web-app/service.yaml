@@ -12,6 +12,6 @@ spec:
     - port: 80
       targetPort: {{ include "rfbpa.webApp.name" . }}
       protocol: TCP
-      name: {{ include "rfbpa.webApp.name" . }}-service
+      name: http
   selector:
     {{- include "rfbpa.selectorLabels" . | nindent 4 }}

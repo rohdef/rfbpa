@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "rfbpa.restApi.name" . }}
+  name: {{ include "rfbpa.name" . }}
   labels:
     {{- include "rfbpa.labels" . | nindent 4 }}
   annotations:
@@ -21,13 +21,15 @@ spec:
              backend:
                service:
                  name: {{ include "rfbpa.restApi.name" . }}
-                 port: {{ include "rfbpa.restApi.name" . }}-service
+                 port:
+                   name: http
            - path: /
              pathType: Prefix
              backend:
                service:
                  name: {{ include "rfbpa.webApp.name" . }}
-                 port: {{ include "rfbpa.webApp.name" . }}-service
+                 port:
+                  name: http
   tls:
     - hosts:
         - rfbpa.rohdef.dk
