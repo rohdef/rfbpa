@@ -13,7 +13,6 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-{{/*     - host: rfbpa.northeurope.cloudapp.azure.com*/}}
      - host: rfbpa.rohdef.dk
        http:
          paths:

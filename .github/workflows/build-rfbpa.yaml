@@ -124,10 +124,6 @@ jobs:
           ssh-key: ${{ secrets.RFBPA_DEPLOY_SSH_KEY }}
       - name: Update deployment
         run: |
-          echo "rest api:"
-          echo ${REST_API_DIGEST}
-          echo "web app:"
-          echo ${WEB_APP_DIGIEST}
           rm -rf ./rfbpa-deploy/rfbpa
           cp -r ./rfbpa/deployment/ ./rfbpa-deploy/rfbpa
           yq e -i ".restApi.image=\"${REST_API_DIGEST}\"" ./rfbpa-deploy/rfbpa/values.yaml

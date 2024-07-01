@@ -41,15 +41,15 @@ spec:
                   key: jwtRealm
           ports:
             - name: {{ include "rfbpa.webApp.name" . }}
-              containerPort: 3000
+              containerPort: 80
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: {{ include "rfbpa.webApp.name" . }}
           readinessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: {{ include "rfbpa.webApp.name" . }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
