@@ -10,6 +10,7 @@ restApi:
 
 auth:
   jwksEndpoint: "https://keycloak.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/certs"
+  authUrl: "https://keycloak.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/auth"
   jwtIssuer: "https://keycloak.rfbpa.rohdef.dk/realms/rfbpa"
   jwtRealm: rfbpa
   jwtClient: rfbpa-web

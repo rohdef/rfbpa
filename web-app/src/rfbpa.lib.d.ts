@@ -6,8 +6,7 @@ declare global {
 
             auth: {
                 url: string,
-                realm: string,
-                client: string
+                client: string,
             }
         };
     }

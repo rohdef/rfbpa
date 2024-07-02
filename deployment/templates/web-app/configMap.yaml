@@ -6,8 +6,7 @@ data:
       apiUrl: "{{ .Values.host }}/",
 
       auth: {
-        url: "{{ .Values.auth.jwksEndpoint }}",
-        realm: "{{ .Values.auth.jwtRealm }}",
+        url: "{{ .Values.auth.authUrl }}",
         client: "{{ .Values.auth.jwtRealm }}"
       }
     }

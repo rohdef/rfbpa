@@ -23,10 +23,9 @@ const AuthorizationContext = ({children}: { children: ReactNode }) => {
     const authorization = checkLogin({authentication})
 
     switch (authorization) {
+        //https://keycloak.rfbpa.rohdef.dk/realms/rfbpa/protocol/openid-connect/auth
         case Authorization.NOT_LOGGED_IN:
-            const authBaseUrl = configuration.auth.url
-            const realm = configuration.auth.realm
-            const authUrl = `${authBaseUrl}/realms/${realm}/protocol/openid-connect/auth`
+            const authUrl = configuration.auth.url
             const client = configuration.auth.client
             const callbackUrl = `${window.location.href}/`
             const redirect = `redirect_uri=${encodeURIComponent(callbackUrl)}`;
