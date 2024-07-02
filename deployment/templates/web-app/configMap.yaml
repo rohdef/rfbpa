@@ -1,15 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 data:
-  env-config.js: |
-    window._env_ = {
-      apiUrl: "{{ .Values.host }}/",
-
-      auth: {
-        url: "{{ .Values.auth.authUrl }}",
-        client: "{{ .Values.auth.jwtRealm }}"
-      }
-    }
+  rfbpaApi: {{ quote .Values.host }}
+  authUrl: {{ quote .Values.auth.authUrl }}
+  authClient: {{ quote .Values.auth.jwtClient }}
 metadata:
   name: {{ include "rfbpa.webApp.name" . }}
   labels:

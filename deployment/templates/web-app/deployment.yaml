@@ -24,25 +24,21 @@ spec:
           env:
             - name: RFBPA_ENVIRONMENT
               value: production
-            - name: RFBPA_AUTH_JWKS_ENDPOINT
+            - name: RFBPA_API
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.restApi.name" . }}
-                  key: jwksEndpoint
-            - name: RFBPA_JWT_ISSUER
+                  name: {{ include "rfbpa.webApp.name" . }}
+                  key: rfbpaApi
+            - name: RFBPA_AUTH_URL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.restApi.name" . }}
-                  key: jwtIssuer
-            - name: RFBPA_JWT_REALM
+                  name: {{ include "rfbpa.webApp.name" . }}
+                  key: authUrl
+            - name: RFBPA_AUTH_CLIENT
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "rfbpa.restApi.name" . }}
-                  key: jwtRealm
-          volumeMounts:
-            - mountPath: /usr/share/nginx/html/env-config.js
-              name: web-config
-              subPath: env-config.js
+                  name: {{ include "rfbpa.webApp.name" . }}
+                  key: authClient
           ports:
             - name: {{ include "rfbpa.webApp.name" . }}
               containerPort: 80
@@ -57,8 +53,3 @@ spec:
               port: {{ include "rfbpa.webApp.name" . }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      volumes:
-        - name: web-config
-          configMap:
-            defaultMode: 420
-            name: {{ include "rfbpa.webApp.name" . }}
