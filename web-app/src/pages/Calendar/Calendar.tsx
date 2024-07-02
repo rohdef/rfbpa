@@ -14,7 +14,7 @@ export default function Calendar() {
 
     useEffect(() => {
         if (authentication instanceof TokenAuthentication) {
-            client.get(`/calendar`, {
+            client.get(`calendar`, {
                 headers: {
                     Authorization: `Bearer ${authentication.token}`
                 }
