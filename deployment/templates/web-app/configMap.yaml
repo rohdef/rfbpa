@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 data:
-  rfbpaApi: {{ quote .Values.host }}
+  rfbpaApi: {{ quote .Values.host }}/api/public
   authUrl: {{ quote .Values.auth.authUrl }}
   authClient: {{ quote .Values.auth.jwtClient }}
 metadata:
