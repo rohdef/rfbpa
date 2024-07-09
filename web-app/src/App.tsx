@@ -22,8 +22,8 @@ function App() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline/>
-            <NavigationBar/>
             <AuthenticationProvider>
+                <NavigationBar/>
                 <RouterProvider router={routes}/>
             </AuthenticationProvider>
         </ThemeProvider>

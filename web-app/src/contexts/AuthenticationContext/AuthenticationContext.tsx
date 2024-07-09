@@ -1,86 +1,7 @@
 import React, {ReactNode, useEffect, useState} from "react"
-import {Data} from "dataclass"
+import {Authentication, AuthenticationHelper, NoAuthentication, TokenAuthentication} from "./Authentication.tsx";
+import {isAfter} from "date-fns/isAfter";
 
-export class AuthenticationHelper {
-    private constructor() {
-    }
-
-    public static fromJSON(object: any): Authentication {
-        if (object.__type === NoAuthentication.name) {
-            return NoAuthentication.instance()
-        } else if (object.__type === TokenAuthentication.name) {
-            delete object.__type
-            return TokenAuthentication.create(object)
-        } else {
-            throw Error
-        }
-    }
-}
-
-export interface Authentication {
-    email(): string
-    subject(): string
-    roles(): string[]
-}
-
-export class NoAuthentication implements Authentication {
-    private static _instance: Authentication
-
-    private constructor() {
-    }
-
-    public static instance() {
-        if (!NoAuthentication._instance) {
-            NoAuthentication._instance = new NoAuthentication()
-        }
-        return NoAuthentication._instance
-    }
-
-    roles(): string[] {
-        return [];
-    }
-
-    email(): string {
-        throw new Error('NoAuthentication - there is no email')
-    }
-
-    subject(): string {
-        throw new Error('NoAuthentication - there is no subject')
-    }
-
-    public toJSON() {
-        return {
-            __type: NoAuthentication.name,
-        }
-    }
-
-    public toString() {
-        return JSON.stringify(this.toJSON())
-    }
-}
-
-export class TokenAuthentication extends Data implements Authentication {
-    token: string = ""
-
-    roles(): string[] {
-        return [];
-    }
-
-    email(): string {
-        return ""
-    }
-
-    subject(): string {
-        return ""
-    }
-
-    public toJSON() {
-        return {
-            __type: TokenAuthentication.name,
-            token: this.token,
-        }
-    }
-}
 
 interface AuthenticationValues {
     authentication: Authentication
@@ -107,20 +28,32 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
         const matches = window.location.href.match(accessTokenRegex);
 
         if (matches) {
-            const authentication1 = TokenAuthentication.create({
-                token: matches[1],
-            })
+            const freshAuthentication = new TokenAuthentication(matches[1])
 
-            localStorage.setItem("authentication", JSON.stringify(authentication1))
-            return authentication1
+            localStorage.setItem("authentication", JSON.stringify(freshAuthentication))
+            return freshAuthentication
         }
 
-        const initialAuth = localStorage.getItem("authentication")
-        if (initialAuth) {
-            return AuthenticationHelper.fromJSON(JSON.parse(initialAuth))
-        } else {
-            return NoAuthentication.instance()
+        const currentAuthenticationSession = localStorage.getItem("authentication")
+        if (currentAuthenticationSession) {
+            const authentication = AuthenticationHelper.fromJSON(JSON.parse(currentAuthenticationSession))
+
+            if (authentication instanceof TokenAuthentication) {
+
+                const expiry = authentication.expiry()
+                const now = Date.now()
+
+                if (isAfter(expiry, now)) {
+                    // TODO probaly a decent place for refresh logic?
+                    return authentication
+                } else {
+                    console.error("Token is expired")
+                }
+            }
         }
+
+        localStorage.removeItem("authentication")
+        return NoAuthentication.instance()
     })
 
     useEffect(() => {

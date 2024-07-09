@@ -16,6 +16,8 @@
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "axios": "^1.7.2",
     "dataclass": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "jwt-decode": "^4.0.0",
     "react": "^18",
     "react-dom": "^18",
     "react-router-dom": "^6",

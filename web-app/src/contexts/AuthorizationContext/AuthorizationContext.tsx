@@ -1,6 +1,7 @@
 import {ReactNode} from "react";
-import {Authentication, NoAuthentication, useAuthentication} from "../AuthenticationContext/AuthenticationContext";
+import {useAuthentication} from "../AuthenticationContext/AuthenticationContext";
 import configuration from "../../configuration.ts";
+import {Authentication, NoAuthentication} from "../AuthenticationContext/Authentication.tsx";
 
 enum Authorization {
     AUTHORIZED = "authorized",

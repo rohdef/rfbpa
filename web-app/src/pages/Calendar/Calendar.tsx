@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
 import axios from "axios";
-import {TokenAuthentication, useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
+import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
 import AuthorizationContext from "../../contexts/AuthorizationContext/AuthorizationContext.tsx";
 import configuration from "../../configuration.ts";
+import {TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
 
 export default function Calendar() {
     const {authentication} = useAuthentication()

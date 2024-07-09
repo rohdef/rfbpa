@@ -1,8 +1,11 @@
 import {useEffect, useState} from "react";
 import {styled} from "@mui/material";
 import Menu from "./Menu.tsx";
+import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
+import {TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
 
 export function NavigationBar() {
+    const {authentication} = useAuthentication()
     const [drawerOpen] = useState(false);
     const [shadow, setShadow] = useState(false);
 
@@ -39,6 +42,8 @@ export function NavigationBar() {
         <StyledNavigation
             id="nav">
             {/*    TODO add mobile section */}
+            {authentication instanceof TokenAuthentication ? authentication.name() : ""}
+
             <Menu/>
         </StyledNavigation>
     )
