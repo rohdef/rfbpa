@@ -17,8 +17,13 @@ data class YearWeekInterval(
 
     companion object {
         private const val solidusSeparator = "/"
+        private const val hyphenSeparator = "--"
         fun parse(text: String): Either<NonEmptyList<YearWeekIntervalParseError>, YearWeekInterval> = either {
-            val timespecifications = text.split(solidusSeparator)
+            val timespecifications = if (text.contains('/')) {
+                text.split(solidusSeparator)
+            } else {
+                text.split(hyphenSeparator)
+            }
 
             if (timespecifications.size == 0) {
             } else if (timespecifications.size >= 2) {

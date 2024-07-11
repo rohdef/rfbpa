@@ -5,12 +5,12 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 
 internal class AxpUrls(
-    val host: String,
+    host: String,
     private val timeZone: TimeZone,
 ) {
-    val base = "https://$host/citizen_web"
+    val base = "$host/citizen_web"
     val index = "$base/index.php"
-    val indexUWeb = "https://$host/index.php"
+    val indexUWeb = "$host/index.php"
     val login = "$base/login.php"
 
     private val shiftsBase = index +

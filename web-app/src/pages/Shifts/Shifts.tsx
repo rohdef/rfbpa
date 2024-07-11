@@ -18,14 +18,12 @@ export default function Shifts() {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        console.log(startWeek)
-        console.log(endWeek)
-
+        const yearWeekInterval = `${startWeek}--${endWeek}`
         if (authentication instanceof TokenAuthentication) {
-            client.get(`shifts`, {
+            client.get(`shifts/${yearWeekInterval}`, {
                 headers: {
                     Authorization: `Bearer ${authentication.token}`
-                }
+                },
             })
                 .then((shifts) => console.log(shifts.data))
         }

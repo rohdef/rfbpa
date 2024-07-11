@@ -50,8 +50,6 @@ dependencies {
 
     implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
 
-
-    implementation(project(":app"))
     implementation(project(":axpclient"))
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
