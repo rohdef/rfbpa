@@ -5,15 +5,17 @@ import {useState} from "react";
 import theme from "../../styles/theme.tsx";
 import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
 import {Role, TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
+import {RouteObject} from "react-router-dom";
+import {rfbpaRoutes} from "../../App.tsx";
 
 interface MenuItemOptions {
-    href: string;
+    destination: RouteObject;
     text: string;
     requiredRole?: Role | null,
     variant?: OverridableStringUnion<'text' | 'outlined' | 'contained', ButtonPropsVariantOverrides>;
 }
 
-function MenuItem({href, text, requiredRole = null, variant = "text"}: MenuItemOptions) {
+function MenuItem({destination, text, requiredRole = null, variant = "text"}: MenuItemOptions) {
     const {authentication} = useAuthentication()
     const [drawerOpen, setDrawerOpen] = useState(false);
     // TODO probably not the best way to ask if mobile - and also, can this be styled in stead?
@@ -35,14 +37,14 @@ function MenuItem({href, text, requiredRole = null, variant = "text"}: MenuItemO
     return (
         <li>
             {isMobile ? (
-                <Button component="a" href={href} variant={variant}>
+                <Button component="a" href={destination.path} variant={variant}>
                     {text}
                 </Button>
             ) : (
                 // TODO find a way to style this using media sizes rather than the if
                 <Button
                     component="a"
-                    href={href}
+                    href={destination.path}
                     variant={variant}
                     onClick={toggleNavigation}
                     sx={{ letterSpacing: theme.typography.standard.letterSpacing }}>
@@ -52,7 +54,6 @@ function MenuItem({href, text, requiredRole = null, variant = "text"}: MenuItemO
         </li>
     )
 }
-
 
 export default function Menu() {
     const {authentication, resetAuthentication} = useAuthentication()
@@ -64,12 +65,12 @@ export default function Menu() {
                 marginRight: theme.spacing(1),
             },
         }}>
-            <MenuItem href="/" text="Start"/>
+            <MenuItem destination={rfbpaRoutes.home} text="Start"/>
 
-            <MenuItem href="/calendar" text="Min kalender"/>
-            <MenuItem href="/calendar" text="Min kalender" requiredRole={Role.EMPLOYER_CALENDAR} />
-            <MenuItem href="/shifts" text="Vagter" requiredRole={Role.SHIFT_ADMIN} />
-            <MenuItem href="/template" text="Affyr skabelon" requiredRole={Role.TEMPLATE_ADMIN} />
+            <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender"/>
+            <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender" requiredRole={Role.EMPLOYER_CALENDAR} />
+            <MenuItem destination={rfbpaRoutes.shifts} text="Vagter" requiredRole={Role.SHIFT_ADMIN} />
+            <MenuItem destination={rfbpaRoutes.templates} text="Affyr skabelon" requiredRole={Role.TEMPLATE_ADMIN} />
 
             {authentication instanceof TokenAuthentication ?
                 (<Button

@@ -79,7 +79,7 @@ export class NoAuthentication implements Authentication {
 }
 
 export class TokenAuthentication implements Authentication {
-    private readonly token: string
+    readonly token: string
 
     private readonly _name: string
     private readonly _email: string
