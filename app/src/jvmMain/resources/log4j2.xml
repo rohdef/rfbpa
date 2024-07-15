@@ -15,7 +15,7 @@
         <Logger name="dk.rohdef" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="dk.rohdef.rfbpa.LoggingWeekPlanRepository" additivity="false" level="info">
+        <Logger name="dk.rohdef.rfbpa.LoggingSalarySystemRepository" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>
         <Root level="debug">

@@ -6,7 +6,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.ProcessedArgument
 import com.github.ajalt.clikt.parameters.arguments.RawArgument
 import com.github.ajalt.clikt.parameters.arguments.convert
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.rfbpa.HelperDataBaseItem
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -16,7 +16,7 @@ import org.koin.dsl.module
 import java.io.Closeable
 
 class RfBpa(
-    private val weekPlansRepository: WeekPlanRepository
+    private val weekPlansRepository: SalarySystemRepository
 ) : CliktCommand(), Closeable {
     override fun run() {}
 

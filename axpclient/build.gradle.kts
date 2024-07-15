@@ -3,7 +3,7 @@ import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("plugin.serialization")
 }
 
 description = "Integration with Handicapformidlingen"
@@ -18,7 +18,7 @@ kotlin {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
             }

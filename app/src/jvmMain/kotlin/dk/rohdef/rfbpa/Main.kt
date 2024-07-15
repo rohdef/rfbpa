@@ -3,8 +3,8 @@ package dk.rohdef.rfbpa
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.MemoryWeekPlanRepository
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.MemorySalarySystemRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.commands.RfBpa
@@ -69,8 +69,8 @@ fun main(cliArguments: Array<String>) {
 
     val appModule = module {
         when (configuration.runtimeMode) {
-            RuntimeMode.DEVELOPMENT ->  single<WeekPlanRepository> { LoggingWeekPlanRepository(MemoryWeekPlanRepository()) }
-            RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+            RuntimeMode.DEVELOPMENT ->  single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository()) }
+            RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind SalarySystemRepository::class
         }
 
         single {

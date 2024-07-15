@@ -4,6 +4,7 @@ import dk.rohdef.rfbpa.web.calendar.calendar
 import dk.rohdef.rfbpa.web.plugins.dependencyInjection
 import dk.rohdef.rfbpa.web.plugins.security
 import dk.rohdef.rfbpa.web.plugins.serialization
+import dk.rohdef.rfbpa.web.shifts.dbShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -14,9 +15,11 @@ import shifts
 fun main(arguments: Array<String>) = io.ktor.server.netty.EngineMain.main(arguments)
 
 fun Application.main() {
-    val log = KotlinLogging.logger {}
+    val log = KotlinLogging.logger{}
 
     log.info { "Starting web interface" }
+
+    DatabaseConnection.init()
 
 //    install(CallLogging)
     dependencyInjection()
@@ -24,6 +27,7 @@ fun Application.main() {
     serialization()
 
     routing {
+        dbShifts()
         authenticate {
             route("/api/public") {
                 calendar()

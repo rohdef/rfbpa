@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web
 
 import dk.rohdef.rfbpa.web.calendar.CalendarTable
+import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -15,6 +16,7 @@ object DatabaseConnection {
 
         transaction {
             SchemaUtils.create(CalendarTable)
+            SchemaUtils.create(HelpersTable)
         }
     }
 

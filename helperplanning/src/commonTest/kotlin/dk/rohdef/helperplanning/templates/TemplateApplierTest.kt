@@ -1,6 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.TestWeekPlanRepository
+import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
 class TemplateApplierTest : FunSpec({
-    val weekPlanRepository = TestWeekPlanRepository()
+    val weekPlanRepository = TestSalarySystemRepository()
     val templateApplier = TemplateApplier(
         weekPlanRepository,
         TemplateTestData.Helpers.helpersMap,

@@ -3,7 +3,7 @@ import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("plugin.serialization")
     application
 }
 
@@ -23,8 +23,8 @@ kotlin {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
                 implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 

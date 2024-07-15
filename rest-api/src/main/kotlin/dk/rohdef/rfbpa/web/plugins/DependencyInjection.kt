@@ -3,12 +3,12 @@ package dk.rohdef.rfbpa.web.plugins
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpWeekPlans
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.MemoryWeekPlanRepository
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.MemorySalarySystemRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.HelperDataBaseItem
-import dk.rohdef.rfbpa.web.LoggingWeekPlanRepository
+import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
 import dk.rohdef.rfbpa.web.MemoryAxpRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
@@ -66,13 +66,13 @@ fun Application.dependencyInjection() {
         // web module
         val web = module {
             when (configuration.runtimeMode) {
-                RuntimeMode.DEVELOPMENT -> single<WeekPlanRepository> {
-                    LoggingWeekPlanRepository(
-                        MemoryWeekPlanRepository()
+                RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> {
+                    LoggingSalarySystemRepository(
+                        MemorySalarySystemRepository()
                     )
                 }
 
-                RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind WeekPlanRepository::class
+                RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind SalarySystemRepository::class
             }
         }
 

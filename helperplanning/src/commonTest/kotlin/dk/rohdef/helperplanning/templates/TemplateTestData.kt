@@ -1,6 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.MemoryWeekPlanRepository
+import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
@@ -90,14 +90,14 @@ object TemplateTestData {
     }
 
     class TestRepositoryShifts(yearWeek: YearWeek) {
-        fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): MemoryWeekPlanRepository.MemoryShift {
+        fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): MemorySalarySystemRepository.MemoryShift {
             val end = if (this.end < this.start) {
                 yearWeekDay.nextDay()
             } else {
                 yearWeekDay
             }.atTime(this.end)
 
-            return MemoryWeekPlanRepository.MemoryShift(
+            return MemorySalarySystemRepository.MemoryShift(
                 yearWeekDay.atTime(this.start),
                 end,
                 this.type,

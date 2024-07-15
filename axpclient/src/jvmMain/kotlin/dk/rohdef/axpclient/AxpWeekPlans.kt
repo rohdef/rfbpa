@@ -4,9 +4,8 @@ import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.axpclient.parsing.WeekPlanParser
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftType
@@ -25,7 +24,7 @@ import java.io.Closeable
 class AxpWeekPlans(
     private val configuration: AxpConfiguration,
     private val helpers: AxpRepository,
-) : WeekPlanRepository, Closeable {
+) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
     private val client = HttpClient(OkHttp) {
         install(HttpCookies)

@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.help
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -15,7 +15,7 @@ import java.io.Closeable
 
 class BookShift(
     // TODO don't use repo directly
-    private val weekPlanRepository: WeekPlanRepository,
+    private val salarySystemRepository: SalarySystemRepository,
     private val helpers: Map<String, Helper.ID>,
 ): CliktCommand() {
     private val log = KotlinLogging.logger {}
@@ -31,7 +31,7 @@ class BookShift(
     override fun run(): Unit = runBlocking {
         log.info { "Booking shift" }
 
-        val bookingId = weekPlanRepository.bookShift(
+        val bookingId = salarySystemRepository.bookShift(
             shiftId,
             helper.helperId,
         )

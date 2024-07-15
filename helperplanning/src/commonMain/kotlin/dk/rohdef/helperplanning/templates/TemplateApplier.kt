@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning.templates
 import arrow.core.Either
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.LocalTime
 
 class TemplateApplier(
-    val weekPlanRepository: WeekPlanRepository,
+    val salarySystemRepository: SalarySystemRepository,
     private val helpers: Map<String, Helper.ID>,
 ) {
     private val log = KotlinLogging.logger {}
@@ -59,7 +59,7 @@ class TemplateApplier(
                 val start = yearWeekDay.atTime(it.start)
                 val end = start.untilTime(it.end)
 
-                val shiftId = weekPlanRepository.createShift(start, end, it.type)
+                val shiftId = salarySystemRepository.createShift(start, end, it.type)
                 log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
 
                 when (shiftId) {
@@ -81,7 +81,7 @@ class TemplateApplier(
             is HelperReservation.Helper -> {
                 val helper = HelperBooking.PermanentHelper(helpers[helperReservation.id]!!)
 
-                val bookingId = weekPlanRepository.bookShift(
+                val bookingId = salarySystemRepository.bookShift(
                     shiftId,
                     helper.helperId,
                 )

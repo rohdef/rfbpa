@@ -9,7 +9,7 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 
-class MemoryWeekPlanRepository : WeekPlanRepository {
+class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
         _shifts.clear()
         _bookings.clear()

@@ -1,6 +1,6 @@
 import arrow.core.Either
 import arrow.core.raise.either
-import dk.rohdef.helperplanning.WeekPlanRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -12,7 +12,7 @@ import org.koin.ktor.ext.inject
 private val log = KotlinLogging.logger {}
 fun Route.shifts() {
     val config: RfBpaConfig by inject()
-    val weekPlansRepository: WeekPlanRepository by inject()
+    val weekPlansRepository: SalarySystemRepository by inject()
 
     get("/shifts/{yearWeekInterval}") {
         log.info { "Initial calls of shifts" }

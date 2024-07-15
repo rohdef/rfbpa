@@ -1,14 +1,13 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("plugin.serialization")
+    id("io.ktor.plugin") version "2.3.12"
     application
     idea
 }
 
 description = "Web server for RF BPA"
 
-//configureCommon()
-//kotest()
 application {
     applicationName = "rfbpa-web"
     mainClass.set("dk.rohdef.rfbpa.web.MainKt")
@@ -54,8 +53,8 @@ dependencies {
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
@@ -65,16 +64,18 @@ dependencies {
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
     implementation("io.ktor:ktor-client-apache:3.0.0-beta-1")
 
-    val ktor_version = "2.3.12"
-    implementation("io.ktor:ktor-server-core:$ktor_version")
-    implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
-    implementation("io.ktor:ktor-server-cors:$ktor_version")
-    implementation("io.ktor:ktor-server-auth:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
-    implementation("io.ktor:ktor-server-call-logging:$ktor_version")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-server-core")
+    implementation("io.ktor:ktor-server-config-yaml")
+    implementation("io.ktor:ktor-server-cors")
+    implementation("io.ktor:ktor-server-auth")
+    implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("io.ktor:ktor-server-auto-head-response")
+    implementation("io.ktor:ktor-server-call-logging")
+    implementation("io.ktor:ktor-server-netty")
+
+    implementation("io.ktor:ktor-server-content-negotiation")
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
+
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
     val exposed_version = "0.51.1"

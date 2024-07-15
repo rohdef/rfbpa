@@ -8,7 +8,7 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
-interface WeekPlanRepository {
+interface ShiftRepository {
     suspend fun bookShift(
         shiftId: ShiftId,
         helperId: Helper.ID,
