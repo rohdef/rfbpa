@@ -3,19 +3,19 @@ package dk.rohdef.rfbpa.web.plugins
 import com.auth0.jwk.JwkProviderBuilder
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.koin.ktor.ext.inject
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
-import org.koin.ktor.ext.inject
 
 fun Application.security() {
     val log = KotlinLogging.logger {}
+    val config by inject<RfBpaConfig>()
 
     install(Authentication) {
-        val config: RfBpaConfig by inject()
         jwt {
             val jwkProvider = JwkProviderBuilder(config.auth.jwkEndpoint).build()
 

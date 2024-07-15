@@ -15,7 +15,7 @@ fun Project.configureCommon() {
             val commonMain by getting {
                 dependencies {
                     // Base functionality
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1-Beta")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
                     implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
 
                     // Base types

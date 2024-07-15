@@ -34,7 +34,7 @@ val kotestVersion = "5.9.0"
 val arrowKtVersionKotest = "1.4.0"
 dependencies {
     // Base functionality
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1-Beta")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
     implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
 
     // Base types
@@ -58,11 +58,13 @@ dependencies {
 
     implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
-    implementation("io.insert-koin:koin-core:3.5.6")
-    implementation("io.insert-koin:koin-ktor:3.5.6")
+    val koinVersion = "3.6.0-Beta4"
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
-    implementation("io.ktor:ktor-client-apache:3.0.0-beta-1")
+    implementation("io.ktor:ktor-client-apache")
 
     implementation("io.ktor:ktor-server-core")
     implementation("io.ktor:ktor-server-config-yaml")
