@@ -8,16 +8,17 @@ import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
+import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.statement.*
+import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.toInstant
 import java.io.Closeable
 
@@ -42,17 +43,24 @@ class AxpWeekPlans(
     )
     private val weekPlanParser = WeekPlanParser(helpers)
 
+    override suspend fun cacheMisses(
+        yearWeeks: YearWeekInterval,
+        updateStrategy: SalarySystemRepository.UpdateStrategy,
+        threshold: DateTimePeriod
+    ): Either<Unit, Set<YearWeek>> {
+        TODO("not implemented")
+    }
+
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-        type: ShiftType
     ): Either<Unit, ShiftId> = either {
         ensureLoggedIn()
 
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
         val endInstant = end.localDateTime.toInstant(configuration.timeZone)
 
-        axpClient.createShift(startInstant, endInstant, AxpShift.ShiftType.from(type))
+        axpClient.createShift(startInstant, endInstant, AxpShift.ShiftType.LONG)
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
     }

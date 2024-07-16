@@ -1,5 +1,7 @@
 package dk.rohdef.rfweeks
 
+import arrow.core.Either
+import arrow.core.raise.either
 import kotlinx.datetime.*
 import java.time.DayOfWeek.*
 
@@ -42,6 +44,26 @@ data class YearWeekDay(
         }
 
     companion object {
+        fun parseUnsafe(text: String): YearWeekDay {
+            val parsed = parse(text)
+            return when (parsed) {
+                is Either.Right -> parsed.value
+                is Either.Left -> TODO()
+            }
+        }
+
+        fun parse(text: String): Either<Unit, YearWeekDay> = either {
+            // TODO: 15/07/2024 rohdef - primitive parsing, assumes dashes exclusively
+            // TODO: 15/07/2024 rohdef - primitive parsing, assumes no errors!
+
+            val yearWeek = text.substring(0, 8).let { YearWeek.parse(it) }.mapLeft { }.bind()
+            val dayOfWeek = text.substring(9)
+                .toInt()
+                .let { DayOfWeek.of(it) }
+
+            YearWeekDay(yearWeek, dayOfWeek)
+        }
+
         fun from(date: LocalDate): YearWeekDay {
             val firstWeekInYear = YearWeekDay(date.year, 1, date.dayOfWeek)
             val firstWeekdayInYear = firstWeekInYear.date

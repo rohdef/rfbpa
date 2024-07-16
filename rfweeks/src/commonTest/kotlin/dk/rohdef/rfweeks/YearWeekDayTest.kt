@@ -1,5 +1,6 @@
 package dk.rohdef.rfweeks
 
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -33,7 +34,16 @@ class YearWeekDayTest : FunSpec({
 //        )
     xcontext("Comparisons") {}
 
-    xcontext("Parsing") {
+    context("Parsing") {
+        test("Should parse") {
+            val text = "2024-W12-3"
+            val parsed = YearWeekDay.parse(text)
+
+            val yearWeekDay = parsed.shouldBeRight()
+            yearWeekDay.year shouldBe 2024
+            yearWeekDay.week shouldBe 12
+            yearWeekDay.dayOfWeek shouldBe DayOfWeek.WEDNESDAY
+        }
     }
 
     context("from other types") {

@@ -2,7 +2,6 @@ package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import kotlinx.datetime.DayOfWeek
@@ -35,42 +34,36 @@ object TemplateTestData {
     object ShiftTemplates {
         val shift6_30to22_30 = ShiftTemplate(
             Helpers.jazz,
-            ShiftType.DAY,
             LocalTime(6, 30),
             LocalTime(22, 30),
         )
 
         val shift5_00to19_00_unbooked = ShiftTemplate(
             HelperReservation.NoReservation,
-            ShiftType.DAY,
             LocalTime(5, 0),
             LocalTime(19, 0),
         )
 
         val shift5_00to19_00_booked = ShiftTemplate(
             Helpers.hiphop,
-            ShiftType.DAY,
             LocalTime(5, 0),
             LocalTime(19, 0),
         )
 
         val shift14_15to22_15 = ShiftTemplate(
             Helpers.blues,
-            ShiftType.EVENING,
             LocalTime(14, 15),
             LocalTime(22, 15),
         )
 
         val shift1_00to6_00 = ShiftTemplate(
             Helpers.metal,
-            ShiftType.NIGHT,
             LocalTime(1, 0),
             LocalTime(6, 0),
         )
 
         val shiftCrossingDate = ShiftTemplate(
             Helpers.rockabilly,
-            ShiftType.NIGHT,
             LocalTime(22, 30),
             LocalTime(6, 30),
         )
@@ -100,7 +93,6 @@ object TemplateTestData {
             return MemorySalarySystemRepository.MemoryShift(
                 yearWeekDay.atTime(this.start),
                 end,
-                this.type,
             )
         }
 

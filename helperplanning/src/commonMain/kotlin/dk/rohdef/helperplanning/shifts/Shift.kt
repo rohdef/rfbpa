@@ -1,19 +1,19 @@
 package dk.rohdef.helperplanning.shifts
 
-import kotlinx.datetime.LocalDateTime
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 
 data class Shift(
     val helperId: HelperBooking,
     val bookingId: UUID,
-    val start: LocalDateTime,
-    val end: LocalDateTime,
+    val start: YearWeekDayAtTime,
+    val end: YearWeekDayAtTime,
 ) {
     constructor(
         helperId: HelperBooking,
-        start: LocalDateTime,
-        end: LocalDateTime,
+        start: YearWeekDayAtTime,
+        end: YearWeekDayAtTime,
     ) : this(
         helperId,
         // TODO: 25/06/2024 rohdef - should be handled by stronger types

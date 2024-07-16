@@ -1,6 +1,7 @@
 package dk.rohdef.axpclient.helper
 
 import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.helperplanning.shifts.Shift as DomainShift
 import kotlinx.datetime.LocalDateTime
 
@@ -15,7 +16,7 @@ internal data class Shift(
     fun shift(axpRepository: AxpRepository) = DomainShift(
         axpHelperBooking.toHelperBooking(axpRepository),
         axpRepository.shiftIdByBookingNumber(axpShiftId.id),
-        start,
-        end,
+        YearWeekDayAtTime.from(start),
+        YearWeekDayAtTime.from(end),
     )
 }

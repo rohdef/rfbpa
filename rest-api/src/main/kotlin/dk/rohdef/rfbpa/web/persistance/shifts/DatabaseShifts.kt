@@ -3,13 +3,18 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import arrow.core.Either
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.*
-import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable.innerJoin
+import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.innerJoin
+import org.jetbrains.exposed.sql.selectAll
 
-class DatabaseShifts: ShiftRepository {
+class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
         TODO()
     }
@@ -35,7 +40,6 @@ class DatabaseShifts: ShiftRepository {
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-        type: ShiftType
     ): Either<Unit, ShiftId> {
         TODO("not implemented")
     }

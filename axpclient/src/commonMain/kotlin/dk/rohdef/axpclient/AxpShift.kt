@@ -1,7 +1,6 @@
 package dk.rohdef.axpclient
 
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.ShiftType
 import kotlinx.datetime.Instant
 
 data class AxpShift(
@@ -20,17 +19,5 @@ data class AxpShift(
         NIGHT("3"),
         LONG("4"),
         HOURS_24("5");
-
-        companion object {
-            fun from(shiftType: dk.rohdef.helperplanning.shifts.ShiftType): ShiftType {
-                return when (shiftType) {
-                    dk.rohdef.helperplanning.shifts.ShiftType.DAY -> DAY
-                    dk.rohdef.helperplanning.shifts.ShiftType.EVENING -> EVENING
-                    dk.rohdef.helperplanning.shifts.ShiftType.NIGHT -> NIGHT
-                    dk.rohdef.helperplanning.shifts.ShiftType.LONG -> LONG
-                    dk.rohdef.helperplanning.shifts.ShiftType.HOURS_24 -> HOURS_24
-                }
-            }
-        }
     }
 }

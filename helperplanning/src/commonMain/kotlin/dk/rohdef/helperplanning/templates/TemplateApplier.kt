@@ -59,7 +59,7 @@ class TemplateApplier(
                 val start = yearWeekDay.atTime(it.start)
                 val end = start.untilTime(it.end)
 
-                val shiftId = salarySystemRepository.createShift(start, end, it.type)
+                val shiftId = salarySystemRepository.createShift(start, end)
                 log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
 
                 when (shiftId) {

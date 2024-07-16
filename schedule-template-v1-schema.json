@@ -16,11 +16,6 @@
             "type": "string"
           },
 
-          "type": {
-            "description": "Type for the scheduling of the helper",
-            "enum": ["day", "evening", "night", "long", "24 hours"]
-          },
-
           "start": {
             "type": "string"
           },
@@ -30,7 +25,7 @@
           }
         },
 
-        "required": ["type", "start", "end"]
+        "required": ["start", "end"]
       }
     }
   },

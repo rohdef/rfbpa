@@ -5,8 +5,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.help
-import com.github.ajalt.clikt.parameters.types.enum
-import dk.rohdef.helperplanning.shifts.ShiftType
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -18,11 +16,8 @@ import java.io.Closeable
 class CreateShift(
     // TODO: 23/04/2024 rohdef - don't use repository directly
     private val salarySystemRepository: SalarySystemRepository,
-): CliktCommand() {
+) : CliktCommand() {
     private val log = KotlinLogging.logger {}
-
-    private val type: ShiftType by argument()
-        .enum()
 
     private val start: YearWeekDayAtTime by argument()
         .convert {
@@ -41,7 +36,7 @@ class CreateShift(
 
     override fun run() = runBlocking {
         log.info { "Creating a new shift" }
-        val bookingId = salarySystemRepository.createShift(start, end, type)
+        val bookingId = salarySystemRepository.createShift(start, end)
 
         when (bookingId) {
             is Either.Right -> {
@@ -49,6 +44,7 @@ class CreateShift(
                 log.info { "$start -- $end" }
                 log.info { "${bookingId.value}" }
             }
+
             is Either.Left -> {
                 log.error { "Could not book ${bookingId.value} shift: $start -- $end" }
             }
