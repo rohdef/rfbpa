@@ -33,8 +33,8 @@ class ShiftsReader(private val weekPlansRepository: SalarySystemRepository) {
             println(dateFormat.format(date.toJavaLocalDate()))
 
             shifts.forEach {
-                val start = timeFormat.format(it.start.toJavaLocalDateTime())
-                val end = timeFormat.format(it.end.toJavaLocalDateTime())
+                val start = timeFormat.format(it.start.localDateTime.toJavaLocalDateTime())
+                val end = timeFormat.format(it.end.localDateTime.toJavaLocalDateTime())
                 println("${start} - ${end}")
             }
             println()

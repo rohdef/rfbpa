@@ -19,7 +19,7 @@ interface SalarySystemRepository {
     suspend fun bookShift(
         shiftId: ShiftId,
         helperId: Helper.ID,
-    ): Either<Unit, ShiftId>
+    ): Either<BookingError, ShiftId>
 
     suspend fun shifts(yearWeeks: YearWeekInterval): Either<ShiftsError, WeekPlans> = either {
         val weeks = yearWeeks.map { shifts(it).bind() }
@@ -33,5 +33,9 @@ interface SalarySystemRepository {
     enum class UpdateStrategy {
         CACHED,
         FORCE,
+    }
+
+    sealed interface BookingError {
+        data class ShiftNotFound(val shiftId: ShiftId) : BookingError
     }
 }

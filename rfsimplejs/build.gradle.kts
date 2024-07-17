@@ -19,7 +19,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("com.github.mpe85:grampa:1.3.0")
+                implementation("com.github.mpe85:grampa:1.3.1")
             }
         }
         val jvmTest by getting

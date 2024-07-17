@@ -1,7 +1,7 @@
 package dk.rohdef.rfbpa.web.plugins
 
 import dk.rohdef.axpclient.AxpRepository
-import dk.rohdef.axpclient.AxpWeekPlans
+import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
@@ -72,7 +72,7 @@ fun Application.dependencyInjection() {
                     )
                 }
 
-                RuntimeMode.PRODUCTION -> singleOf(::AxpWeekPlans) bind SalarySystemRepository::class
+                RuntimeMode.PRODUCTION -> singleOf(::AxpSalarySystem) bind SalarySystemRepository::class
             }
         }
 

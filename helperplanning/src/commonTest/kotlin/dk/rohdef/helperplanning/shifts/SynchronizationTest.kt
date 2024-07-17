@@ -1,5 +1,6 @@
 package dk.rohdef.helperplanning.shifts
 
+import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.TestShiftRespository
 import dk.rohdef.rfweeks.YearWeek
@@ -10,7 +11,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 class SynchronizationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
-    val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository)
+    val weekSynchronizationRepository = MemoryWeekSynchronizationRepository()
+    val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
     val shift1Start = YearWeekDayAtTime.parseUnsafe("2024-W13-1T13:30")
     val shift1End = YearWeekDayAtTime.parseUnsafe("2024-W13-1T14:30")

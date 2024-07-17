@@ -21,7 +21,7 @@ fun Project.configureCommon() {
                     // Base types
                     implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
                     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC.2")
-                    implementation("app.softwork:kotlinx-uuid-core:0.0.25")
+                    implementation("app.softwork:kotlinx-uuid-core:0.0.26")
                 }
             }
 

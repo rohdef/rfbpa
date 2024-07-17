@@ -24,7 +24,7 @@ class LoggingSalarySystemRepository(
         return salarySystemRepository.cacheMisses(yearWeeks, updateStrategy, threshold)
     }
 
-    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<Unit, ShiftId> {
+    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<SalarySystemRepository.BookingError, ShiftId> {
         log.debug { "Booking shift $shiftId to helper ${helper}" }
         return salarySystemRepository.bookShift(shiftId, helper)
     }

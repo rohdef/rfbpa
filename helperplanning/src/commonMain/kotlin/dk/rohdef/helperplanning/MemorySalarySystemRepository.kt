@@ -2,11 +2,9 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.right
+import arrow.core.toOption
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -17,16 +15,12 @@ import kotlinx.uuid.generateUUID
 class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
         _shifts.clear()
-        _bookings.clear()
     }
 
-    private val _shifts = mutableMapOf<ShiftId, MemoryShift>()
-    private val _bookings = mutableMapOf<ShiftId, HelperBooking>().withDefault { HelperBooking.NoBooking }
+    private val _shifts = mutableMapOf<ShiftId, Shift>()
 
-    val shifts: Map<ShiftId, MemoryShift>
+    val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
-    val bookings: Map<ShiftId, HelperBooking>
-        get() = _bookings.toMap().withDefault { HelperBooking.NoBooking }
 
     override suspend fun cacheMisses(
         yearWeeks: YearWeekInterval,
@@ -36,13 +30,16 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         TODO("not implemented")
     }
 
-    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<Unit, ShiftId> {
+    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<SalarySystemRepository.BookingError, ShiftId> {
         if (!_shifts.containsKey(shiftId)) {
             TODO("Missing shift is currently not handled")
         }
-        _bookings.put(shiftId, HelperBooking.PermanentHelper(helper))
+        val shift = _shifts[shiftId].toOption()
+            .map { it.copy(helperId = HelperBooking.PermanentHelper(helper)) }
+        shift.onSome { _shifts.put(shiftId, it) }
 
-        return shiftId.right()
+        return shift.map { shiftId }
+            .toEither { SalarySystemRepository.BookingError.ShiftNotFound(shiftId) }
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
@@ -55,15 +52,10 @@ class MemorySalarySystemRepository : SalarySystemRepository {
     ): Either<Unit, ShiftId> {
         val uuid = UUID.generateUUID()
         val shiftId = ShiftId(uuid.toString())
-        val shift = MemoryShift(start, end)
+        val shift = Shift(HelperBooking.NoBooking, start, end)
 
         _shifts.put(shiftId, shift)
 
         return shiftId.right()
     }
-
-    data class MemoryShift(
-        val start: YearWeekDayAtTime,
-        val end: YearWeekDayAtTime,
-    )
 }

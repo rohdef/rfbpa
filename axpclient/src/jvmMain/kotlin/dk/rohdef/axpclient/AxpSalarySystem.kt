@@ -22,7 +22,7 @@ import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.toInstant
 import java.io.Closeable
 
-class AxpWeekPlans(
+class AxpSalarySystem(
     private val configuration: AxpConfiguration,
     private val helpers: AxpRepository,
 ) : SalarySystemRepository, Closeable {
@@ -68,7 +68,7 @@ class AxpWeekPlans(
     override suspend fun bookShift(
         shiftId: ShiftId,
         helperId: Helper.ID,
-    ): Either<Unit, ShiftId> {
+    ): Either<SalarySystemRepository.BookingError, ShiftId> {
         ensureLoggedIn()
 
         val helperTid = helpers.helperById(helperId).axpTid
@@ -76,6 +76,7 @@ class AxpWeekPlans(
             .mapLeft {
                 // TODO improve
                 log.error { it }
+                TODO("Error detected, improve me")
             }
             .map { shiftId }
     }
