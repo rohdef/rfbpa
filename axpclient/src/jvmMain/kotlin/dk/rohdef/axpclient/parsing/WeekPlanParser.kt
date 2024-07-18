@@ -17,7 +17,8 @@ internal class WeekPlanParser(
     val axpToDomainMapper: AxpToDomainMapper,
 ) {
     // TODO: 18/07/2024 rohdef - this translates into domain model too early, this should be kept intermediate
-    fun parse(body: String): WeekPlan {
+    // TODO: 18/07/2024 rohdef - this should also make these methods no longer need suspend
+    suspend fun parse(body: String): WeekPlan {
         val shiftTable = Jsoup.parse(body)
             .body()
             .select("#mstatus .prettygrey")
@@ -34,7 +35,7 @@ internal class WeekPlanParser(
         )
     }
 
-    fun AxpShift.shift(): Shift {
+    suspend fun AxpShift.shift(): Shift {
         val helperBooking = axpHelperBooking.toHelperBooking(helperRepository)
         val storedShiftId = axpToDomainMapper.axpBookingToShiftId(bookingId)
 
@@ -55,7 +56,7 @@ internal class WeekPlanParser(
         )
     }
 
-    fun weekday(shiftTable: Element, weekday: WeekdayTable): Weekday {
+    suspend fun weekday(shiftTable: Element, weekday: WeekdayTable): Weekday {
         val day = shiftTable
             .shiftData(ShiftsField.Day, weekday)
             .map { it.shift() }

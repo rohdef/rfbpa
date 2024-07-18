@@ -1,8 +1,10 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import arrow.core.Either
+import dk.rohdef.axpclient.AxpToDomainMapper
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.web.DatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
@@ -42,6 +44,20 @@ suspend fun fet(): List<Hel> = DatabaseConnection.dbQuery {
 
 fun Route.dbShifts() {
     val weekPlansRepository: SalarySystemRepository by inject()
+    val axpToDomainMapper: AxpToDomainMapper by inject()
+
+    get("/qq") {
+        val bn = axpToDomainMapper.shiftIdToAxpBooking(
+            ShiftId(
+                UUID("c2b38da7-4c58-426e-a70e-2777020317ee")
+            )
+        )
+
+        when (bn) {
+            is Either.Right -> call.respond("hello: ${bn.value}")
+            is Either.Left -> call.respond("not happy")
+        }
+    }
 
     get("/play") {
         val s = weekPlansRepository.shifts(YearWeek(2024, 30))

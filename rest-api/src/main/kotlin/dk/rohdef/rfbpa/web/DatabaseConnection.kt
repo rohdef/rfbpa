@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web
 
 import dk.rohdef.rfbpa.web.calendar.CalendarTable
+import dk.rohdef.rfbpa.web.persistance.axp.AxpBookingToShift
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
@@ -15,6 +16,7 @@ object DatabaseConnection {
         Database.connect(jdbcURL, driverClassName)
 
         transaction {
+            SchemaUtils.create(AxpBookingToShift)
             SchemaUtils.create(CalendarTable)
             SchemaUtils.create(HelpersTable)
         }

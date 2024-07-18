@@ -3,7 +3,7 @@ package dk.rohdef.rfbpa.web.plugins
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.AxpToDomainMapper
-import dk.rohdef.rfbpa.web.DatabaseAxpToDomainmapper
+import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
