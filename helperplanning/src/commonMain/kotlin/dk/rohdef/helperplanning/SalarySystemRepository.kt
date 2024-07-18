@@ -28,7 +28,7 @@ interface SalarySystemRepository {
 
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, ShiftId>
+    suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift>
 
     enum class UpdateStrategy {
         CACHED,

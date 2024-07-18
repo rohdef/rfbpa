@@ -59,16 +59,16 @@ class TemplateApplier(
                 val start = yearWeekDay.atTime(it.start)
                 val end = start.untilTime(it.end)
 
-                val shiftId = salarySystemRepository.createShift(start, end)
+                val shift = salarySystemRepository.createShift(start, end)
                 log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
 
-                when (shiftId) {
+                when (shift) {
                     is Either.Right -> {
-                        bookHelper(shiftId.value, it.helper)
+                        bookHelper(shift.value.shiftId, it.helper)
                     }
 
                     is Either.Left -> {
-                        log.error { "Could not book ${shiftId.value}" }
+                        log.error { "Could not book ${shift.value}" }
                     }
                 }
             }

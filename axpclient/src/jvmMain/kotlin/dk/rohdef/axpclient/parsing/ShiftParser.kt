@@ -1,11 +1,13 @@
 package dk.rohdef.axpclient.parsing
 
 import arrow.core.*
+import dk.rohdef.axpclient.AxpBookingId
 import dk.rohdef.axpclient.helper.AxpMetadataRepository
 import dk.rohdef.axpclient.helper.HelperNumber
-import dk.rohdef.axpclient.helper.Shift
+import dk.rohdef.axpclient.helper.AxpShift
 import dk.rohdef.rfsimplejs.JavaScriptParser
 import dk.rohdef.rfsimplejs.ast.*
+import io.ktor.http.*
 import kotlinx.datetime.LocalDateTime
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -13,22 +15,28 @@ import org.jsoup.select.Elements
 internal class ShiftParser {
     private val jsParser = JavaScriptParser()
 
-    fun parse(elements: Elements): List<Shift> {
+    fun parse(elements: Elements): List<AxpShift> {
         return elements.map { parseShift(it) }
     }
 
-    private fun parseShift(element: Element): Shift {
+    private fun parseShift(element: Element): AxpShift {
+        val onclick = element.attr("onclick")
         val mouseover = element.attr("onmouseover")
 
+        val windowOpenParameter = jsParser.parse(onclick)
+            .functionCalls()
+            .first { it.name == Name("windowopen") }
+            .parameters as Text
         val tooltipParameter = jsParser.parse(mouseover)
             .functionCalls()
             .first { it.name == Name("toolTip") }
             .parameters as Text
 
-        val shiftData = parseTooltip(tooltipParameter.text)
+        val windowOpenUrl = Url(windowOpenParameter.text)
+        val tooltipShiftData = parseTooltip(tooltipParameter.text)
 
         // TODO replace with AXP model
-        val helperBooking = shiftData.getValue(AxpField.HELPER_ID).map {
+        val helperBooking = tooltipShiftData.getValue(AxpField.HELPER_ID).map {
             when (it) {
                 "60621" -> AxpMetadataRepository.VacancyBooking
                 else -> AxpMetadataRepository.PermanentHelper(
@@ -37,18 +45,21 @@ internal class ShiftParser {
             }
         }
             .getOrElse { AxpMetadataRepository.NoBooking }
-        val axpShiftId = shiftData.getValue(AxpField.SHIFT_ID)
-            .map { Shift.AxpShiftId(it) }
-            .getOrElse { throw IllegalStateException("Shift ID is missing in $shiftData\n$tooltipParameter") }
-        val start = shiftData.getValue(AxpField.SHIFT_START)
+        val axpBookingId = windowOpenUrl
+            .parameters
+            .get("booking")
+            .toOption()
+            .map { AxpBookingId(it) }
+            .getOrElse { throw IllegalStateException("Booking number is missing in $windowOpenUrl\n$windowOpenParameter") }
+        val start = tooltipShiftData.getValue(AxpField.SHIFT_START)
             .map { toLocalDateTime(it) }
             .getOrElse { TODO() }
-        val end = shiftData.getValue(AxpField.SHIFT_END)
+        val end = tooltipShiftData.getValue(AxpField.SHIFT_END)
             .map { toLocalDateTime(it) }
             .getOrElse { TODO() }
-        return Shift(
+        return AxpShift(
             helperBooking,
-            axpShiftId,
+            axpBookingId,
             start,
             end,
         )

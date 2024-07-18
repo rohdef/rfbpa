@@ -10,6 +10,7 @@ data class YearWeekDayAtTime(
     val yearWeekDay: YearWeekDay,
     val time: LocalTime,
 ) {
+    val yearWeek = yearWeekDay.yearWeek
     val year = yearWeekDay.year
     val week = yearWeekDay.week
     val dayOfWeek = yearWeekDay.dayOfWeek

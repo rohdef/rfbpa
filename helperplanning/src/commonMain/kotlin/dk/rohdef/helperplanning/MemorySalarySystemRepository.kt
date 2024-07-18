@@ -9,8 +9,6 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.DateTimePeriod
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
 
 class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
@@ -30,7 +28,10 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         TODO("not implemented")
     }
 
-    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<SalarySystemRepository.BookingError, ShiftId> {
+    override suspend fun bookShift(
+        shiftId: ShiftId,
+        helper: Helper.ID
+    ): Either<SalarySystemRepository.BookingError, ShiftId> {
         if (!_shifts.containsKey(shiftId)) {
             TODO("Missing shift is currently not handled")
         }
@@ -49,13 +50,12 @@ class MemorySalarySystemRepository : SalarySystemRepository {
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> {
-        val uuid = UUID.generateUUID()
-        val shiftId = ShiftId(uuid.toString())
+    ): Either<Unit, Shift> {
+        val shiftId = ShiftId.generateId()
         val shift = Shift(HelperBooking.NoBooking, start, end)
 
         _shifts.put(shiftId, shift)
 
-        return shiftId.right()
+        return shift.right()
     }
 }

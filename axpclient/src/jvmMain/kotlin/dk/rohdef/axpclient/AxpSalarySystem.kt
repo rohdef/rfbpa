@@ -1,15 +1,14 @@
 package dk.rohdef.axpclient
 
 import arrow.core.Either
+import arrow.core.getOrElse
 import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -24,6 +23,7 @@ import java.io.Closeable
 
 class AxpSalarySystem(
     private val configuration: AxpConfiguration,
+    private val axpToDomainMapper: AxpToDomainMapper,
     private val helpers: AxpRepository,
 ) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
@@ -41,7 +41,7 @@ class AxpSalarySystem(
         client,
         configuration,
     )
-    private val weekPlanParser = WeekPlanParser(helpers)
+    private val weekPlanParser = WeekPlanParser(helpers, axpToDomainMapper)
 
     override suspend fun cacheMisses(
         yearWeeks: YearWeekInterval,
@@ -54,15 +54,26 @@ class AxpSalarySystem(
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> = either {
+    ): Either<Unit, Shift> = either {
         ensureLoggedIn()
 
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
         val endInstant = end.localDateTime.toInstant(configuration.timeZone)
 
-        axpClient.createShift(startInstant, endInstant, AxpShift.ShiftType.LONG)
+        val axpBookingId = axpClient.createShift(startInstant, endInstant, AxpShift.ShiftType.LONG)
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
+
+
+        val shift = Shift(
+            HelperBooking.NoBooking,
+            start,
+            end,
+        )
+
+        axpToDomainMapper.saveAxpBookingToShiftId(axpBookingId, shift.shiftId)
+
+        shift
     }
 
     override suspend fun bookShift(
@@ -72,7 +83,9 @@ class AxpSalarySystem(
         ensureLoggedIn()
 
         val helperTid = helpers.helperById(helperId).axpTid
-        return axpClient.bookHelper(shiftId, helperTid)
+        val axpBookingId = axpToDomainMapper.shiftIdToAxpBooking(shiftId)
+            .getOrElse { TODO("Handle the optional better") }
+        return axpClient.bookHelper(axpBookingId, helperTid)
             .mapLeft {
                 // TODO improve
                 log.error { it }

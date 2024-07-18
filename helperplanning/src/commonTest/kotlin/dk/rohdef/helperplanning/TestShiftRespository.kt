@@ -2,9 +2,11 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 
 class TestShiftRespository(
     val memoryShiftRepository: MemoryShiftRepository = MemoryShiftRepository(),
@@ -28,9 +30,8 @@ class TestShiftRespository(
     }
 
     override suspend fun createShift(
-        start: YearWeekDayAtTime,
-        end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> {
+        shift: Shift
+    ): Either<Unit, Shift> {
         TODO("not implemented")
     }
 }

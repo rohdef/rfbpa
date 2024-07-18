@@ -2,6 +2,8 @@ package dk.rohdef.rfbpa.web.plugins
 
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpSalarySystem
+import dk.rohdef.axpclient.AxpToDomainMapper
+import dk.rohdef.rfbpa.web.DatabaseAxpToDomainmapper
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
@@ -12,6 +14,7 @@ import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
 import dk.rohdef.rfbpa.web.MemoryAxpRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
+import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.decodeFromString
 import net.mamoe.yamlkt.Yaml
@@ -43,6 +46,10 @@ fun Application.dependencyInjection() {
                 val helpers = Paths.get("helpers.yaml")
                     .readText()
                 Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
+            }
+
+            single<AxpToDomainMapper> {
+                DatabaseAxpToDomainmapper(Clock.System)
             }
 
             single<AxpRepository> {

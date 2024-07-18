@@ -38,9 +38,8 @@ class DatabaseShifts : ShiftRepository {
     }
 
     override suspend fun createShift(
-        start: YearWeekDayAtTime,
-        end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> {
+        shift: Shift,
+    ): Either<Unit, Shift> {
         TODO("not implemented")
     }
 }

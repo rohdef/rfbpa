@@ -4,7 +4,6 @@ import arrow.core.*
 import arrow.core.raise.either
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.helper.HelperTID
-import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeek
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
@@ -68,24 +67,23 @@ internal class AxpClient(
         start: Instant,
         end: Instant,
         type: AxpShift.ShiftType,
-    ): Either<BookShiftError, ShiftId> = either {
+    ): Either<BookShiftError, AxpBookingId> = either {
         log.info { "Creating shift" }
 
         checkCustomerContract(start, end).bind()
         saveShift(start, end, type).bind()
-            .bookingId()
     }
 
     suspend fun bookHelper(
-        booking: ShiftId,
+        booking: AxpBookingId,
         helper: HelperTID,
-    ): Either<BookShiftError, ShiftId> = either {
+    ): Either<BookShiftError, AxpBookingId> = either {
         val response = client.submitForm(
             urls.index,
             parameters {
                 shiftPlan(ShiftPlanAct.SAVE_BOOKING)
 
-                append("booking", booking.id)
+                append("booking", booking.axpId)
                 // TODO deal with helper in a good way
                 append("book_temp", helper.id)
             }

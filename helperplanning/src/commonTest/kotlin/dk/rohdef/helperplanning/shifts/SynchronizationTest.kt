@@ -80,9 +80,10 @@ class SynchronizationTest : FunSpec({
             additionalShifts.forEach { salarySystemRepository.createShift(it.start, it.end) }
         }
 
-        test("weeks in interval with interruption") {
-            additionalShifts.forEach { salarySystemRepository.createShift(it.start, it.end) }
-            shiftRepository.createShift(shift7Start, shift7End)
+        xtest("weeks in interval with interruption") {
+            TODO()
+//            additionalShifts.forEach { salarySystemRepository.createShift(it.start, it.end) }
+//            shiftRepository.createShift(shift7Start, shift7End)
         }
     }
 

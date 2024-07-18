@@ -1,7 +1,12 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import arrow.core.Either
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.web.DatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
+import dk.rohdef.rfweeks.YearWeek
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -12,6 +17,7 @@ import kotlinx.uuid.toJavaUUID
 import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import org.koin.ktor.ext.inject
 
 suspend fun ins() = DatabaseConnection.dbQuery {
     HelpersTable.insert {
@@ -35,6 +41,18 @@ suspend fun fet(): List<Hel> = DatabaseConnection.dbQuery {
 }
 
 fun Route.dbShifts() {
+    val weekPlansRepository: SalarySystemRepository by inject()
+
+    get("/play") {
+        val s = weekPlansRepository.shifts(YearWeek(2024, 30))
+            .map { it.allShifts.map { Shi.fromShift(it) } }
+
+        when(s) {
+            is Either.Right -> call.respond(s.value)
+            is Either.Left -> call.respond("Error: ${s.value}")
+        }
+    }
+
     get("/seed") {
         ins()
 
@@ -48,6 +66,25 @@ fun Route.dbShifts() {
         call.respond(o)
     }
 
+}
+
+@Serializable
+data class Shi(
+    val id: UUID,
+    val start: String,
+    val end: String,
+) {
+    companion object {
+        fun fromShift(shift: Shift): Shi {
+            val s = shift.start
+            val e = shift.end
+            return Shi(
+                shift.shiftId.id,
+                "${s.year}-W${s.week}-${s.dayOfWeek.value}T${s.time.hour}:${s.time.minute}",
+                "${e.time.hour}:${e.time.minute}",
+            )
+        }
+    }
 }
 
 @Serializable

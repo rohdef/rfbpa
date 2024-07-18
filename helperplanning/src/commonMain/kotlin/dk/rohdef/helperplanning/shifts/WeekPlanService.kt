@@ -26,15 +26,19 @@ class WeekPlanService(
         w.allShifts.forEach {
 //            shiftRepository.createShift()
         }
+
+        weekSynchronizationRepository.markSynchronized(yearWeek)
     }
 
     suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ) {
-        // TODO mark week unsynced
+    ) = either {
+        weekSynchronizationRepository.markForSynchronization(start.yearWeek)
 
-//        val y = salarySystem.createShift(shift1Start, shift1End)
+        val shift = salarySystem.createShift(start, end).bind()
+        sync(start.yearWeek)
+        shift
 
         // TODO: 16/07/2024 rohdef - how do we detect semi synced?
         // systemet detecter når vi booker - er det nok?

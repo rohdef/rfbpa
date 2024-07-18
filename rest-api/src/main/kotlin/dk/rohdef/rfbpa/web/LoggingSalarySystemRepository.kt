@@ -37,15 +37,15 @@ class LoggingSalarySystemRepository(
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> {
+    ): Either<Unit, Shift> {
         log.debug { "Creating shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
-        val shiftId = salarySystemRepository.createShift(start, end)
+        val shift = salarySystemRepository.createShift(start, end)
 
-        when (shiftId) {
-            is Either.Right -> log.debug { "Successfully created shift ${shiftId.value}" }
-            is Either.Left -> log.error { "Error creating shift ${shiftId.value}" }
+        when (shift) {
+            is Either.Right -> log.debug { "Successfully created shift ${shift.value}" }
+            is Either.Left -> log.error { "Error creating shift ${shift.value}" }
         }
 
-        return shiftId
+        return shift
     }
 }
