@@ -1,9 +1,13 @@
 package dk.rohdef.helperplanning
 
+import arrow.core.Either
+import arrow.core.right
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeekDay
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
@@ -18,13 +22,21 @@ class TestSalarySystemRepository(
         // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
         get() = shiftList.sortedBy { it.start.localDateTime }
 
+    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {
+        val shiftId = generateTestShiftId(start, end)
+        val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
+
+        memoryWeekPlanRepository._shifts.put(shiftId, shift)
+
+        return shift.right()
+    }
+
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
         shiftList.filter { it.start.yearWeekDay == yearWeekDay }
 
     internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
         return shiftsOnDay(yearWeekDay).values
             .map { it.helperId }
-            .filterIsInstance<HelperBooking.PermanentHelper>()
     }
 
     internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {

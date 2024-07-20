@@ -6,6 +6,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.parsing.WeekPlanParser
+import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
@@ -41,7 +42,7 @@ class AxpSalarySystem(
         client,
         configuration,
     )
-    private val weekPlanParser = WeekPlanParser(helpers, axpToDomainMapper)
+    private val weekPlanParser = WeekPlanParser()
 
     override suspend fun cacheMisses(
         yearWeeks: YearWeekInterval,
@@ -60,7 +61,7 @@ class AxpSalarySystem(
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
         val endInstant = end.localDateTime.toInstant(configuration.timeZone)
 
-        val axpBookingId = axpClient.createShift(startInstant, endInstant, AxpShift.ShiftType.LONG)
+        val axpBookingId = axpClient.createShift(startInstant, endInstant, CreateAxpShift.ShiftType.LONG)
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
 
@@ -94,13 +95,44 @@ class AxpSalarySystem(
             .map { shiftId }
     }
 
+    internal suspend fun AxpShift.shift(): Shift {
+        val helperBooking = axpHelperBooking.toHelperBooking(helpers)
+        val storedShiftId = axpToDomainMapper.axpBookingToShiftId(bookingId)
+
+        val shiftId = when (storedShiftId) {
+            is Either.Right -> storedShiftId.value
+            is Either.Left -> {
+                val newId = ShiftId.generateId()
+                axpToDomainMapper.saveAxpBookingToShiftId(bookingId, newId)
+                newId
+            }
+        }
+
+        return Shift(
+            helperBooking,
+            shiftId,
+            YearWeekDayAtTime.from(start),
+            YearWeekDayAtTime.from(end),
+        )
+    }
+
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         ensureLoggedIn()
 
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
 
-        return weekPlan.right()
+        val wp = WeekPlan(
+            weekPlan.monday.allShifts.map { it.shift() },
+            weekPlan.tuesday.allShifts.map { it.shift() },
+            weekPlan.wednesday.allShifts.map { it.shift() },
+            weekPlan.thursday.allShifts.map { it.shift() },
+            weekPlan.friday.allShifts.map { it.shift() },
+            weekPlan.saturday.allShifts.map { it.shift() },
+            weekPlan.sunday.allShifts.map { it.shift() },
+        )
+
+        return wp.right()
     }
 
     override fun close() {

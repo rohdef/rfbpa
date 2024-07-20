@@ -1,4 +1,4 @@
-package dk.rohdef.axpclient.helper
+package dk.rohdef.axpclient.shift
 
 internal sealed interface ShiftData {
     operator fun plus(shiftData: ShiftData): ShiftData

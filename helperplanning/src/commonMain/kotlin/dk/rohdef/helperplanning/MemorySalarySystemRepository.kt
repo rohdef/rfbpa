@@ -15,7 +15,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         _shifts.clear()
     }
 
-    private val _shifts = mutableMapOf<ShiftId, Shift>()
+    internal val _shifts = mutableMapOf<ShiftId, Shift>()
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
@@ -52,7 +52,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         end: YearWeekDayAtTime,
     ): Either<Unit, Shift> {
         val shiftId = ShiftId.generateId()
-        val shift = Shift(HelperBooking.NoBooking, start, end)
+        val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
 
         _shifts.put(shiftId, shift)
 

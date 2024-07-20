@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa
 import arrow.core.Either
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.helperplanning.shifts.WeekPlan
@@ -39,7 +40,7 @@ class LoggingSalarySystemRepository(
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, ShiftId> {
+    ): Either<Unit, Shift> {
         log.debug { "Creating shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
         val shiftId = salarySystemRepository.createShift(start, end)
 

@@ -1,13 +1,13 @@
 package dk.rohdef.helperplanning.shifts
 
 data class WeekPlan(
-    val monday: Weekday,
-    val tuesday: Weekday,
-    val wednesday: Weekday,
-    val thursday: Weekday,
-    val friday: Weekday,
-    val saturday: Weekday,
-    val sunday: Weekday,
+    val monday: List<Shift>,
+    val tuesday: List<Shift>,
+    val wednesday: List<Shift>,
+    val thursday: List<Shift>,
+    val friday: List<Shift>,
+    val saturday: List<Shift>,
+    val sunday: List<Shift>,
 ) {
     val allDays = listOf(
         monday,
@@ -21,5 +21,5 @@ data class WeekPlan(
 
     val allShifts =
         allDays
-            .flatMap { it.allShifts }
+            .flatMap { it }
 }

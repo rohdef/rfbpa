@@ -1,6 +1,6 @@
 package dk.rohdef.axpclient.parsing
 
-import dk.rohdef.axpclient.helper.AxpShift
+import dk.rohdef.axpclient.shift.AxpShift
 import org.jsoup.select.Elements
 
 internal class ShiftDataParser {

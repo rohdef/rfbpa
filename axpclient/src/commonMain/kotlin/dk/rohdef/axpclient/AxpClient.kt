@@ -26,7 +26,7 @@ internal class AxpClient(
     private val client: HttpClient,
     private val configuration: AxpConfiguration,
 ) {
-    private val customerId = AxpShift.CustomerId("1366")
+    private val customerId = CreateAxpShift.CustomerId("1366")
 
     private val urls = AxpUrls(configuration.url, configuration.timeZone)
 
@@ -66,7 +66,7 @@ internal class AxpClient(
     suspend fun createShift(
         start: Instant,
         end: Instant,
-        type: AxpShift.ShiftType,
+        type: CreateAxpShift.ShiftType,
     ): Either<BookShiftError, AxpBookingId> = either {
         log.info { "Creating shift" }
 
@@ -119,7 +119,7 @@ internal class AxpClient(
         append("quiet_run", "1")
     }
 
-    private fun ParametersBuilder.shiftTimes(start: Instant, end: Instant, type: AxpShift.ShiftType) {
+    private fun ParametersBuilder.shiftTimes(start: Instant, end: Instant, type: CreateAxpShift.ShiftType) {
         start
             .let { DDate(it, configuration.timeZone) }
             .let { Json.encodeToString(it) }
@@ -179,7 +179,7 @@ internal class AxpClient(
     private suspend fun saveShift(
         start: Instant,
         end: Instant,
-        type: AxpShift.ShiftType,
+        type: CreateAxpShift.ShiftType,
     ): Either<BookShiftError, AxpBookingId> {
         val response = client.submitForm(
             urls.index,
