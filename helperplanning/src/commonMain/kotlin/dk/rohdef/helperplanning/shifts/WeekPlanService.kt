@@ -21,13 +21,17 @@ class WeekPlanService(
     }
 
     suspend fun sync(yearWeek: YearWeek) = either {
-        val w = salarySystem.shifts(yearWeek).bind()
+        val salaryWeeks = salarySystem.shifts(yearWeek)
+            .mapLeft { TODO() }
+            .bind()
 
-        w.allShifts.forEach {
-//            shiftRepository.createShift()
+        salaryWeeks.allShifts.map {
+            shiftRepository.createShift(it)
+                .mapLeft { TODO() }
+                .bind()
         }
-
-        weekSynchronizationRepository.markSynchronized(yearWeek)
+//
+//        weekSynchronizationRepository.markSynchronized(yearWeek)
     }
 
     suspend fun createShift(

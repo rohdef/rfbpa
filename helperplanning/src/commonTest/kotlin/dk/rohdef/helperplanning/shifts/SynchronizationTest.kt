@@ -45,6 +45,7 @@ class SynchronizationTest : FunSpec({
 
     context("Non-synchronized weeks") {
         test("one week") {
+            // TODO: 20/07/2024 rohdef - add logic for synchronization repository
             weekPlanService.sync(YearWeek(2024, 13))
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder listOf(
