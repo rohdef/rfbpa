@@ -5,7 +5,6 @@ import dk.rohdef.rfweeks.YearWeekInterval
 
 class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
     override fun markForSynchronization(yearWeek: YearWeek) {
-        TODO("not implemented")
     }
 
     override fun markSynchronized(yearWeek: YearWeek) {

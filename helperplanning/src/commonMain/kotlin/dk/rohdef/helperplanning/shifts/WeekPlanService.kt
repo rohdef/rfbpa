@@ -37,7 +37,6 @@ class WeekPlanService(
         weekSynchronizationRepository.markForSynchronization(start.yearWeek)
 
         val shift = salarySystem.createShift(start, end).bind()
-        sync(start.yearWeek)
         shift
 
         // TODO: 16/07/2024 rohdef - how do we detect semi synced?
