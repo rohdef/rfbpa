@@ -3,6 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.TestShiftRespository
+import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
@@ -33,18 +34,25 @@ class SynchronizationTest : FunSpec({
         }
     }
 
+    fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
+        return Shift(
+            HelperBooking.NoBooking,
+            generateTestShiftId(start, end),
+            start,
+            end,
+        )
+    }
+
     context("Non-synchronized weeks") {
         test("one week") {
             weekPlanService.sync(YearWeek(2024, 13))
 
-            val noIdShifts = shiftRepository.shiftList.map { NoIdShift.fromShift(it) }
-            noIdShifts shouldContainExactlyInAnyOrder listOf(
-                NoIdShift(HelperBooking.NoBooking, shift1Start, shift1End),
-                NoIdShift(HelperBooking.NoBooking, shift2Start, shift2End),
-                NoIdShift(HelperBooking.NoBooking, shift3Start, shift3End),
+            shiftRepository.shiftList shouldContainExactlyInAnyOrder listOf(
+                createTestShift(shift1Start, shift1End),
+                createTestShift(shift2Start, shift2End),
+                createTestShift(shift3Start, shift3End),
             )
         }
-
 
         val shift4Start = YearWeekDayAtTime.parseUnsafe("2024-W14-1T13:30")
         val shift4End = YearWeekDayAtTime.parseUnsafe("2024-W14-1T14:30")
@@ -65,15 +73,15 @@ class SynchronizationTest : FunSpec({
         val shift12Start = YearWeekDayAtTime.parseUnsafe("2024-W16-1T13:30")
         val shift12End = YearWeekDayAtTime.parseUnsafe("2024-W16-1T14:30")
         val additionalShifts = listOf(
-            NoIdShift(HelperBooking.NoBooking, shift4Start, shift4End),
-            NoIdShift(HelperBooking.NoBooking, shift5Start, shift5End),
-            NoIdShift(HelperBooking.NoBooking, shift6Start, shift6End),
-            NoIdShift(HelperBooking.NoBooking, shift7Start, shift7End),
-            NoIdShift(HelperBooking.NoBooking, shift8Start, shift8End),
-            NoIdShift(HelperBooking.NoBooking, shift9Start, shift9End),
-            NoIdShift(HelperBooking.NoBooking, shift10Start, shift10End),
-            NoIdShift(HelperBooking.NoBooking, shift11Start, shift11End),
-            NoIdShift(HelperBooking.NoBooking, shift12Start, shift12End),
+            createTestShift(shift4Start, shift4End),
+            createTestShift(shift5Start, shift5End),
+            createTestShift(shift6Start, shift6End),
+            createTestShift(shift7Start, shift7End),
+            createTestShift(shift8Start, shift8End),
+            createTestShift(shift9Start, shift9End),
+            createTestShift(shift10Start, shift10End),
+            createTestShift(shift11Start, shift11End),
+            createTestShift(shift12Start, shift12End),
         )
 
         test("week interval") {

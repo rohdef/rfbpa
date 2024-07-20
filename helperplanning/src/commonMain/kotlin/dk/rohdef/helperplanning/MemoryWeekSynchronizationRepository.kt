@@ -11,17 +11,18 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
     }
 
     override fun markSynchronized(yearWeek: YearWeek) {
-        TODO("not implemented")
+        weeksForSynchronization.remove(yearWeek)
     }
 
     override fun markSynchronized(yearWeeks: List<YearWeek>) {
-        TODO("not implemented")
+        yearWeeks.forEach { markForSynchronization(it) }
     }
 
     override fun weeksToSynchronize(): List<YearWeek> =
         weeksForSynchronization.toList().sorted()
 
     override fun weeksToSynchronize(yearWeekInterval: YearWeekInterval): List<YearWeek> {
-        TODO("not implemented")
+        return weeksToSynchronize()
+            .filter { yearWeekInterval.contains(it) }
     }
 }

@@ -9,6 +9,7 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.DayOfWeek
 
 class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
@@ -44,7 +45,17 @@ class MemorySalarySystemRepository : SalarySystemRepository {
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
-        TODO("not implemented")
+        val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
+        val weekPlan = WeekPlan(
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.TUESDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.WEDNESDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.THURSDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.FRIDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SATURDAY },
+            shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SUNDAY },
+        )
+        return weekPlan.right()
     }
 
     override suspend fun createShift(
