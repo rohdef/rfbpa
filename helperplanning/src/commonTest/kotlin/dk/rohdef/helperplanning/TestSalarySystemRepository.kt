@@ -22,6 +22,10 @@ class TestSalarySystemRepository(
         // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
         get() = shiftList.sortedBy { it.start.localDateTime }
 
+    fun addShift(shift: Shift) {
+        memoryWeekPlanRepository._shifts[shift.shiftId] = shift
+    }
+
     override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {
         val shiftId = generateTestShiftId(start, end)
         val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)

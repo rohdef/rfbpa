@@ -7,7 +7,7 @@ import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.*
 
 class SynchronizationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
@@ -21,6 +21,12 @@ class SynchronizationTest : FunSpec({
     val shift2End = YearWeekDayAtTime.parseUnsafe("2024-W13-3T21:30")
     val shift3Start = YearWeekDayAtTime.parseUnsafe("2024-W13-4T17:30")
     val shift3End = YearWeekDayAtTime.parseUnsafe("2024-W13-5T17:30")
+
+    val shiftNotInSystem = Shift(
+        HelperBooking.NoBooking,
+        YearWeekDayAtTime.parseUnsafe("2024-W13-6T08:00"),
+        YearWeekDayAtTime.parseUnsafe("2024-W13-6T15:45"),
+    )
 
     beforeEach {
         shiftRepository.reset()
@@ -43,18 +49,72 @@ class SynchronizationTest : FunSpec({
         )
     }
 
-    context("Non-synchronized weeks") {
-        test("one week") {
-            // TODO: 20/07/2024 rohdef - add logic for synchronization repository
-            weekPlanService.sync(YearWeek(2024, 13))
+    val year2024Weeks = YearWeek(2024, 1)..YearWeek(2024, 52)
+
+    context("Single week") {
+        val year2024Week13 = YearWeek(2024, 13)
+
+        test("No syncronized") {
+            shiftRepository.shiftList.shouldBeEmpty()
+            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldContain year2024Week13
+
+            weekPlanService.sync(year2024Week13)
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder listOf(
                 createTestShift(shift1Start, shift1End),
                 createTestShift(shift2Start, shift2End),
                 createTestShift(shift3Start, shift3End),
             )
+            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
         }
 
+        test("Aleady synchronized - synchronization only happens when requested") {
+            weekSynchronizationRepository.markSynchronized(year2024Week13)
+            salarySystemRepository.addShift(shiftNotInSystem)
+
+            weekPlanService.sync(year2024Week13)
+
+            shiftRepository.shiftList shouldContainExactlyInAnyOrder listOf(
+                createTestShift(shift1Start, shift1End),
+                createTestShift(shift2Start, shift2End),
+                createTestShift(shift3Start, shift3End),
+            )
+            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+        }
+
+        test("Synchronized but marked for synchronization") {
+            weekPlanService.sync(year2024Week13)
+            weekSynchronizationRepository.markForSynchronization(year2024Week13)
+            salarySystemRepository.addShift(shiftNotInSystem)
+
+            weekPlanService.sync(year2024Week13)
+
+            shiftRepository.shiftList shouldContainExactlyInAnyOrder listOf(
+                createTestShift(shift1Start, shift1End),
+                createTestShift(shift2Start, shift2End),
+                createTestShift(shift3Start, shift3End),
+                shiftNotInSystem,
+            )
+            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+        }
+
+        test("Create shift marks for synchhronization") {
+            weekSynchronizationRepository.markSynchronized(year2024Week13)
+            salarySystemRepository.addShift(shiftNotInSystem)
+
+            weekPlanService.createShift(shiftNotInSystem.start, shiftNotInSystem.end)
+
+            salarySystemRepository.shiftList shouldContainExactlyInAnyOrder listOf(
+                createTestShift(shift1Start, shift1End),
+                createTestShift(shift2Start, shift2End),
+                createTestShift(shift3Start, shift3End),
+                shiftNotInSystem,
+            )
+            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+        }
+    }
+
+    context("Non-synchronized weeks") {
         val shift4Start = YearWeekDayAtTime.parseUnsafe("2024-W14-1T13:30")
         val shift4End = YearWeekDayAtTime.parseUnsafe("2024-W14-1T14:30")
         val shift5Start = YearWeekDayAtTime.parseUnsafe("2024-W14-1T13:30")

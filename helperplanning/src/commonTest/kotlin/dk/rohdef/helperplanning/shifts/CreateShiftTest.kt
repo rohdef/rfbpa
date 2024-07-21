@@ -7,7 +7,6 @@ import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 
 class CreateShiftTest : FunSpec({
