@@ -9,6 +9,5 @@ interface WeekSynchronizationRepository {
     fun markSynchronized(yearWeek: YearWeek)
     fun markSynchronized(yearWeeks: List<YearWeek>)
 
-    fun weeksToSynchronize(): List<YearWeek>
     fun weeksToSynchronize(yearWeekInterval: YearWeekInterval): List<YearWeek>
 }

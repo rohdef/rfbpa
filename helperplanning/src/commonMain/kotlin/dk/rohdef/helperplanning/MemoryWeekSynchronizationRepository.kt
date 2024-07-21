@@ -4,25 +4,23 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
 class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
-    val weeksForSynchronization = mutableSetOf<YearWeek>()
+    val synchronizedWeeks = mutableSetOf<YearWeek>()
 
     override fun markForSynchronization(yearWeek: YearWeek) {
-        weeksForSynchronization.add(yearWeek)
+        synchronizedWeeks.remove(yearWeek)
     }
 
     override fun markSynchronized(yearWeek: YearWeek) {
-        weeksForSynchronization.remove(yearWeek)
+        synchronizedWeeks.add(yearWeek)
     }
 
     override fun markSynchronized(yearWeeks: List<YearWeek>) {
         yearWeeks.forEach { markForSynchronization(it) }
     }
 
-    override fun weeksToSynchronize(): List<YearWeek> =
-        weeksForSynchronization.toList().sorted()
-
     override fun weeksToSynchronize(yearWeekInterval: YearWeekInterval): List<YearWeek> {
-        return weeksToSynchronize()
-            .filter { yearWeekInterval.contains(it) }
+        return yearWeekInterval.toList()
+            .filter { !synchronizedWeeks.contains(it) }
+            .sorted()
     }
 }

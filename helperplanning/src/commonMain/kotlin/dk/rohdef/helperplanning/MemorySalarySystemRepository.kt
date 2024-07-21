@@ -31,13 +31,13 @@ class MemorySalarySystemRepository : SalarySystemRepository {
 
     override suspend fun bookShift(
         shiftId: ShiftId,
-        helper: Helper.ID
+        helperId: Helper.ID
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         if (!_shifts.containsKey(shiftId)) {
             TODO("Missing shift is currently not handled")
         }
         val shift = _shifts[shiftId].toOption()
-            .map { it.copy(helperId = HelperBooking.PermanentHelper(helper)) }
+            .map { it.copy(helperId = HelperBooking.PermanentHelper(helperId)) }
         shift.onSome { _shifts.put(shiftId, it) }
 
         return shift.map { shiftId }
