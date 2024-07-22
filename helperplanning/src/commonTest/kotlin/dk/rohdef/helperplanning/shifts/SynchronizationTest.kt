@@ -3,32 +3,42 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.TestShiftRespository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.*
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
+import java.time.DayOfWeek
 
 class SynchronizationTest : FunSpec({
+    val year2024Week13 = YearWeek(2024, 13)
+
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = MemoryWeekSynchronizationRepository()
     val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
-    val shift1Start = YearWeekDayAtTime.parseUnsafe("2024-W13-1T13:30")
-    val shift1End = YearWeekDayAtTime.parseUnsafe("2024-W13-1T14:30")
-    val shift2Start = YearWeekDayAtTime.parseUnsafe("2024-W13-3T17:30")
-    val shift2End = YearWeekDayAtTime.parseUnsafe("2024-W13-3T21:30")
-    val shift3Start = YearWeekDayAtTime.parseUnsafe("2024-W13-4T17:30")
-    val shift3End = YearWeekDayAtTime.parseUnsafe("2024-W13-5T17:30")
+    val shift1Start = year2024Week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(13, 30)
+    val shift1End = year2024Week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(14, 30)
+    val shift2Start = year2024Week13.atDayOfWeek(DayOfWeek.WEDNESDAY).atTime(17, 30)
+    val shift2End = year2024Week13.atDayOfWeek(DayOfWeek.WEDNESDAY).atTime(21, 30)
+    val shift3Start = year2024Week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(9, 45)
+    val shift3End = year2024Week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(15, 15)
 
+    val shiftNotInSystemStart = year2024Week13.atDayOfWeek(DayOfWeek.SATURDAY).atTime(8, 0)
+    val shiftNotInSystemEnd = year2024Week13.atDayOfWeek(DayOfWeek.SATURDAY).atTime(15, 45)
     val shiftNotInSystem = Shift(
         HelperBooking.NoBooking,
-        YearWeekDayAtTime.parseUnsafe("2024-W13-6T08:00"),
-        YearWeekDayAtTime.parseUnsafe("2024-W13-6T15:45"),
+        generateTestShiftId(shiftNotInSystemStart, shiftNotInSystemEnd),
+        shiftNotInSystemStart,
+        shiftNotInSystemEnd,
     )
 
     beforeEach {
+        weekSynchronizationRepository.reset()
         shiftRepository.reset()
 
         salarySystemRepository.apply {
@@ -49,14 +59,10 @@ class SynchronizationTest : FunSpec({
         )
     }
 
-    val year2024Weeks = YearWeek(2024, 1)..YearWeek(2024, 52)
-
     context("Single week") {
-        val year2024Week13 = YearWeek(2024, 13)
-
         test("No syncronized") {
             shiftRepository.shiftList.shouldBeEmpty()
-            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldContain year2024Week13
+            weekSynchronizationRepository.synchronizationState(year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
 
             weekPlanService.sync(year2024Week13)
 
@@ -65,11 +71,11 @@ class SynchronizationTest : FunSpec({
                 createTestShift(shift2Start, shift2End),
                 createTestShift(shift3Start, shift3End),
             )
-            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+            weekSynchronizationRepository.synchronizationState(year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Aleady synchronized - synchronization only happens when requested") {
-            weekSynchronizationRepository.markSynchronized(year2024Week13)
+            weekPlanService.sync(year2024Week13)
             salarySystemRepository.addShift(shiftNotInSystem)
 
             weekPlanService.sync(year2024Week13)
@@ -79,7 +85,7 @@ class SynchronizationTest : FunSpec({
                 createTestShift(shift2Start, shift2End),
                 createTestShift(shift3Start, shift3End),
             )
-            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+            weekSynchronizationRepository.synchronizationState(year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Synchronized but marked for synchronization") {
@@ -95,11 +101,12 @@ class SynchronizationTest : FunSpec({
                 createTestShift(shift3Start, shift3End),
                 shiftNotInSystem,
             )
-            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+            weekSynchronizationRepository.synchronizationState(year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Create shift marks for synchhronization") {
-            weekSynchronizationRepository.markSynchronized(year2024Week13)
+            val targetYearWeek = shiftNotInSystem.start.yearWeek
+            weekSynchronizationRepository.markSynchronized(targetYearWeek)
             salarySystemRepository.addShift(shiftNotInSystem)
 
             weekPlanService.createShift(shiftNotInSystem.start, shiftNotInSystem.end)
@@ -110,7 +117,7 @@ class SynchronizationTest : FunSpec({
                 createTestShift(shift3Start, shift3End),
                 shiftNotInSystem,
             )
-            weekSynchronizationRepository.weeksToSynchronize(year2024Weeks) shouldNotContain year2024Week13
+            weekSynchronizationRepository.synchronizationState(targetYearWeek) shouldBe WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
         }
     }
 

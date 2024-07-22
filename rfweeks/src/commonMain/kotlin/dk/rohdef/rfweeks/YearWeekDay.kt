@@ -19,6 +19,8 @@ data class YearWeekDay(
 
     fun atTime(time: LocalTime) =
         YearWeekDayAtTime(this, time)
+    fun atTime(hour: Int, minute: Int) =
+        YearWeekDayAtTime(this, LocalTime(hour, minute))
 
     fun nextDay(): YearWeekDay {
         return when (dayOfWeek) {

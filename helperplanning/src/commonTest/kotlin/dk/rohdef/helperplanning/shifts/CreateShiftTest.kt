@@ -3,11 +3,13 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.TestShiftRespository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.maps.shouldContainExactly
 
 class CreateShiftTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
@@ -34,7 +36,8 @@ class CreateShiftTest : FunSpec({
                 )
             )
         val all2024Weeks = YearWeek(2024, 1)..YearWeek(2024, 52)
-        weekSynchronizationRepository.weeksToSynchronize(all2024Weeks) shouldContainExactly all2024Weeks
+        val expectedSynchronizationStates = all2024Weeks.associate { it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
+        weekSynchronizationRepository.synchronizationStates(all2024Weeks) shouldContainExactly expectedSynchronizationStates
     }
 
     test("shift not created in shift repository") {}

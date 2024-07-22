@@ -9,5 +9,11 @@ interface WeekSynchronizationRepository {
     fun markSynchronized(yearWeek: YearWeek)
     fun markSynchronized(yearWeeks: List<YearWeek>)
 
-    fun weeksToSynchronize(yearWeekInterval: YearWeekInterval): List<YearWeek>
+    fun synchronizationStates(yearWeekInterval: YearWeekInterval): Map<YearWeek, SynchronizationState>
+    fun synchronizationState(yearWeek: YearWeek): SynchronizationState
+
+    enum class SynchronizationState {
+        SYNCHRONIZED,
+        OUT_OF_DATE,
+    }
 }
