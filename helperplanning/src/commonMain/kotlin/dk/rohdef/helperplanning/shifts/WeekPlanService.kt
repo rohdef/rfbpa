@@ -13,15 +13,15 @@ class WeekPlanService(
     private val shiftRepository: ShiftRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) {
-    suspend fun sync(yearWeekInterval: YearWeekInterval) {
+    suspend fun synchronize(yearWeekInterval: YearWeekInterval) {
         val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
         val weeksToSynchronize = synchronizationStates
             .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
             .keys
-        weeksToSynchronize.forEach { sync(it) }
+        weeksToSynchronize.forEach { synchronize(it) }
     }
 
-    suspend fun sync(yearWeek: YearWeek) = either {
+    suspend fun synchronize(yearWeek: YearWeek) = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             val salaryWeeks = salarySystem.shifts(yearWeek)
@@ -58,7 +58,7 @@ class WeekPlanService(
     }
 
     suspend fun shifts(yearWeekInterval: YearWeekInterval) {
-        sync(yearWeekInterval)
+        synchronize(yearWeekInterval)
 
         val shifts = shiftRepository.shifts(yearWeekInterval)
     }
