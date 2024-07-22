@@ -3,28 +3,23 @@ package dk.rohdef.rfbpa.web
 import arrow.core.Either
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.datetime.DateTimePeriod
 
 class LoggingSalarySystemRepository(
     private val salarySystemRepository: SalarySystemRepository,
 ) : SalarySystemRepository {
     private val log = KotlinLogging.logger {}
 
-    override suspend fun cacheMisses(
-        yearWeeks: YearWeekInterval,
-        updateStrategy: SalarySystemRepository.UpdateStrategy,
-        threshold: DateTimePeriod
-    ): Either<Unit, Set<YearWeek>> {
-        log.debug { "Finding the weeks that need synchronization" }
-        return salarySystemRepository.cacheMisses(yearWeeks, updateStrategy, threshold)
-    }
-
-    override suspend fun bookShift(shiftId: ShiftId, helper: Helper.ID): Either<SalarySystemRepository.BookingError, ShiftId> {
+    override suspend fun bookShift(
+        shiftId: ShiftId,
+        helper: Helper.ID
+    ): Either<SalarySystemRepository.BookingError, ShiftId> {
         log.debug { "Booking shift $shiftId to helper ${helper}" }
         return salarySystemRepository.bookShift(shiftId, helper)
     }

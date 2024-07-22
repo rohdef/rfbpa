@@ -10,12 +10,6 @@ import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.DateTimePeriod
 
 interface SalarySystemRepository {
-    suspend fun cacheMisses(
-        yearWeeks: YearWeekInterval,
-        updateStrategy: UpdateStrategy = UpdateStrategy.CACHED,
-        threshold: DateTimePeriod = DateTimePeriod(days = 7),
-    ) : Either<Unit, Set<YearWeek>>
-
     suspend fun bookShift(
         shiftId: ShiftId,
         helperId: Helper.ID,
@@ -29,11 +23,6 @@ interface SalarySystemRepository {
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
     suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift>
-
-    enum class UpdateStrategy {
-        CACHED,
-        FORCE,
-    }
 
     sealed interface BookingError {
         data class ShiftNotFound(val shiftId: ShiftId) : BookingError

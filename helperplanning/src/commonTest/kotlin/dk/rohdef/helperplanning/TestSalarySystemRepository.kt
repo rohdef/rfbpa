@@ -2,16 +2,22 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.right
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
+import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
+
+typealias ShiftsPrerunner = (yearWeek: YearWeek) -> Unit
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
 ) : SalarySystemRepository by memoryWeekPlanRepository {
+    private val _shiftsPrerunners = mutableListOf<ShiftsPrerunner>()
+    fun addShiftsPrerunner(prerunner: ShiftsPrerunner) {
+        _shiftsPrerunners.add(prerunner)
+    }
+
     internal fun reset() = memoryWeekPlanRepository.reset()
 
     internal val shifts: Map<ShiftId, Shift>
@@ -24,6 +30,11 @@ class TestSalarySystemRepository(
 
     fun addShift(shift: Shift) {
         memoryWeekPlanRepository._shifts[shift.shiftId] = shift
+    }
+
+    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
+        _shiftsPrerunners.forEach { it(yearWeek) }
+        return memoryWeekPlanRepository.shifts(yearWeek)
     }
 
     override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {

@@ -7,8 +7,6 @@ import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import dk.rohdef.rfweeks.YearWeekInterval
-import kotlinx.datetime.DateTimePeriod
 import kotlinx.datetime.DayOfWeek
 
 class MemorySalarySystemRepository : SalarySystemRepository {
@@ -20,14 +18,6 @@ class MemorySalarySystemRepository : SalarySystemRepository {
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
-
-    override suspend fun cacheMisses(
-        yearWeeks: YearWeekInterval,
-        updateStrategy: SalarySystemRepository.UpdateStrategy,
-        threshold: DateTimePeriod
-    ): Either<Unit, Set<YearWeek>> {
-        TODO("not implemented")
-    }
 
     override suspend fun bookShift(
         shiftId: ShiftId,

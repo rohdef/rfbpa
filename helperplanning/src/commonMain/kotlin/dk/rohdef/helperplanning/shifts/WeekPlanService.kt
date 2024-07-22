@@ -13,11 +13,12 @@ class WeekPlanService(
     private val shiftRepository: ShiftRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) {
-    suspend fun sync(yearWeekInterval: YearWeekInterval) = either {
-        val q = salarySystem.cacheMisses(yearWeekInterval).bind()
-        q.forEach {
-            sync(it)
-        }
+    suspend fun sync(yearWeekInterval: YearWeekInterval) {
+        val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
+        val weeksToSynchronize = synchronizationStates
+            .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
+            .keys
+        weeksToSynchronize.forEach { sync(it) }
     }
 
     suspend fun sync(yearWeek: YearWeek) = either {
@@ -41,18 +42,19 @@ class WeekPlanService(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ) = either {
+        // TODO mark possibly-synced
         weekSynchronizationRepository.markForSynchronization(start.yearWeek)
 
         val shift = salarySystem.createShift(start, end).bind()
+        // TODO try add shift repository
+//        val x = shiftRepository.createShift(shift1Start, shift1End)
+        //
         shift
 
-        // TODO: 16/07/2024 rohdef - how do we detect semi synced?
+        // TODO: 16/07/2024 rohdef
         // systemet detecter når vi booker - er det nok?
-        // skal der evt. laves et sync, just in case? Måske smart nok
         // måske sync skal have strategi til conflict?
-        // altid salary repository først, alt andet kan give problematiske fejl!
 
-//        val x = shiftRepository.createShift(shift1Start, shift1End)
     }
 
     suspend fun shifts(yearWeekInterval: YearWeekInterval) {

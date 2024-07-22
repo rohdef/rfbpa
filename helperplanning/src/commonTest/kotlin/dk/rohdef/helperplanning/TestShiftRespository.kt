@@ -1,18 +1,28 @@
 package dk.rohdef.helperplanning
 
+import arrow.core.Either
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
+
+typealias CreateShiftPrerunner = (shift: Shift) -> Unit
 
 class TestShiftRespository(
     val memoryShiftRepository: MemoryShiftRepository = MemoryShiftRepository(),
 ) : ShiftRepository by memoryShiftRepository {
+    private val _createShiftPrerunners = mutableListOf<CreateShiftPrerunner>()
+    fun addCreateShiftPrerunner(prerunner: CreateShiftPrerunner) {
+        _createShiftPrerunners.add(prerunner)
+    }
+
     internal fun reset() = memoryShiftRepository.reset()
 
     internal val shifts: Map<ShiftId, Shift>
         get() = memoryShiftRepository.shifts
     internal val shiftList: List<Shift>
         get() = shifts.values.toList()
-    internal val sortedByStartShifts: List<Shift>
-        // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
-        get() = shiftList.sortedBy { it.start.localDateTime }
+
+    override suspend fun createShift(shift: Shift): Either<Unit, Shift> {
+        _createShiftPrerunners.forEach { it(shift) }
+        return memoryShiftRepository.createShift(shift)
+    }
 }
