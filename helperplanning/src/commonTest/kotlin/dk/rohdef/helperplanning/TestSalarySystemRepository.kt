@@ -1,6 +1,7 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
+import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
@@ -8,17 +9,26 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
-typealias ShiftsPrerunner = (yearWeek: YearWeek) -> Unit
+typealias ShiftsPreRunner = (yearWeek: YearWeek) -> Unit
+typealias ShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
 ) : SalarySystemRepository by memoryWeekPlanRepository {
-    private val _shiftsPrerunners = mutableListOf<ShiftsPrerunner>()
-    fun addShiftsPrerunner(prerunner: ShiftsPrerunner) {
-        _shiftsPrerunners.add(prerunner)
+    private val _shiftsPreRunners = mutableListOf<ShiftsPreRunner>()
+    fun addShiftsPreRunner(preRunner: ShiftsPreRunner) {
+        _shiftsPreRunners.add(preRunner)
+    }
+    private val _shiftsErrorRunners = mutableListOf<ShiftsErrorRunner>()
+    fun addShiftsErrorRunner(errorRunner: ShiftsErrorRunner) {
+        _shiftsErrorRunners.add(errorRunner)
     }
 
-    internal fun reset() = memoryWeekPlanRepository.reset()
+    internal fun reset() {
+        memoryWeekPlanRepository.reset()
+        _shiftsPreRunners.clear()
+        _shiftsErrorRunners.clear()
+    }
 
     internal val shifts: Map<ShiftId, Shift>
         get() = memoryWeekPlanRepository.shifts
@@ -32,9 +42,10 @@ class TestSalarySystemRepository(
         memoryWeekPlanRepository._shifts[shift.shiftId] = shift
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
-        _shiftsPrerunners.forEach { it(yearWeek) }
-        return memoryWeekPlanRepository.shifts(yearWeek)
+    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
+        _shiftsPreRunners.forEach { it(yearWeek) }
+        _shiftsErrorRunners.map { it(yearWeek).bind() }
+        memoryWeekPlanRepository.shifts(yearWeek).bind()
     }
 
     override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {

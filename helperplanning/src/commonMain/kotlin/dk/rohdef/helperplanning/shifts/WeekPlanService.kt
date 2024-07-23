@@ -1,9 +1,10 @@
 package dk.rohdef.helperplanning.shifts
 
+import arrow.core.*
 import arrow.core.raise.either
-import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -13,26 +14,26 @@ class WeekPlanService(
     private val shiftRepository: ShiftRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) {
-    suspend fun synchronize(yearWeekInterval: YearWeekInterval) {
+    suspend fun synchronize(yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> = either {
         val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
         val weeksToSynchronize = synchronizationStates
             .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
             .keys
-        weeksToSynchronize.forEach { synchronize(it) }
+        weeksToSynchronize.mapOrAccumulate { synchronize(it).bind() }
+            .bind()
     }
 
-    suspend fun synchronize(yearWeek: YearWeek) = either {
+    suspend fun synchronize(yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             val salaryWeeks = salarySystem.shifts(yearWeek)
-                .mapLeft { TODO() }
+                .mapLeft { SynchronizationError.Dummy }
                 .bind()
 
-            salaryWeeks.allShifts.map {
+            salaryWeeks.allShifts.mapOrAccumulate {
                 shiftRepository.createShift(it)
-                    .mapLeft { TODO() }
                     .bind()
-            }
+            }.mapLeft { SynchronizationError.Dummy }
 
             weekSynchronizationRepository.markSynchronized(yearWeek)
         }

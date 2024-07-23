@@ -7,7 +7,6 @@ interface WeekSynchronizationRepository {
     fun markForSynchronization(yearWeek: YearWeek)
 
     fun markSynchronized(yearWeek: YearWeek)
-    fun markSynchronized(yearWeeks: List<YearWeek>)
 
     fun synchronizationStates(yearWeekInterval: YearWeekInterval): Map<YearWeek, SynchronizationState>
     fun synchronizationState(yearWeek: YearWeek): SynchronizationState

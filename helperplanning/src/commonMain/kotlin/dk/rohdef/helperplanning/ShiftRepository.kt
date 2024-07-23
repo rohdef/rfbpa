@@ -5,7 +5,6 @@ import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
 interface ShiftRepository {

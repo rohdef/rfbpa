@@ -18,10 +18,6 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
         synchronizedWeeks.add(yearWeek)
     }
 
-    override fun markSynchronized(yearWeeks: List<YearWeek>) {
-        yearWeeks.forEach { markForSynchronization(it) }
-    }
-
     override fun synchronizationStates(yearWeekInterval: YearWeekInterval): Map<YearWeek, WeekSynchronizationRepository.SynchronizationState> {
         return yearWeekInterval.associate { it to synchronizationState(it) }
     }
