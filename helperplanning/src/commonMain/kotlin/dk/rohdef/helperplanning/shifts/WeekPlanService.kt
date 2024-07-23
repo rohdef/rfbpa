@@ -27,13 +27,15 @@ class WeekPlanService(
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             val salaryWeeks = salarySystem.shifts(yearWeek)
-                .mapLeft { SynchronizationError.Dummy }
+                .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
             salaryWeeks.allShifts.mapOrAccumulate {
                 shiftRepository.createShift(it)
                     .bind()
-            }.mapLeft { SynchronizationError.Dummy }
+            }
+                .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
+                .bind()
 
             weekSynchronizationRepository.markSynchronized(yearWeek)
         }
