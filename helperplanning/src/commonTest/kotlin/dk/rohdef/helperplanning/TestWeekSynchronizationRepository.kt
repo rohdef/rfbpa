@@ -1,6 +1,7 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
+import arrow.core.raise.either
 import dk.rohdef.rfweeks.YearWeek
 
 typealias MarkSynchronizedErrorRunner = (yearWeek: YearWeek) -> Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit>
@@ -18,8 +19,8 @@ class TestWeekSynchronizationRepository(
         memoryWeekSynchronizationRepository.reset()
     }
 
-    override fun markSynchronized(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        _markSynchronizedPreRunners.forEach { it(yearWeek) }
-        return memoryWeekSynchronizationRepository.markSynchronized(yearWeek)
+    override fun markSynchronized(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+        _markSynchronizedPreRunners.map { it(yearWeek).bind() }
+        memoryWeekSynchronizationRepository.markSynchronized(yearWeek)
     }
 }

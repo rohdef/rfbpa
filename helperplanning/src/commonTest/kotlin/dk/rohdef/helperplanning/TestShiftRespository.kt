@@ -4,8 +4,9 @@ import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
 
-typealias CreateShiftErrorRunner = (shift: Shift) -> Either<Unit, Unit>
+typealias CreateShiftErrorRunner = (shift: Shift) -> Either<ShiftsError, Unit>
 
 class TestShiftRespository(
     val memoryShiftRepository: MemoryShiftRepository = MemoryShiftRepository(),
@@ -25,7 +26,7 @@ class TestShiftRespository(
     internal val shiftList: List<Shift>
         get() = shifts.values.toList()
 
-    override suspend fun createShift(shift: Shift): Either<Unit, Shift> = either {
+    override suspend fun createShift(shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
         memoryShiftRepository.createShift(shift).bind()
     }

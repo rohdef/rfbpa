@@ -39,7 +39,7 @@ class DatabaseShifts : ShiftRepository {
 
     override suspend fun createShift(
         shift: Shift,
-    ): Either<Unit, Shift> {
+    ): Either<ShiftsError, Shift> {
         TODO("not implemented")
     }
 }

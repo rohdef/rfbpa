@@ -26,18 +26,14 @@ class WeekPlanService(
     suspend fun synchronize(yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
-            val salaryWeeks = salarySystem.shifts(yearWeek)
-                .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
-                .bind()
-
-            salaryWeeks.allShifts.mapOrAccumulate {
-                shiftRepository.createShift(it)
-                    .bind()
-            }
+            salarySystem.shifts(yearWeek)
+                .flatMap { it.allShifts.mapOrAccumulate { shiftRepository.createShift(it).bind() } }
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
             weekSynchronizationRepository.markSynchronized(yearWeek)
+                .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
+                .bind()
         }
     }
 
@@ -46,12 +42,15 @@ class WeekPlanService(
         end: YearWeekDayAtTime,
     ) = either {
         // TODO mark possibly-synced
+        // TODO improve domain errors (i.e., create them)
         weekSynchronizationRepository.markForSynchronization(start.yearWeek)
+            .mapLeft {  }
+            .bind()
 
-        val shift = salarySystem.createShift(start, end).bind()
+        val shift = salarySystem.createShift(start, end)
         // TODO try add shift repository
-//        val x = shiftRepository.createShift(shift1Start, shift1End)
-        //
+//            .flatMap { shiftRepository.createShift(it) }
+            .bind()
         shift
 
         // TODO: 16/07/2024 rohdef

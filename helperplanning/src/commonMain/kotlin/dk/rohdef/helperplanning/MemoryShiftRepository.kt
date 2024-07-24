@@ -40,7 +40,7 @@ class MemoryShiftRepository : ShiftRepository {
 
     override suspend fun createShift(
         shift: Shift,
-    ): Either<Unit, Shift> {
+    ): Either<ShiftsError, Shift> {
         _shifts.put(shift.shiftId, shift)
         return shift.right()
     }
