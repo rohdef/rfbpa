@@ -9,16 +9,11 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
-typealias ShiftsPreRunner = (yearWeek: YearWeek) -> Unit
 typealias ShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
 ) : SalarySystemRepository by memoryWeekPlanRepository {
-    private val _shiftsPreRunners = mutableListOf<ShiftsPreRunner>()
-    fun addShiftsPreRunner(preRunner: ShiftsPreRunner) {
-        _shiftsPreRunners.add(preRunner)
-    }
     private val _shiftsErrorRunners = mutableListOf<ShiftsErrorRunner>()
     fun addShiftsErrorRunner(errorRunner: ShiftsErrorRunner) {
         _shiftsErrorRunners.add(errorRunner)
@@ -26,7 +21,6 @@ class TestSalarySystemRepository(
 
     internal fun reset() {
         memoryWeekPlanRepository.reset()
-        _shiftsPreRunners.clear()
         _shiftsErrorRunners.clear()
     }
 
@@ -43,7 +37,6 @@ class TestSalarySystemRepository(
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
-        _shiftsPreRunners.forEach { it(yearWeek) }
         _shiftsErrorRunners.map { it(yearWeek).bind() }
         memoryWeekPlanRepository.shifts(yearWeek).bind()
     }

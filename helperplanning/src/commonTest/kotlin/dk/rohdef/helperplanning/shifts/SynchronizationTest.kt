@@ -211,30 +211,6 @@ class SynchronizationTest : FunSpec({
         }
 
         context("Salary system") {
-            test("Throws exception - the, rest should still sync") {
-                val synchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
-                synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
-                salarySystemRepository.addShiftsPreRunner { if (it == year2024Week15) throw RuntimeException("Week 15 must fail") }
-
-                val errors = weekPlanService.synchronize(year2024Week13..year2024Week16)
-                    .shouldBeLeft()
-
-                val updatedSynchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16)
-                updatedSynchronizationStates shouldContainExactly mapOf(
-                    year2024Week13 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                    year2024Week14 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                    year2024Week15 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
-                    year2024Week16 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                )
-                shiftRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + additionalShifts - week15Shifts)
-
-                errors shouldContainExactlyInAnyOrder listOf(
-                    SynchronizationError.CouldNotSynchronizeWeek(year2024Week15),
-                )
-            }
-
             test("Fail as domain failure") {
                 val synchronizationStates =
                     weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
@@ -261,30 +237,6 @@ class SynchronizationTest : FunSpec({
         }
 
         context("Shifts repository") {
-            test("Fail as exception") {
-                shiftRepository.addCreateShiftPreRunner { if (it == shift5) throw RuntimeException("Week 14 must fail") }
-                val synchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
-                synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
-
-                val errors = weekPlanService.synchronize(year2024Week13..year2024Week16)
-                    .shouldBeLeft()
-
-                val updatedSynchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16)
-                updatedSynchronizationStates shouldContainExactly mapOf(
-                    year2024Week13 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                    year2024Week14 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
-                    year2024Week15 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                    year2024Week16 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
-                )
-                shiftRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + additionalShifts - shift5)
-
-                errors shouldContainExactlyInAnyOrder listOf(
-                    SynchronizationError.CouldNotSynchronizeWeek(year2024Week14),
-                )
-            }
-
             test("Fail as domain failure") {
                 shiftRepository.addCreateShiftErrorRunner { if (it == shift11) Unit.left() else Unit.right() }
                 val synchronizationStates =
@@ -311,8 +263,8 @@ class SynchronizationTest : FunSpec({
         }
 
         context("Synchronization repository") {
-            test("Fail as exception") {
-                weekSynchronizationRepository.addMarkSynchronizedPreRunner { if (it == year2024Week16) throw RuntimeException("Week 16 cannot synchronize") }
+            test("Fail as domain failure") {
+                weekSynchronizationRepository.addMarkSynchronizedPreRunners { if (it == year2024Week16) WeekSynchronizationRepository.CannotChangeSyncronizationState(year2024Week13).left() else Unit.right() }
                 val synchronizationStates =
                     weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
                 synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
@@ -337,9 +289,9 @@ class SynchronizationTest : FunSpec({
         }
 
         test("Multiple errors in combination") {
-            weekSynchronizationRepository.addMarkSynchronizedPreRunner { if (it == year2024Week14) throw RuntimeException("Week 13 cannot synchronize") }
+            weekSynchronizationRepository.addMarkSynchronizedPreRunners { if (it == year2024Week14) WeekSynchronizationRepository.CannotChangeSyncronizationState(year2024Week13).left() else Unit.right() }
             shiftRepository.addCreateShiftErrorRunner { if (it == shift1) Unit.left() else Unit.right() }
-            salarySystemRepository.addShiftsPreRunner { if (it == year2024Week15) throw RuntimeException("Week 15 must fail") }
+            salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week15) ShiftsError.NotAuthorized.left() else Unit.right() }
             val synchronizationStates =
                 weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
             synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
