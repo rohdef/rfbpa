@@ -19,11 +19,11 @@ import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
-private fun interface ShiftBuilderOnDay {
+internal fun interface ShiftBuilderOnDay {
     fun start(hours: Int, minutes: Int): ShiftBuilderAtStart
 }
 
-private fun interface ShiftBuilderAtStart {
+internal fun interface ShiftBuilderAtStart {
     fun end(hours: Int, minutes: Int): Shift
 }
 
@@ -50,24 +50,23 @@ class SynchronizationTest : FunSpec({
         }
     }
 
-    val year2024Week13 = YearWeek(2024, 13)
-
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = TestWeekSynchronizationRepository()
     val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
-    val shift1 = year2024Week13.shift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
-    val shift2 = year2024Week13.shift(DayOfWeek.WEDNESDAY).start(17, 30).end(21, 30)
-    val shift3 = year2024Week13.shift(DayOfWeek.THURSDAY).start(9, 45).end(15, 15)
+    val year2024Week13 = YearWeek(2024, 13)
+
+    val week13Shift1 = year2024Week13.shift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
+    val week13Shift2 = year2024Week13.shift(DayOfWeek.WEDNESDAY).start(17, 30).end(21, 30)
+    val week13Shift3 = year2024Week13.shift(DayOfWeek.THURSDAY).start(9, 45).end(15, 15)
     val week13Shifts = listOf(
-        shift1,
-        shift2,
-        shift3,
+        week13Shift1,
+        week13Shift2,
+        week13Shift3,
     )
 
     val shiftNotInSystem = year2024Week13.shift(DayOfWeek.SATURDAY).start(8, 0).end(15, 45)
-
 
     val year2024Week14 = YearWeek(2024, 14)
     val year2024Week15 = YearWeek(2024, 15)
@@ -101,9 +100,9 @@ class SynchronizationTest : FunSpec({
         salarySystemRepository.apply {
             reset()
 
-            createShift(shift1.start, shift1.end)
-            createShift(shift2.start, shift2.end)
-            createShift(shift3.start, shift3.end)
+            createShift(week13Shift1.start, week13Shift1.end)
+            createShift(week13Shift2.start, week13Shift2.end)
+            createShift(week13Shift3.start, week13Shift3.end)
         }
     }
 
@@ -290,7 +289,7 @@ class SynchronizationTest : FunSpec({
 
         test("Multiple errors in combination") {
             weekSynchronizationRepository.addMarkSynchronizedPreRunners { if (it == year2024Week14) WeekSynchronizationRepository.CannotChangeSyncronizationState(year2024Week13).left() else Unit.right() }
-            shiftRepository.addCreateShiftErrorRunner { if (it == shift1) ShiftsError.NotAuthorized.left() else Unit.right() }
+            shiftRepository.addCreateShiftErrorRunner { if (it == week13Shift1) ShiftsError.NotAuthorized.left() else Unit.right() }
             salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week15) ShiftsError.NotAuthorized.left() else Unit.right() }
             val synchronizationStates =
                 weekSynchronizationRepository.synchronizationStates(year2024Week13..year2024Week16).values
@@ -307,7 +306,7 @@ class SynchronizationTest : FunSpec({
                 year2024Week15 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
                 year2024Week16 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
             )
-            shiftRepository.shiftList shouldContainExactlyInAnyOrder ((week13Shifts - shift1) + week14Shifts + week16Shifts)
+            shiftRepository.shiftList shouldContainExactlyInAnyOrder ((week13Shifts - week13Shift1) + week14Shifts + week16Shifts)
 
             errors shouldContainExactlyInAnyOrder listOf(
                 SynchronizationError.CouldNotSynchronizeWeek(year2024Week13),

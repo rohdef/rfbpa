@@ -59,9 +59,10 @@ class WeekPlanService(
 
     }
 
-    suspend fun shifts(yearWeekInterval: YearWeekInterval) {
+    suspend fun shifts(yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<Shift>> {
         synchronize(yearWeekInterval)
 
         val shifts = shiftRepository.shifts(yearWeekInterval)
+        TODO()
     }
 }

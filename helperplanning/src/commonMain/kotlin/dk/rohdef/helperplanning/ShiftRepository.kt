@@ -1,6 +1,8 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
+import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.*
@@ -13,8 +15,8 @@ interface ShiftRepository {
         helperId: Helper.ID,
     ): Either<Unit, ShiftId>
 
-    suspend fun shifts(yearWeeks: YearWeekInterval): Either<ShiftsError, WeekPlans> = either {
-        val weeks = yearWeeks.map { shifts(it).bind() }
+    suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, WeekPlans> = either {
+        val weeks = yearWeeks.mapOrAccumulate { shifts(it).bind() }.bind()
         WeekPlans(weeks)
     }
 

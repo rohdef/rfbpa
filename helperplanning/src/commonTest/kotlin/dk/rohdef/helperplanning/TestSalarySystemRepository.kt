@@ -9,13 +9,13 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
-typealias ShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
+typealias SalaryShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
 ) : SalarySystemRepository by memoryWeekPlanRepository {
-    private val _shiftsErrorRunners = mutableListOf<ShiftsErrorRunner>()
-    fun addShiftsErrorRunner(errorRunner: ShiftsErrorRunner) {
+    private val _shiftsErrorRunners = mutableListOf<SalaryShiftsErrorRunner>()
+    fun addShiftsErrorRunner(errorRunner: SalaryShiftsErrorRunner) {
         _shiftsErrorRunners.add(errorRunner)
     }
 
