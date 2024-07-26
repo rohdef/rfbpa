@@ -88,17 +88,20 @@ class WeekPlanServiceTest : FunSpec({
         val shifts = weekPlanService.shifts(year2024Week8..year2024Week10)
             .shouldBeRight()
 
-        shifts shouldContainExactlyInAnyOrder allShiftsInSystem + shiftsNotInSystem
+        shifts.flatMap { it.allShifts } shouldContainExactlyInAnyOrder allShiftsInSystem + shiftsNotInSystem
     }
 
     test("should use shifts repository when synchronized") {
         val shifts = weekPlanService.shifts(year2024Week8..year2024Week10)
             .shouldBeRight()
 
-        shifts shouldContainExactlyInAnyOrder allShiftsInSystem
+        shifts.flatMap { it.allShifts } shouldContainExactlyInAnyOrder allShiftsInSystem
     }
 
     test("should fail when synchronization fails") {
+        weekSynchronizationRepository.markForSynchronization(year2024Week8).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(year2024Week9).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(year2024Week10).shouldBeRight()
         salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week10) ShiftsError.NotAuthorized.left() else Unit.right() }
 
         val error = weekPlanService.shifts(year2024Week8..year2024Week10)
@@ -118,10 +121,12 @@ class WeekPlanServiceTest : FunSpec({
     }
 
     test("should just failure when unable to read shifts repository") {
-        shiftRepository.addShiftsErrorRunner { if (it == year2024Week8) ShiftsError.NotAuthorized.left() else Unit.right() }
-        weekSynchronizationRepository.markSynchronized(year2024Week8).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week9).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week10).shouldBeRight()
+        shiftRepository.addShiftsErrorRunner {
+            if (it == year2024Week8)
+                ShiftsError.NotAuthorized.left()
+            else
+                Unit.right()
+        }
 
         val error = weekPlanService.shifts(year2024Week8..year2024Week10)
             .shouldBeLeft()

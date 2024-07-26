@@ -8,7 +8,6 @@ import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.alias
 import org.jetbrains.exposed.sql.innerJoin

@@ -112,7 +112,8 @@ class AxpSalarySystem(
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
 
-        val wp = WeekPlan(
+        return WeekPlan(
+            yearWeek,
             weekPlan.monday.allShifts.map { it.shift() },
             weekPlan.tuesday.allShifts.map { it.shift() },
             weekPlan.wednesday.allShifts.map { it.shift() },
@@ -120,9 +121,7 @@ class AxpSalarySystem(
             weekPlan.friday.allShifts.map { it.shift() },
             weekPlan.saturday.allShifts.map { it.shift() },
             weekPlan.sunday.allShifts.map { it.shift() },
-        )
-
-        return wp.right()
+        ).right()
     }
 
     override fun close() {

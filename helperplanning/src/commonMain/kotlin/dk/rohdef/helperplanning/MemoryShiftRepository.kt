@@ -27,6 +27,7 @@ class MemoryShiftRepository : ShiftRepository {
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
         val weekPlan = WeekPlan(
+            yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.TUESDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.WEDNESDAY },

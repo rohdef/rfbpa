@@ -14,14 +14,15 @@ class WeekPlanService(
     private val shiftRepository: ShiftRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) {
-    suspend fun synchronize(yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> = either {
-        val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
-        val weeksToSynchronize = synchronizationStates
-            .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
-            .keys
-        weeksToSynchronize.mapOrAccumulate { synchronize(it).bind() }
-            .bind()
-    }
+    suspend fun synchronize(yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> =
+        either {
+            val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
+            val weeksToSynchronize = synchronizationStates
+                .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
+                .keys
+            weeksToSynchronize.mapOrAccumulate { synchronize(it).bind() }
+                .bind()
+        }
 
     suspend fun synchronize(yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
@@ -44,11 +45,11 @@ class WeekPlanService(
         // TODO mark possibly-synced
         // TODO improve domain errors (i.e., create them)
         weekSynchronizationRepository.markForSynchronization(start.yearWeek)
-            .mapLeft {  }
+            .mapLeft { }
             .bind()
 
         val shift = salarySystem.createShift(start, end)
-        // TODO try add shift repository
+            // TODO try add shift repository
 //            .flatMap { shiftRepository.createShift(it) }
             .bind()
         shift
@@ -59,10 +60,20 @@ class WeekPlanService(
 
     }
 
-    suspend fun shifts(yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<Shift>> {
+    suspend fun shifts(yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>> = either {
         synchronize(yearWeekInterval)
+            .mapLeft {
+                it.map {
+                    when (it) {
+                        is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
+                    }
+                }.first()
+            }.bind()
 
-        val shifts = shiftRepository.shifts(yearWeekInterval)
-        TODO()
+        shiftRepository.shifts(yearWeekInterval)
+            .mapLeft {
+               WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+            }
+            .bind()
     }
 }

@@ -1,6 +1,10 @@
 package dk.rohdef.helperplanning.shifts
 
+import dk.rohdef.rfweeks.YearWeek
+
 data class WeekPlan(
+    val week: YearWeek,
+
     val monday: List<Shift>,
     val tuesday: List<Shift>,
     val wednesday: List<Shift>,
@@ -20,6 +24,5 @@ data class WeekPlan(
     )
 
     val allShifts =
-        allDays
-            .flatMap { it }
+        allDays.flatMap { it }
 }

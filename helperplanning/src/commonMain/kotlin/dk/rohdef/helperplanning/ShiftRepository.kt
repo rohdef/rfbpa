@@ -15,9 +15,8 @@ interface ShiftRepository {
         helperId: Helper.ID,
     ): Either<Unit, ShiftId>
 
-    suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, WeekPlans> = either {
-        val weeks = yearWeeks.mapOrAccumulate { shifts(it).bind() }.bind()
-        WeekPlans(weeks)
+    suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
+        yearWeeks.mapOrAccumulate { shifts(it).bind() }.bind()
     }
 
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
