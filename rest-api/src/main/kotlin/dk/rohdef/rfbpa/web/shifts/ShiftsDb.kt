@@ -1,11 +1,9 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import arrow.core.Either
-import dk.rohdef.axpclient.AxpToDomainMapper
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.DatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfweeks.YearWeek
@@ -44,18 +42,26 @@ suspend fun fet(): List<Hel> = DatabaseConnection.dbQuery {
 
 fun Route.dbShifts() {
     val weekPlansRepository: SalarySystemRepository by inject()
-    val axpToDomainMapper: AxpToDomainMapper by inject()
+    val wps: WeekPlanService by inject()
+
 
     get("/qq") {
-        val bn = axpToDomainMapper.shiftIdToAxpBooking(
-            ShiftId(
-                UUID("c2b38da7-4c58-426e-a70e-2777020317ee")
-            )
-        )
+        val sh = wps.shifts(YearWeek(2024, 28)..YearWeek(2024, 32))
 
-        when (bn) {
-            is Either.Right -> call.respond("hello: ${bn.value}")
-            is Either.Left -> call.respond("not happy")
+        when (sh) {
+            is Either.Left -> TODO()
+            is Either.Right -> {
+                val x = sh.value
+                    .flatMap { it.allShifts }
+                    .map {
+                        Shi(
+                            it.shiftId.id,
+                            it.start.localDateTime.toString(),
+                            it.end.localDateTime.toString(),
+                        )
+                    }
+                call.respond(x)
+            }
         }
     }
 
@@ -63,7 +69,7 @@ fun Route.dbShifts() {
         val s = weekPlansRepository.shifts(YearWeek(2024, 30))
             .map { it.allShifts.map { Shi.fromShift(it) } }
 
-        when(s) {
+        when (s) {
             is Either.Right -> call.respond(s.value)
             is Either.Left -> call.respond("Error: ${s.value}")
         }

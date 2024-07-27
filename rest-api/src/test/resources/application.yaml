@@ -1,0 +1,23 @@
+rfbpa:
+  environment: "test"
+
+  auth:
+    jwkEndpoint: "$RFBPA_AUTH_JWKS_ENDPOINT:http://localhost:8383/realms/rfbpa/protocol/openid-connect/certs"
+    jwtIssuer: "$RFBPA_JWT_ISSUER:http://localhost:8383/realms/rfbpa"
+    jwtRealm: "$RFBPA_JWT_REALM:rfbpa"
+
+  axp:
+    host: "$RFBPA_AXP_HOST:https://www.handicapformidlingen.axp.dk"
+    username: "dummy"
+    password: "dummy"
+
+ktor:
+  development: false
+  deployment:
+    watch:
+      - classes
+      - resources
+    port: 8080
+  application:
+    modules:
+      - dk.rohdef.rfbpa.web.MainKt.main

@@ -5,8 +5,8 @@ import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.AxpToDomainMapper
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.helperplanning.MemorySalarySystemRepository
-import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.HelperDataBaseItem
@@ -35,6 +35,7 @@ fun Application.dependencyInjection() {
     when (configuration.runtimeMode) {
         RuntimeMode.DEVELOPMENT -> log.warn { "Running in development mode" }
         RuntimeMode.PRODUCTION -> log.info { "Running in production mode" }
+        RuntimeMode.TEST -> log.info { "Running in test mode" }
     }
 
     install(Koin) {
@@ -51,6 +52,10 @@ fun Application.dependencyInjection() {
             single<AxpToDomainMapper> {
                 DatabaseAxpToDomainmapper(Clock.System)
             }
+
+            single<ShiftRepository> { MemoryShiftRepository() }
+            single<WeekSynchronizationRepository> { MemoryWeekSynchronizationRepository() }
+            single<WeekPlanService> { WeekPlanService(get(), get(), get()) }
 
             single<AxpRepository> {
                 val helpers = get<Map<String, HelperDataBaseItem>>(named("helpers"))
@@ -74,6 +79,11 @@ fun Application.dependencyInjection() {
         val web = module {
             when (configuration.runtimeMode) {
                 RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> {
+                    LoggingSalarySystemRepository(
+                        MemorySalarySystemRepository()
+                    )
+                }
+                RuntimeMode.TEST -> single<SalarySystemRepository> {
                     LoggingSalarySystemRepository(
                         MemorySalarySystemRepository()
                     )

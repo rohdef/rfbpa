@@ -2,7 +2,6 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.right
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -19,10 +18,6 @@ class MemoryShiftRepository : ShiftRepository {
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
-
-    override suspend fun bookShift(shiftId: ShiftId, helperId: Helper.ID): Either<Unit, ShiftId> {
-        TODO("not implemented")
-    }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }

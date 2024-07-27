@@ -20,6 +20,9 @@ tasks.getByName<Zip>("distZip") {
 tasks.getByName<Tar>("distTar") {
     archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}
 
 repositories {
     mavenLocal()
@@ -58,7 +61,7 @@ dependencies {
 
     implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
-    val koinVersion = "3.6.0-Beta4"
+    val koinVersion = "3.6.0-Beta5"
     implementation("io.insert-koin:koin-core:$koinVersion")
     implementation("io.insert-koin:koin-ktor:$koinVersion")
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
@@ -90,13 +93,17 @@ dependencies {
     implementation("org.flywaydb:flyway-core:10.15.0")
 
     // Test=
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-engine:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:$arrowKtVersionKotest")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-}
 
+    testImplementation("io.ktor:ktor-server-test-host")
+    testImplementation("io.insert-koin:koin-test:$koinVersion")
+}
 
 
 idea {

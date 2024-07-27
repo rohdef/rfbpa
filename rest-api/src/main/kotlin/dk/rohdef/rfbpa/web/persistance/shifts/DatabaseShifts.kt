@@ -1,10 +1,9 @@
 package dk.rohdef.rfbpa.web.persistance.shifts
 
 import arrow.core.Either
+import arrow.core.right
 import dk.rohdef.helperplanning.ShiftRepository
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
@@ -18,10 +17,6 @@ class DatabaseShifts : ShiftRepository {
         TODO()
     }
 
-    override suspend fun bookShift(shiftId: ShiftId, helperId: Helper.ID): Either<Unit, ShiftId> {
-        TODO("not implemented")
-    }
-
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         val shifts = ShiftsTable
             .innerJoin(
@@ -33,12 +28,15 @@ class DatabaseShifts : ShiftRepository {
         // TODO map selection to date types that exposed can deal with
 //            .where {  }
 //            .
-        TODO("not implemented")
+        return WeekPlan.unsafeFromList(
+            yearWeek,
+            emptyList(),
+        ).right()
     }
 
     override suspend fun createShift(
         shift: Shift,
     ): Either<ShiftsError, Shift> {
-        TODO("not implemented")
+        return shift.right()
     }
 }

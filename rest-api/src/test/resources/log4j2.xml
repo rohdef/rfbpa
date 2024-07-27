@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{}{magenta} [%20M] %style{%50C}{cyan} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%xEx}</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="dk.rohdef" additivity="false">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="org.jetbrains.exposed.sql" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="io.ktor" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="io.ktor.server.engine.ApplicationEngineEnvironmentReloading" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="io.netty" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Root level="debug">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

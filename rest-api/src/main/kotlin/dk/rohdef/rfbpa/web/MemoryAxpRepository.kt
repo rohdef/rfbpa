@@ -8,7 +8,7 @@ import dk.rohdef.helperplanning.helpers.Helper
 
 // TODO: 25/06/2024 rohdef - delete once proper database actions available
 class MemoryAxpRepository(
-    private val helpers: List<HelperDataBaseItem>,
+    helpers: List<HelperDataBaseItem>,
 ) : AxpRepository {
     private val helpersConverted = helpers.map {
         HelperIdMapping(
