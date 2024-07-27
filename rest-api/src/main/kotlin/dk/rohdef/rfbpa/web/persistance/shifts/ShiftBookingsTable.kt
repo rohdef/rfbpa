@@ -4,9 +4,11 @@ import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import org.jetbrains.exposed.sql.Table
 
 object ShiftBookingsTable : Table() {
-    val id = uuid("id")
-    val helperId = uuid("helper_id").references(HelpersTable.id)
-    val shiftId = uuid("shift_id").references(ShiftsTable.id).uniqueIndex()
+    val shiftId = uuid("shift_id")
+        .references(ShiftsTable.id)
+        .uniqueIndex()
+    val helperId = uuid("helper_id")
+        .references(HelpersTable.id)
 
-    override val primaryKey = PrimaryKey(HelpersTable.id)
+    override val primaryKey = PrimaryKey(shiftId)
 }

@@ -62,10 +62,8 @@ internal fun YearWeek.shift(dayOfWeek: DayOfWeek): ShiftBuilderOnDay {
 class DatabaseShiftsTest : FunSpec({
     val shiftRepository = DatabaseShifts()
 
-    lateinit var connection: Database
     beforeEach {
         TestDatabaseConnection.init()
-
     }
 
     afterEach {

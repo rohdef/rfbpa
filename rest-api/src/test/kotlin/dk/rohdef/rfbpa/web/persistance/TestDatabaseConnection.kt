@@ -3,6 +3,8 @@ package dk.rohdef.rfbpa.web.persistance
 import dk.rohdef.rfbpa.web.calendar.CalendarTable
 import dk.rohdef.rfbpa.web.persistance.axp.AxpBookingToShift
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
+import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
+import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -20,6 +22,8 @@ object TestDatabaseConnection {
             SchemaUtils.create(AxpBookingToShift)
             SchemaUtils.create(CalendarTable)
             SchemaUtils.create(HelpersTable)
+            SchemaUtils.create(ShiftsTable)
+            SchemaUtils.create(ShiftBookingsTable)
         }
     }
 
