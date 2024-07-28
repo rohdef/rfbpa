@@ -1,6 +1,0 @@
-runtimeMode: production
-client:
-  axp:
-    url: www.handicapformidlingen.axp.dk
-    username:
-    password:
