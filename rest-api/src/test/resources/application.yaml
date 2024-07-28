@@ -20,4 +20,6 @@ ktor:
     port: 8080
   application:
     modules:
-      - dk.rohdef.rfbpa.web.MainKt.main
+      - dk.rohdef.rfbpa.web.modules.SecurityKt.security
+      - dk.rohdef.rfbpa.web.modules.SerializationKt.serialization
+      - dk.rohdef.rfbpa.web.modules.RoutesKt.routes

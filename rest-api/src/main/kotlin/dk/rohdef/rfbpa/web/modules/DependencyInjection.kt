@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa.web.plugins
+package dk.rohdef.rfbpa.web.modules
 
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpSalarySystem
@@ -39,28 +39,12 @@ fun Application.dependencyInjection() {
     }
 
     install(Koin) {
-        // configuration
         val config = module {
             single<RfBpaConfig> { configuration }
 
             single<Map<String, HelperDataBaseItem>>(named("helpers")) {
-                val helpers = Paths.get("helpers.yaml")
-                    .readText()
+                val helpers = Paths.get("helpers.yaml").readText()
                 Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(helpers)
-            }
-
-            single<AxpToDomainMapper> {
-                DatabaseAxpToDomainmapper(Clock.System)
-            }
-
-            single<ShiftRepository> { MemoryShiftRepository() }
-            single<WeekSynchronizationRepository> { MemoryWeekSynchronizationRepository() }
-            single<WeekPlanService> { WeekPlanService(get(), get(), get()) }
-
-            single<AxpRepository> {
-                val helpers = get<Map<String, HelperDataBaseItem>>(named("helpers"))
-                    .map { it.value }
-                MemoryAxpRepository(helpers)
             }
 
             single<AxpConfiguration> {
@@ -72,6 +56,22 @@ fun Application.dependencyInjection() {
                     config.axp.username,
                     config.axp.password,
                 )
+            }
+
+            single<Clock> { Clock.System }
+
+            singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
+
+            singleOf(::AxpSalarySystem) bind SalarySystemRepository::class
+            singleOf(::MemoryShiftRepository) bind ShiftRepository::class
+            singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
+            singleOf(::WeekPlanService) bind WeekPlanService::class
+
+            single<AxpRepository> {
+                val helpers = Paths.get("helpers.yaml").readText()
+                    .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
+                    .map { it.value }
+                MemoryAxpRepository(helpers)
             }
         }
 

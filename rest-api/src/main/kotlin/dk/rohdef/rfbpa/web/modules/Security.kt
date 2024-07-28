@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa.web.plugins
+package dk.rohdef.rfbpa.web.modules
 
 import com.auth0.jwk.JwkProviderBuilder
 import dk.rohdef.rfbpa.configuration.RfBpaConfig

@@ -1,57 +1,107 @@
 package dk.rohdef.rfbpa.web.shifts
 
-import arrow.core.Either
-import arrow.core.NonEmptyList
-import dk.rohdef.helperplanning.ShiftRepository
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
-import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekInterval
+import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.AxpToDomainMapper
+import dk.rohdef.axpclient.configuration.AxpConfiguration
+import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.rfbpa.configuration.Axp
+import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.rfbpa.configuration.RuntimeMode
+import dk.rohdef.rfbpa.web.HelperDataBaseItem
+import dk.rohdef.rfbpa.web.MemoryAxpRepository
+import dk.rohdef.rfbpa.web.configuration.Auth
+import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
+import java.net.URL
 
 class ShiftsDbKtTest : FunSpec({
     // TODO: 26/07/2024 rohdef - change to call actual shifts endpoint
     val url = "/qq"
 
-    fun FunSpec.restTest(name: String, block: suspend ApplicationTestBuilder.()->Unit) {
+    fun FunSpec.restTest(name: String, block: suspend ApplicationTestBuilder.(client: HttpClient)->Unit) {
         test(name) {
-            testApplication(block)
+            testApplication {
+                val client = createClient {
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                }
+
+                environment {
+                    developmentMode = false
+                }
+
+                block(client)
+            }
         }
     }
+
     fun FunSpec.xrestTest(name: String, block: suspend ApplicationTestBuilder.()->Unit) {
-        xtest(name) {
-            testApplication(block)
-        }
+        xtest(name) {}
     }
 
     beforeEach {
+        val configuration = RfBpaConfig(
+            Axp("", "", ""),
+            Auth(
+                URL("http://localhost:1234/test"),
+                "http://localhost:1234/test"
+            ),
+            RuntimeMode.TEST,
+        )
+
         startKoin {
-            module {
-                single< ShiftRepository> {
-                    object : ShiftRepository {
-                        override suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> {
-                            TODO("Test override")
-                        }
+            val config = module {
+                single<RfBpaConfig> { configuration }
 
-                        override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
-                            TODO("Test override")
-                        }
+                single<AxpConfiguration> {
+                    val config: RfBpaConfig = get()
 
-                        override suspend fun createShift(shift: Shift): Either<ShiftsError, Shift> {
-                            TODO("Test override")
-                        }
-                    } }
+                    AxpConfiguration(
+                        TimeZone.of("Europe/Copenhagen"),
+                        config.axp.host,
+                        config.axp.username,
+                        config.axp.password,
+                    )
+                }
+
+                single<Clock> { Clock.System }
+
+                singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
+
+                singleOf(::MemoryShiftRepository) bind ShiftRepository::class
+                singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
+                singleOf(::WeekPlanService) bind WeekPlanService::class
+
+                single<AxpRepository> {
+                    val helpers = listOf(HelperDataBaseItem("x", "y", UUID.generateUUID()))
+                    MemoryAxpRepository(helpers)
+                }
+                singleOf(::MemorySalarySystemRepository) bind SalarySystemRepository::class
             }
+
+            modules(
+                config,
+            )
         }
     }
 
@@ -59,10 +109,7 @@ class ShiftsDbKtTest : FunSpec({
         stopKoin()
     }
 
-    restTest("No shifts gives an empty list") {
-        // TODO probably do nothing
-        // query empty week
-
+    restTest("No shifts gives an empty list") { client ->
         val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.OK
@@ -70,7 +117,7 @@ class ShiftsDbKtTest : FunSpec({
         weekPlans.shouldBeEmpty()
     }
 
-    restTest("No shifts gives an empty list") {
+    restTest("No shifts gives an empty list") { client ->
         // TODO add items to system - maybe lift to all tests
         // query multiple weeks
 

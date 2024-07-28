@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa.web.plugins
+package dk.rohdef.rfbpa.web.modules
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

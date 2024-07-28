@@ -79,6 +79,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty")
 
     implementation("io.ktor:ktor-server-content-negotiation")
+    implementation("io.ktor:ktor-client-content-negotiation")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
 
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
@@ -92,7 +93,7 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("org.flywaydb:flyway-core:10.15.0")
 
-    // Test=
+    // Test
     testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
 
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")

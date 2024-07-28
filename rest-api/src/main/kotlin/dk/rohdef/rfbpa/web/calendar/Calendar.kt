@@ -1,7 +1,6 @@
 package dk.rohdef.rfbpa.web.calendar
 
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import dk.rohdef.rfbpa.web.HelperDataBaseItem
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -14,13 +13,11 @@ import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.FluentCalendar
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.util.RandomUidGenerator
-import org.koin.core.qualifier.named
 import org.koin.ktor.ext.inject
 
 private val log = KotlinLogging.logger {}
 fun Route.calendar() {
     val config: RfBpaConfig by inject()
-    val helpers: Map<String, HelperDataBaseItem> by inject(named("helpers"))
 
     get("/calendar") {
         val principal = call.principal<JWTPrincipal>()
@@ -31,7 +28,6 @@ fun Route.calendar() {
         log.info { "${call.request.queryParameters["key"]}" }
         log.info { "${username}" }
         log.info { "${expiresAt}" }
-        log.info { "${helpers}" }
 
         val calendar = Calendar()
             .withProdId("-//Rohde Fischer//RF-BPA//DA")
