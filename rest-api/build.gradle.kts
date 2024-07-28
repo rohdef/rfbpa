@@ -84,7 +84,7 @@ dependencies {
 
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
-    val exposed_version = "0.51.1"
+    val exposed_version = "0.52.0"
     val h2_version = "2.2.224"
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")

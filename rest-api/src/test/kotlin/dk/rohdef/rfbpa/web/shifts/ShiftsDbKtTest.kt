@@ -2,7 +2,6 @@ package dk.rohdef.rfbpa.web.shifts
 
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpToDomainMapper
-import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.configuration.Axp
@@ -10,7 +9,10 @@ import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.MemoryAxpRepository
+import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.configuration.Auth
+import dk.rohdef.rfbpa.web.modules.configuration
+import dk.rohdef.rfbpa.web.modules.repositories
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -23,7 +25,6 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 import org.koin.core.context.startKoin
@@ -59,48 +60,28 @@ class ShiftsDbKtTest : FunSpec({
         xtest(name) {}
     }
 
+    val shiftRepository = MemoryShiftRepository()
+    val salarySystem = MemorySalarySystemRepository()
+    val synchronization = MemoryWeekSynchronizationRepository()
+
     beforeEach {
-        val configuration = RfBpaConfig(
-            Axp("", "", ""),
-            Auth(
-                URL("http://localhost:1234/test"),
-                "http://localhost:1234/test"
-            ),
-            RuntimeMode.TEST,
-        )
-
         startKoin {
-            val config = module {
-                single<RfBpaConfig> { configuration }
-
-                single<AxpConfiguration> {
-                    val config: RfBpaConfig = get()
-
-                    AxpConfiguration(
-                        TimeZone.of("Europe/Copenhagen"),
-                        config.axp.host,
-                        config.axp.username,
-                        config.axp.password,
-                    )
-                }
-
-                single<Clock> { Clock.System }
-
+            val repositories = module {
                 singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
-
-                singleOf(::MemoryShiftRepository) bind ShiftRepository::class
-                singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
-                singleOf(::WeekPlanService) bind WeekPlanService::class
-
+                single<ShiftRepository> { shiftRepository }
+                single<WeekSynchronizationRepository> { synchronization }
                 single<AxpRepository> {
                     val helpers = listOf(HelperDataBaseItem("x", "y", UUID.generateUUID()))
                     MemoryAxpRepository(helpers)
                 }
-                singleOf(::MemorySalarySystemRepository) bind SalarySystemRepository::class
+                single<SalarySystemRepository> { salarySystem }
             }
 
             modules(
-                config,
+                module { single<Clock> { Clock.System } },
+                configuration(TestConfiguration.default),
+                repositories,
+                module { singleOf(::WeekPlanService) bind WeekPlanService::class },
             )
         }
     }
