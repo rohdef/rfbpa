@@ -19,6 +19,10 @@ data class YearWeekDayAtTime(
 
     val localDateTime = date.atTime(time)
 
+    override fun toString(): String {
+        return "$year-W${week.toString().padStart(2, '0')}-${dayOfWeek.value}T$time"
+    }
+
     companion object {
         fun parseUnsafe(text: String): YearWeekDayAtTime {
             val parsed = parse(text)

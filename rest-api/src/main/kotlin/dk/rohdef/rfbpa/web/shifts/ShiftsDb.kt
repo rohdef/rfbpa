@@ -56,8 +56,8 @@ fun Route.dbShifts() {
                     .map {
                         Shi(
                             it.shiftId.id,
-                            it.start.localDateTime.toString(),
-                            it.end.localDateTime.toString(),
+                            it.start.toString(),
+                            it.end.toString(),
                         )
                     }
                 call.respond(x)

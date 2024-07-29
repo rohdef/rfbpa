@@ -19,4 +19,20 @@ class YearWeekDayAtTimeTest : FunSpec({
             yearWeekDayAtTime.time.minute shouldBe 53
         }
     }
+
+    test("Formatting") {
+        val text1 = "1914-W21-1T04:11"
+        val parsed1 = YearWeekDayAtTime.parse(text1).shouldBeRight()
+
+        val toString1 = parsed1.toString()
+
+        toString1 shouldBe text1
+
+        val text2 = "2018-W02-6T11:53"
+        val parsed2 = YearWeekDayAtTime.parse(text2).shouldBeRight()
+
+        val toString2 = parsed2.toString()
+
+        toString2 shouldBe text2
+    }
 })

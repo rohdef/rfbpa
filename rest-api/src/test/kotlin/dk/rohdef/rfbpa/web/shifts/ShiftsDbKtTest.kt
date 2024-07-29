@@ -2,18 +2,15 @@ package dk.rohdef.rfbpa.web.shifts
 
 import dk.rohdef.axpclient.AxpRepository
 import dk.rohdef.axpclient.AxpToDomainMapper
-import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.ShiftRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.shifts.WeekPlanService
-import dk.rohdef.rfbpa.configuration.Axp
-import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import dk.rohdef.rfbpa.configuration.RuntimeMode
-import dk.rohdef.rfbpa.web.HelperDataBaseItem
-import dk.rohdef.rfbpa.web.MemoryAxpRepository
-import dk.rohdef.rfbpa.web.TestConfiguration
-import dk.rohdef.rfbpa.web.configuration.Auth
+import dk.rohdef.rfbpa.web.*
 import dk.rohdef.rfbpa.web.modules.configuration
-import dk.rohdef.rfbpa.web.modules.repositories
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
+import dk.rohdef.rfweeks.YearWeekDayAtTime
+import generateTestShiftId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
@@ -32,7 +29,6 @@ import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import java.net.URL
 
 class ShiftsDbKtTest : FunSpec({
     // TODO: 26/07/2024 rohdef - change to call actual shifts endpoint
@@ -60,11 +56,15 @@ class ShiftsDbKtTest : FunSpec({
         xtest(name) {}
     }
 
-    val shiftRepository = MemoryShiftRepository()
-    val salarySystem = MemorySalarySystemRepository()
-    val synchronization = MemoryWeekSynchronizationRepository()
+    val shiftRepository = TestShiftRespository()
+    val salarySystem = TestSalarySystemRepository()
+    val synchronization = TestWeekSynchronizationRepository()
 
     beforeEach {
+        shiftRepository.reset()
+        salarySystem.reset()
+        synchronization.reset()
+
         startKoin {
             val repositories = module {
                 singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
@@ -101,13 +101,23 @@ class ShiftsDbKtTest : FunSpec({
     restTest("No shifts gives an empty list") { client ->
         // TODO add items to system - maybe lift to all tests
         // query multiple weeks
+        val start = YearWeekDayAtTime.parseUnsafe("2024-W29-3T11:30")
+        val end = YearWeekDayAtTime.parseUnsafe("2024-W29-3T16:30")
+        salarySystem.createShift(
+            start,
+            end,
+        )
 
         val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.OK
-        val weekPlans: List<String> = response.body()
+        val weekPlans: List<Shi> = response.body()
         weekPlans shouldBe listOf(
-            "dummy for now",
+            Shi(
+                generateTestShiftId(start, end).id,
+                "2024-W29-3T11:30",
+                "2024-W29-3T16:30",
+            ),
         )
     }
 

@@ -14,7 +14,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         _shifts.clear()
     }
 
-    internal val _shifts = mutableMapOf<ShiftId, Shift>()
+    val _shifts = mutableMapOf<ShiftId, Shift>()
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
