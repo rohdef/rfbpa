@@ -15,6 +15,10 @@ data class YearWeekInterval(
             endInclusive,
         )
 
+    override fun toString(): String {
+        return "${start}--${endInclusive}"
+    }
+
     companion object {
         private const val solidusSeparator = "/"
         private const val hyphenSeparator = "--"

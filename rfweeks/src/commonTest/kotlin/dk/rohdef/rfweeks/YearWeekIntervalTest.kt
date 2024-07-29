@@ -25,14 +25,23 @@ class YearWeekIntervalTest : FunSpec({
             yearWeekInterval.start shouldBe YearWeek(2011, 3)
             yearWeekInterval.endInclusive shouldBe YearWeek(2019, 9)
         }
+
+        test("using hyphen seperator") {
+            val text = "2024-W19--2024-W41"
+            val parsed = YearWeekInterval.parse(text)
+
+            val yearWeekInterval = parsed.shouldBeRight()
+            yearWeekInterval.start shouldBe YearWeek(2024, 19)
+            yearWeekInterval.endInclusive shouldBe YearWeek(2024, 41)
+        }
     }
 
-    context("Invalid separators") {
-        xtest("separator not found") {}
+    context("Formatting as string") {
+        test("uses hyphen separator") {
+            val yearWeekInterval = YearWeek(2024, 1)..YearWeek(2024, 5)
 
-        xtest("too many separators found") {}
-
-        xtest("mixed usage of separators (too many separators variation)") {}
+            yearWeekInterval.toString() shouldBe "2024-W01--2024-W05"
+        }
     }
 
     xtest("start must be before end") {}
@@ -96,6 +105,14 @@ class YearWeekIntervalTest : FunSpec({
                         ),
                     ),
                 )
+            }
+
+            context("Invalid separators") {
+                xtest("separator not found") {}
+
+                xtest("too many separators found") {}
+
+                xtest("mixed usage of separators (too many separators variation)") {}
             }
         }
     }

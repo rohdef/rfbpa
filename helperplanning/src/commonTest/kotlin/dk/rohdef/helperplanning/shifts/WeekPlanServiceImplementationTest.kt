@@ -15,7 +15,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
-class WeekPlanServiceTest : FunSpec({
+class WeekPlanServiceImplementationTest : FunSpec({
     fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
         return Shift(
             HelperBooking.NoBooking,
@@ -41,7 +41,7 @@ class WeekPlanServiceTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = TestWeekSynchronizationRepository()
-    val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val weekPlanService = WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
     val year2024Week8 = YearWeek(2024, 8)
     val year2024Week9 = YearWeek(2024, 9)

@@ -57,6 +57,10 @@ data class YearWeek(
         return yearComparison
     }
 
+    override fun toString(): String {
+        return "${year}-W${week.toString().padStart(2, '0')}"
+    }
+
     /**
      * Gives the next year/week combination.
      *

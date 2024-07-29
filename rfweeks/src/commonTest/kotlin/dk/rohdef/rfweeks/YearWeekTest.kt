@@ -333,6 +333,14 @@ class YearWeekTest : FunSpec({
         }
     }
 
+    context("Formatting as string") {
+        test("uses hyphen separator") {
+            val yearWeekInterval = YearWeek(1812, 6)
+
+            yearWeekInterval.toString() shouldBe "1812-W06"
+        }
+    }
+
     test("at day of week") {
         val yearWeek = YearWeek(1992, 7)
         val yearWeekDay = yearWeek.atDayOfWeek(DayOfWeek.SUNDAY)
