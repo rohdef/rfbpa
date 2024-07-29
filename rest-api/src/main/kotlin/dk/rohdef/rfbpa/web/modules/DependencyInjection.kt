@@ -6,6 +6,7 @@ import dk.rohdef.axpclient.AxpToDomainMapper
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.HelperDataBaseItem
@@ -70,7 +71,7 @@ fun Application.dependencyInjection() {
             module { single<Clock> { Clock.System } },
             configuration(rfBpaConfig),
             repositories(rfBpaConfig),
-            module { singleOf(::WeekPlanService) bind WeekPlanService::class },
+            module { singleOf(::WeekPlanServiceImplementation) bind WeekPlanService::class },
         )
     }
 }

@@ -7,6 +7,7 @@ import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.DatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfweeks.YearWeek
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -40,12 +41,17 @@ suspend fun fet(): List<Hel> = DatabaseConnection.dbQuery {
         }
 }
 
+private val log = KotlinLogging.logger {}
 fun Route.dbShifts() {
     val weekPlansRepository: SalarySystemRepository by inject()
     val wps: WeekPlanService by inject()
 
 
-    get("/qq") {
+    get("/shifts/{yearWeekInterval}") {
+        log.info { "Initial calls of shifts" }
+
+        val ywi = call.parameters["yearWeekInterval"]!!
+        log.info { ywi }
         val sh = wps.shifts(YearWeek(2024, 28)..YearWeek(2024, 32))
 
         when (sh) {

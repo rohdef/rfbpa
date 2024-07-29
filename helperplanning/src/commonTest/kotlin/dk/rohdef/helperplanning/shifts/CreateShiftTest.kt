@@ -15,7 +15,7 @@ class CreateShiftTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = MemoryWeekSynchronizationRepository()
-    val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val weekPlanService = WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
     val shift1Start = YearWeekDayAtTime.parseUnsafe("2024-W13-1T13:30")
     val shift1End = YearWeekDayAtTime.parseUnsafe("2024-W13-1T14:30")

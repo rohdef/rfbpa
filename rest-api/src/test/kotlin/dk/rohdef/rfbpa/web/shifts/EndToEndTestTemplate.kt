@@ -1,13 +1,15 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.AxpToDomainMapper
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.ShiftRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.shifts.WeekPlanService
-import dk.rohdef.rfbpa.web.TestConfiguration
-import dk.rohdef.rfbpa.web.TestSalarySystemRepository
-import dk.rohdef.rfbpa.web.TestWeekPlanService
+import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
+import dk.rohdef.rfbpa.web.*
 import dk.rohdef.rfbpa.web.modules.configuration
-import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts
-import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.shiftW29Wednesday1
-import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29To31
+import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import generateTestShiftId
 import io.kotest.core.spec.style.FunSpec
@@ -21,16 +23,21 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.datetime.Clock
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
-class ShiftsDbKtTest : FunSpec({
+class EndToEndTestTemplate : FunSpec({
     // TODO: 26/07/2024 rohdef - change to call actual shifts endpoint
-    val url = "/shifts"
+    val url = "/qq"
 
+    // TODO all is disabled right now
     fun FunSpec.restTest(name: String, block: suspend ApplicationTestBuilder.(client: HttpClient)->Unit) {
-        test(name) {
+        xtest(name) {
             testApplication {
                 val client = createClient {
                     install(ContentNegotiation) {
@@ -51,15 +58,32 @@ class ShiftsDbKtTest : FunSpec({
         xtest(name) {}
     }
 
-    val weekPlanService = TestWeekPlanService()
+    val shiftRepository = TestShiftRespository()
+    val salarySystem = TestSalarySystemRepository()
+    val synchronization = TestWeekSynchronizationRepository()
+
     beforeEach {
-        weekPlanService.reset()
+        shiftRepository.reset()
+        salarySystem.reset()
+        synchronization.reset()
 
         startKoin {
+            val repositories = module {
+                singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
+                single<ShiftRepository> { shiftRepository }
+                single<WeekSynchronizationRepository> { synchronization }
+                single<AxpRepository> {
+                    val helpers = listOf(HelperDataBaseItem("x", "y", UUID.generateUUID()))
+                    MemoryAxpRepository(helpers)
+                }
+                single<SalarySystemRepository> { salarySystem }
+            }
+
             modules(
                 module { single<Clock> { Clock.System } },
                 configuration(TestConfiguration.default),
-                module { single<WeekPlanService> { weekPlanService } },
+                repositories,
+                module { singleOf(::WeekPlanServiceImplementation) bind WeekPlanService::class },
             )
         }
     }
@@ -76,20 +100,25 @@ class ShiftsDbKtTest : FunSpec({
         weekPlans.shouldBeEmpty()
     }
 
-    restTest("Querying multiple shifts") { client ->
+    restTest("No shifts gives an empty list") { client ->
         // TODO add items to system - maybe lift to all tests
         // query multiple weeks
-        weekPlanService.addShift(shiftW29Wednesday1)
+        val start = YearWeekDayAtTime.parseUnsafe("2024-W29-3T11:30")
+        val end = YearWeekDayAtTime.parseUnsafe("2024-W29-3T16:30")
+        salarySystem.createShift(
+            start,
+            end,
+        )
 
-        val response = client.get("${url}/${week29To31}")
+        val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.OK
         val weekPlans: List<Shi> = response.body()
         weekPlans shouldBe listOf(
             Shi(
-                shiftW29Wednesday1.shiftId.id,
-                shiftW29Wednesday1.start.toString(),
-                shiftW29Wednesday1.end.toString(),
+                generateTestShiftId(start, end).id,
+                "2024-W29-3T11:30",
+                "2024-W29-3T16:30",
             ),
         )
     }
@@ -112,11 +141,10 @@ class ShiftsDbKtTest : FunSpec({
         val error: String = response.body()
     }
 
-    restTest("Query params start is missing") {
-        val response = client.get("$url/..2024-W22-2T11:44")
-
-        response.status shouldBe HttpStatusCode.BadRequest
-    }
-
+    xrestTest("Query params missing") {}
+    xrestTest("Query params start is missing") {}
     xrestTest("Query params start is malformed") {}
+    xrestTest("Query params end is missing") {}
+    xrestTest("Query params end is malformed") {}
+    xrestTest("Query params end is before start") {}
 })

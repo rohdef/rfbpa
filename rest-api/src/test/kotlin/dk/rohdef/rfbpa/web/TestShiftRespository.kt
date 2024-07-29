@@ -40,6 +40,10 @@ class TestShiftRespository(
     internal val shiftList: List<Shift>
         get() = shifts.values.toList()
 
+    suspend fun addShift(shift: Shift) {
+        memoryShiftRepository.createShift(shift)
+    }
+
     override suspend fun createShift(shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
         memoryShiftRepository.createShift(shift).bind()

@@ -53,7 +53,7 @@ class SynchronizationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = TestWeekSynchronizationRepository()
-    val weekPlanService = WeekPlanService(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val weekPlanService = WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
     val year2024Week13 = YearWeek(2024, 13)
 
