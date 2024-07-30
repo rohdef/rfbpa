@@ -1,26 +1,25 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.TestWeekPlanService
 import dk.rohdef.rfbpa.web.modules.configuration
-import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.shiftW29Wednesday1
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29To31
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week30
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week31
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.kotest.core.spec.style.scopes.FunSpecRootScope
-import io.kotest.core.test.TestScope
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
@@ -87,12 +86,26 @@ class ShiftsDbKtTest : FunSpec({
     }
 
     context("Reading shifts") {
-        restTest("No shifts gives an empty list") { client ->
+        restTest("Requesting single week") { client ->
+            val response = client.get("$url/$week29--$week29")
+
+            response.status shouldBe HttpStatusCode.OK
+            val weekPlans: List<WeekPlanOut> = response.body()
+            weekPlans shouldBe listOf(
+                WeekPlanOut.from(WeekPlan.emptyPlan(week29)),
+            )
+        }
+
+        restTest("No shifts gives an empty week plans") { client ->
             val response = client.get(urlWeek29To31)
 
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<WeekPlanOut> = response.body()
-            weekPlans.shouldBeEmpty()
+            weekPlans shouldBe listOf(
+                WeekPlanOut.from(WeekPlan.emptyPlan(week29)),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week30)),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week31)),
+            )
         }
 
         restTest("Querying multiple shifts") { client ->

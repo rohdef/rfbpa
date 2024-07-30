@@ -51,22 +51,18 @@ fun Route.dbShifts() {
                 }
                 .bind()
 
-            val shifts = weekPlanService.shifts(yearWeekInterval)
+            val weekPlans = weekPlanService.shifts(yearWeekInterval)
                 .mapLeft {
                     when (it) {
-                        WeekPlanServiceError.AccessDeniedToSalarySystem -> TODO()
-                        WeekPlanServiceError.CannotCommunicateWithShiftsRepository -> TODO()
+                        WeekPlanServiceError.AccessDeniedToSalarySystem ->
+                            ApiError.forbidden("Access to salary system denied, please check configuration of credentials")
+                        WeekPlanServiceError.CannotCommunicateWithShiftsRepository ->
+                            ApiError.internalServerError("Shifts repository unreachable right now, try again later")
                     }
                 }
                 .bind()
-                .flatMap { it.allShifts }
-            shifts.map {
-                Shi(
-                    it.shiftId.id,
-                    it.start.toString(),
-                    it.end.toString(),
-                )
-            }
+
+            weekPlans.map { WeekPlanOut.from(it) }
         }
     }
 }
@@ -77,6 +73,8 @@ data class ApiError(
 ) {
     companion object {
         fun badRequest(message: String) = ApiError(HttpStatusCode.BadRequest, message)
+        fun internalServerError(message: String) = ApiError(HttpStatusCode.InternalServerError, message)
+        fun forbidden(message: String) = ApiError(HttpStatusCode.Forbidden, message)
     }
 }
 
