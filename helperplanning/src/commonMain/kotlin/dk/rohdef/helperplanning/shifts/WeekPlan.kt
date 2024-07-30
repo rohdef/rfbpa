@@ -1,6 +1,5 @@
 package dk.rohdef.helperplanning.shifts
 
-import arrow.core.NonEmptyList
 import dk.rohdef.rfweeks.YearWeek
 import kotlinx.datetime.DayOfWeek
 

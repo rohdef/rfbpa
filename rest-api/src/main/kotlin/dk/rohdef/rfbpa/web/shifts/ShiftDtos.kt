@@ -32,7 +32,7 @@ sealed interface HelperBookingOut {
 
 @Serializable
 data class WeekPlanOut(
-    val week: String,
+    val week: YearWeek,
 
     val monday: List<ShiftOut>,
     val tuesday: List<ShiftOut>,
@@ -45,7 +45,7 @@ data class WeekPlanOut(
     companion object {
         fun from(weekPlan: WeekPlan): WeekPlanOut = with(weekPlan) {
             WeekPlanOut(
-                week.toString(),
+                week,
                 monday.map { ShiftOut.from(it) },
                 tuesday.map { ShiftOut.from(it) },
                 wednesday.map { ShiftOut.from(it) },

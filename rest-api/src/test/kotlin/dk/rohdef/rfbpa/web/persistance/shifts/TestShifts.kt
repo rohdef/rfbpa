@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
@@ -59,5 +60,49 @@ internal object TestShifts {
 
     val week29To31 = week29..week31
 
-    val shiftW29Wednesday1: Shift = week29.shift(DayOfWeek.WEDNESDAY).start(11, 0).end(16, 30)
+    val shiftW29Wednesday1 = week29.shift(DayOfWeek.WEDNESDAY).start(11, 0).end(16, 30)
+    val shiftW29Friday1 = week29.shift(DayOfWeek.FRIDAY).start(9, 45).end(17, 0)
+    val weekPlanWeek29 = WeekPlan(
+        week29,
+
+        listOf(),
+        listOf(),
+        listOf(shiftW29Wednesday1),
+        listOf(),
+        listOf(shiftW29Friday1),
+        listOf(),
+        listOf(),
+    )
+
+    val shiftW30Tuesday1 = week30.shift(DayOfWeek.TUESDAY).start(7, 30).end(13, 0)
+    val shiftW30Tuesday2 = week30.shift(DayOfWeek.TUESDAY).start(18, 15).end(22, 45)
+    val shiftW30Saturday1 = week30.shift(DayOfWeek.SATURDAY).start(9, 0).end(23, 0)
+    val weekPlanWeek30 = WeekPlan(
+        week30,
+
+        listOf(),
+        listOf(
+            shiftW30Tuesday1,
+            shiftW30Tuesday2,
+        ),
+        listOf(),
+        listOf(),
+        listOf(),
+        listOf(shiftW30Saturday1),
+        listOf(),
+    )
+
+    val shiftW31Wednesday1 = week31.shift(DayOfWeek.WEDNESDAY).start(5, 45).end(21, 15)
+    val shiftW31Sunday1 = week31.shift(DayOfWeek.SUNDAY).start(5, 45).end(21, 15)
+    val weekPlanWeek31 = WeekPlan(
+        week31,
+
+        listOf(),
+        listOf(),
+        listOf(shiftW31Wednesday1),
+        listOf(),
+        listOf(),
+        listOf(),
+        listOf(shiftW31Sunday1),
+    )
 }

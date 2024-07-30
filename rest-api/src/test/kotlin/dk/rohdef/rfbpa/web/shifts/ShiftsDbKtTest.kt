@@ -5,7 +5,11 @@ import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.TestWeekPlanService
 import dk.rohdef.rfbpa.web.modules.configuration
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.shiftW29Wednesday1
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29To31
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
+import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.kotest.core.spec.style.scopes.FunSpecRootScope
@@ -87,25 +91,25 @@ class ShiftsDbKtTest : FunSpec({
             val response = client.get(urlWeek29To31)
 
             response.status shouldBe HttpStatusCode.OK
-            val weekPlans: List<String> = response.body()
+            val weekPlans: List<WeekPlanOut> = response.body()
             weekPlans.shouldBeEmpty()
         }
 
         restTest("Querying multiple shifts") { client ->
             // TODO add items to system - maybe lift to all tests
             // query multiple weeks
-            weekPlanService.addShift(shiftW29Wednesday1)
+            weekPlanWeek29.allShifts.forEach { weekPlanService.addShift(it) }
+            weekPlanWeek30.allShifts.forEach { weekPlanService.addShift(it) }
+            weekPlanWeek31.allShifts.forEach { weekPlanService.addShift(it) }
 
             val response = client.get(urlWeek29To31)
 
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<Shi> = response.body()
             weekPlans shouldBe listOf(
-                Shi(
-                    shiftW29Wednesday1.shiftId.id,
-                    shiftW29Wednesday1.start.toString(),
-                    shiftW29Wednesday1.end.toString(),
-                ),
+                WeekPlanOut.from(weekPlanWeek29),
+                WeekPlanOut.from(weekPlanWeek30),
+                WeekPlanOut.from(weekPlanWeek31),
             )
         }
     }
