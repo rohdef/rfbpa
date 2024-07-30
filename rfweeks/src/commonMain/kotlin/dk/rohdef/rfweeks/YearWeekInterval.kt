@@ -2,7 +2,9 @@ package dk.rohdef.rfweeks
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
+import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
 
 data class YearWeekInterval(
@@ -29,8 +31,8 @@ data class YearWeekInterval(
                 text.split(hyphenSeparator)
             }
 
-            if (timespecifications.size == 0) {
-            } else if (timespecifications.size >= 2) {
+            ensure(timespecifications.size != 1) { nonEmptyListOf(YearWeekIntervalParseError.NoSeparatorError(text)) }
+            if (timespecifications.size >= 2) {
             }
 
             val start = timespecifications[0]
@@ -62,8 +64,8 @@ data class YearWeekInterval(
                         }
                         .bind()
                 },
-            ) { firstWeek, lastWeek ->
-                firstWeek..lastWeek
+            ) {
+              firstWeek, lastWeek -> firstWeek..lastWeek
             }
         }
     }

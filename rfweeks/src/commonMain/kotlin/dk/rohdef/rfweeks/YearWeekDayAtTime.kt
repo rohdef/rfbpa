@@ -5,7 +5,14 @@ import arrow.core.raise.either
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
+@Serializable(with = YearWeekDayAtTime.Serializer::class)
 data class YearWeekDayAtTime(
     val yearWeekDay: YearWeekDay,
     val time: LocalTime,
@@ -48,6 +55,18 @@ data class YearWeekDayAtTime(
                 YearWeekDay.from(dateTime.date),
                 dateTime.time,
             )
+        }
+    }
+
+    object Serializer : KSerializer<YearWeekDayAtTime> {
+        override val descriptor = PrimitiveSerialDescriptor("YearWeekDayAtTime", PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder): YearWeekDayAtTime {
+            TODO("not implemented")
+        }
+
+        override fun serialize(encoder: Encoder, value: YearWeekDayAtTime) {
+            encoder.encodeString("not implemented")
         }
     }
 }

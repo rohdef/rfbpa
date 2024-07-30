@@ -1,6 +1,10 @@
 package dk.rohdef.rfweeks
 
 sealed interface YearWeekIntervalParseError {
+    data class NoSeparatorError(
+        val text: String,
+    ) : YearWeekIntervalParseError
+
     data class YearWeekComponentParseError(
         val text: String,
         val intervalPart: IntervalPart,

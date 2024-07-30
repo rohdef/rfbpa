@@ -1,8 +1,12 @@
 package dk.rohdef.rfweeks
 
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.datetime.LocalTime
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.time.DayOfWeek
 
 class YearWeekDayAtTimeTest : FunSpec({
@@ -34,5 +38,35 @@ class YearWeekDayAtTimeTest : FunSpec({
         val toString2 = parsed2.toString()
 
         toString2 shouldBe text2
+    }
+
+    context("Serialization") {
+        test("Should serialize to ISO-8601") {
+            val yearWeekDayAtTime = YearWeekDayAtTime(
+                YearWeekDay(1992, 7, DayOfWeek.SUNDAY),
+                LocalTime(12, 41),
+            )
+
+            val encodedDay = Json.encodeToString(yearWeekDayAtTime)
+
+            encodedDay shouldBe "\"1992-W07-7T12:41\""
+        }
+
+        test("Should deserialize from ISO-8601") {
+            val text = "\"1993-W30-6T08:11\""
+
+            val decoded = Json.decodeFromString<YearWeekDayAtTime>(text)
+
+            decoded shouldBe YearWeekDayAtTime(
+                YearWeekDay(1993, 30, DayOfWeek.SATURDAY),
+                LocalTime(8, 11),
+            )
+        }
+
+        test("Should fail if not ISO-8601") {
+            val text = "\"1993-W30-6\""
+
+            shouldThrow<IllegalArgumentException> { Json.decodeFromString<YearWeekDayAtTime>(text) }
+        }
     }
 })

@@ -108,7 +108,15 @@ class YearWeekIntervalTest : FunSpec({
             }
 
             context("Invalid separators") {
-                xtest("separator not found") {}
+                test("separator not found") {
+                    val text = "week8-to-week9"
+
+                    val parsed = YearWeekInterval.parse(text).shouldBeLeft()
+
+                    parsed shouldBe nonEmptyListOf(
+                        YearWeekIntervalParseError.NoSeparatorError(text)
+                    )
+                }
 
                 xtest("too many separators found") {}
 

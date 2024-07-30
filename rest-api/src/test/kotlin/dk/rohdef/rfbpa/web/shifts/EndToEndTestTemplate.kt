@@ -122,29 +122,4 @@ class EndToEndTestTemplate : FunSpec({
             ),
         )
     }
-
-    xrestTest("Authentication from salary system error should be communicated to the client") {
-        val response = client.get(url)
-
-        response.status shouldBe HttpStatusCode.Unauthorized
-        // TODO: 26/07/2024 rohdef - how do we model a decent error?
-        val error: String = response.body()
-    }
-
-    xrestTest("Sync and shift error should be communicated to the client as server failure") {
-        // TODO: 26/07/2024 rohdef - set the status for error
-
-        val response = client.get(url)
-
-        response.status shouldBe HttpStatusCode.InternalServerError
-        // TODO: 26/07/2024 rohdef - how do we model a decent error?
-        val error: String = response.body()
-    }
-
-    xrestTest("Query params missing") {}
-    xrestTest("Query params start is missing") {}
-    xrestTest("Query params start is malformed") {}
-    xrestTest("Query params end is missing") {}
-    xrestTest("Query params end is malformed") {}
-    xrestTest("Query params end is before start") {}
 })
