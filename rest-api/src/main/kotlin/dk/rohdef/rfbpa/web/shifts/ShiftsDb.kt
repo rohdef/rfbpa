@@ -1,16 +1,22 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import arrow.core.Either
+import arrow.core.raise.either
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.DatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfweeks.YearWeek
+import dk.rohdef.rfweeks.YearWeekInterval
+import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
@@ -46,27 +52,52 @@ fun Route.dbShifts() {
     val weekPlansRepository: SalarySystemRepository by inject()
     val wps: WeekPlanService by inject()
 
+    fun Route.typedGet(
+        path: String,
+        body: suspend PipelineContext<Unit, ApplicationCall>.() -> Either<ApiError, Any>,
+    ) {
+        get(path) {
+            val res = body()
 
-    get("/shifts/{yearWeekInterval}") {
-        log.info { "Initial calls of shifts" }
+            when (res) {
+                is Either.Left -> call.respond(res.value.status, res.value.message)
+                is Either.Right -> call.respond(res.value)
+            }
+        }
+    }
 
-        val ywi = call.parameters["yearWeekInterval"]!!
-        log.info { ywi }
-        val sh = wps.shifts(YearWeek(2024, 28)..YearWeek(2024, 32))
+    typedGet("/shifts/{yearWeekInterval}") {
+        either {
+            log.info { "Initial calls of shifts" }
 
-        when (sh) {
-            is Either.Left -> TODO()
-            is Either.Right -> {
-                val x = sh.value
-                    .flatMap { it.allShifts }
-                    .map {
-                        Shi(
-                            it.shiftId.id,
-                            it.start.toString(),
-                            it.end.toString(),
-                        )
+            val yearWeekInterval = call.parameters["yearWeekInterval"]!!
+                .let { YearWeekInterval.parse(it) }
+                .mapLeft { it.first() }
+                .mapLeft {
+                    when (it) {
+                        is YearWeekIntervalParseError.NoSeparatorError ->
+                            ApiError.badRequest("Could not find interval separator, please use double hyphen '--'")
+                        is YearWeekIntervalParseError.YearWeekComponentParseError ->
+                            ApiError.badRequest("Parsing of year weeks failed")
                     }
-                call.respond(x)
+                }
+                .bind()
+
+            val shifts = wps.shifts(yearWeekInterval)
+                .mapLeft {
+                    when (it) {
+                        WeekPlanServiceError.AccessDeniedToSalarySystem -> TODO()
+                        WeekPlanServiceError.CannotCommunicateWithShiftsRepository -> TODO()
+                    }
+                }
+                .bind()
+                .flatMap { it.allShifts }
+            shifts.map {
+                Shi(
+                    it.shiftId.id,
+                    it.start.toString(),
+                    it.end.toString(),
+                )
             }
         }
     }
@@ -93,7 +124,15 @@ fun Route.dbShifts() {
 
         call.respond(o)
     }
+}
 
+data class ApiError(
+    val status: HttpStatusCode,
+    val message: String,
+) {
+    companion object {
+        fun badRequest(message: String) = ApiError(HttpStatusCode.BadRequest, message)
+    }
 }
 
 @Serializable
