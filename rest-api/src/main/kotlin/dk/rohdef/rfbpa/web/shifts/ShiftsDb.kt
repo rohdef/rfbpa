@@ -77,10 +77,3 @@ data class ApiError(
         fun forbidden(message: String) = ApiError(HttpStatusCode.Forbidden, message)
     }
 }
-
-@Serializable
-data class Shi(
-    val id: UUID,
-    val start: String,
-    val end: String,
-)

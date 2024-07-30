@@ -118,7 +118,7 @@ class ShiftsDbKtTest : FunSpec({
             val response = client.get(urlWeek29To31)
 
             response.status shouldBe HttpStatusCode.OK
-            val weekPlans: List<Shi> = response.body()
+            val weekPlans: List<WeekPlanOut> = response.body()
             weekPlans shouldBe listOf(
                 WeekPlanOut.from(weekPlanWeek29),
                 WeekPlanOut.from(weekPlanWeek30),

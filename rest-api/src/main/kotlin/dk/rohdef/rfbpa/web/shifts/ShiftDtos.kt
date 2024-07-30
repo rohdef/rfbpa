@@ -4,7 +4,7 @@ import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.uuid.UUID
 
@@ -27,6 +27,8 @@ data class ShiftOut(
 
 @Serializable
 sealed interface HelperBookingOut {
+    @Serializable
+    @SerialName("NoBooking")
     object NoBooking : HelperBookingOut
 }
 

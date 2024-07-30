@@ -11,7 +11,6 @@ import dk.rohdef.rfbpa.web.*
 import dk.rohdef.rfbpa.web.modules.configuration
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import generateTestShiftId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
@@ -36,7 +35,7 @@ class EndToEndTestTemplate : FunSpec({
     val url = "/qq"
 
     // TODO all is disabled right now
-    fun FunSpec.restTest(name: String, block: suspend ApplicationTestBuilder.(client: HttpClient)->Unit) {
+    fun FunSpec.restTest(name: String, block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit) {
         xtest(name) {
             testApplication {
                 val client = createClient {
@@ -54,7 +53,7 @@ class EndToEndTestTemplate : FunSpec({
         }
     }
 
-    fun FunSpec.xrestTest(name: String, block: suspend ApplicationTestBuilder.()->Unit) {
+    fun FunSpec.xrestTest(name: String, block: suspend ApplicationTestBuilder.() -> Unit) {
         xtest(name) {}
     }
 
@@ -113,13 +112,7 @@ class EndToEndTestTemplate : FunSpec({
         val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.OK
-        val weekPlans: List<Shi> = response.body()
-        weekPlans shouldBe listOf(
-            Shi(
-                generateTestShiftId(start, end).id,
-                "2024-W29-3T11:30",
-                "2024-W29-3T16:30",
-            ),
-        )
+        val weekPlans: List<WeekPlanOut> = response.body()
+        weekPlans shouldBe listOf()
     }
 })
