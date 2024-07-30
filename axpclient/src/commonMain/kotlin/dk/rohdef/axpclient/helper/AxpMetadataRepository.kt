@@ -1,6 +1,6 @@
 package dk.rohdef.axpclient.helper
 
-import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.helperplanning.shifts.HelperBooking
 
 sealed interface AxpMetadataRepository {
@@ -10,7 +10,7 @@ sealed interface AxpMetadataRepository {
 
     object NoBooking : AxpMetadataRepository
 
-    fun toHelperBooking(helperRepository: AxpRepository): HelperBooking {
+    fun toHelperBooking(helperRepository: AxpHelperReferences): HelperBooking {
         return when(this) {
             is PermanentHelper -> HelperBooking.PermanentHelper(helperNumber.toId(helperRepository))
             is VacancyBooking -> HelperBooking.VacancyHelper

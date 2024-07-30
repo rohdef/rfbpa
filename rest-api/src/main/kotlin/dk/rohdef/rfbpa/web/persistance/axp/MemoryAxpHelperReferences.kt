@@ -1,15 +1,15 @@
-package dk.rohdef.rfbpa.web
+package dk.rohdef.rfbpa.web.persistance.axp
 
-import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.axpclient.helper.HelperIdMapping
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.helpers.Helper
 
 // TODO: 25/06/2024 rohdef - delete once proper database actions available
-class MemoryAxpRepository(
+class MemoryAxpHelperReferences(
     helpers: List<HelperDataBaseItem>,
-) : AxpRepository {
+) : AxpHelperReferences {
     private val helpersConverted = helpers.map {
         HelperIdMapping(
             Helper.ID(it.id),

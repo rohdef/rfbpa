@@ -27,7 +27,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
             TODO("Missing shift is currently not handled")
         }
         val shift = _shifts[shiftId].toOption()
-            .map { it.copy(helperId = HelperBooking.PermanentHelper(helperId)) }
+            .map { it.copy(helperBooking = HelperBooking.PermanentHelper(helperId)) }
         shift.onSome { _shifts.put(shiftId, it) }
 
         return shift.map { shiftId }

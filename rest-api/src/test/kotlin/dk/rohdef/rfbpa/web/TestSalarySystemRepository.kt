@@ -57,7 +57,7 @@ class TestSalarySystemRepository(
 
     internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
         return shiftsOnDay(yearWeekDay).values
-            .map { it.helperId }
+            .map { it.helperBooking }
     }
 
     internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {

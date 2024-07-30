@@ -54,6 +54,8 @@ internal object TestShifts {
         }
     }
 
+    fun Shift.book(helperBooking: HelperBooking): Shift = this.copy(helperBooking = helperBooking)
+
     val week29 = YearWeek(2024, 29)
     val week30 = YearWeek(2024, 30)
     val week31 = YearWeek(2024, 31)
@@ -105,4 +107,8 @@ internal object TestShifts {
         listOf(),
         listOf(shiftW31Sunday1),
     )
+
+    internal object BookedShifts {
+
+    }
 }

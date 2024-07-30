@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
 data class Shift(
-    val helperId: HelperBooking,
+    val helperBooking: HelperBooking,
     val shiftId: ShiftId,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,

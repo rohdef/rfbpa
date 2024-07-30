@@ -1,14 +1,8 @@
 package dk.rohdef.axpclient.parsing
 
-import arrow.core.Either
-import dk.rohdef.axpclient.AxpRepository
-import dk.rohdef.axpclient.AxpToDomainMapper
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.axpclient.shift.WeekPlan
 import dk.rohdef.axpclient.shift.Weekday
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 

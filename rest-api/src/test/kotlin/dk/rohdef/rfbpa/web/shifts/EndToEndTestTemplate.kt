@@ -1,7 +1,7 @@
 package dk.rohdef.rfbpa.web.shifts
 
-import dk.rohdef.axpclient.AxpRepository
-import dk.rohdef.axpclient.AxpToDomainMapper
+import dk.rohdef.axpclient.AxpHelperReferences
+import dk.rohdef.axpclient.AxpShiftReferences
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
@@ -9,7 +9,9 @@ import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.rfbpa.web.*
 import dk.rohdef.rfbpa.web.modules.configuration
-import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
+import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
+import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
+import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -68,12 +70,12 @@ class EndToEndTestTemplate : FunSpec({
 
         startKoin {
             val repositories = module {
-                singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
+                singleOf(::DatabaseAxpShiftReferences) bind AxpShiftReferences::class
                 single<ShiftRepository> { shiftRepository }
                 single<WeekSynchronizationRepository> { synchronization }
-                single<AxpRepository> {
+                single<AxpHelperReferences> {
                     val helpers = listOf(HelperDataBaseItem("x", "y", UUID.generateUUID()))
-                    MemoryAxpRepository(helpers)
+                    MemoryAxpHelperReferences(helpers)
                 }
                 single<SalarySystemRepository> { salarySystem }
             }

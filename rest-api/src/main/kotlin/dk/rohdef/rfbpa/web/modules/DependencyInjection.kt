@@ -1,18 +1,18 @@
 package dk.rohdef.rfbpa.web.modules
 
-import dk.rohdef.axpclient.AxpRepository
+import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.axpclient.AxpSalarySystem
-import dk.rohdef.axpclient.AxpToDomainMapper
+import dk.rohdef.axpclient.AxpShiftReferences
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
-import dk.rohdef.rfbpa.web.HelperDataBaseItem
+import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
-import dk.rohdef.rfbpa.web.MemoryAxpRepository
-import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpToDomainmapper
+import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
+import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import kotlinx.datetime.Clock
@@ -36,14 +36,14 @@ fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
 }
 
 fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
-    singleOf(::DatabaseAxpToDomainmapper) bind AxpToDomainMapper::class
+    singleOf(::DatabaseAxpShiftReferences) bind AxpShiftReferences::class
     singleOf(::MemoryShiftRepository) bind ShiftRepository::class
     singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
-    single<AxpRepository> {
+    single<AxpHelperReferences> {
         val helpers = Paths.get("helpers.yaml").readText()
             .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
             .map { it.value }
-        MemoryAxpRepository(helpers)
+        MemoryAxpHelperReferences(helpers)
     }
 
     val loggingMemoryRepository = LoggingSalarySystemRepository(MemorySalarySystemRepository())

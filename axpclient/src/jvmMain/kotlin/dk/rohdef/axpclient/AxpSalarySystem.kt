@@ -22,8 +22,8 @@ import java.io.Closeable
 
 class AxpSalarySystem(
     private val configuration: AxpConfiguration,
-    private val axpToDomainMapper: AxpToDomainMapper,
-    private val helpers: AxpRepository,
+    private val axpShiftReferences: AxpShiftReferences,
+    private val helpers: AxpHelperReferences,
 ) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
     private val client = HttpClient(OkHttp) {
@@ -62,7 +62,7 @@ class AxpSalarySystem(
             end,
         )
 
-        axpToDomainMapper.saveAxpBookingToShiftId(axpBookingId, shift.shiftId)
+        axpShiftReferences.saveAxpBookingToShiftId(axpBookingId, shift.shiftId)
 
         shift
     }
@@ -74,7 +74,7 @@ class AxpSalarySystem(
         ensureLoggedIn()
 
         val helperTid = helpers.helperById(helperId).axpTid
-        val axpBookingId = axpToDomainMapper.shiftIdToAxpBooking(shiftId)
+        val axpBookingId = axpShiftReferences.shiftIdToAxpBooking(shiftId)
             .getOrElse { TODO("Handle the optional better") }
         return axpClient.bookHelper(axpBookingId, helperTid)
             .mapLeft {
@@ -87,13 +87,13 @@ class AxpSalarySystem(
 
     internal suspend fun AxpShift.shift(): Shift {
         val helperBooking = axpHelperBooking.toHelperBooking(helpers)
-        val storedShiftId = axpToDomainMapper.axpBookingToShiftId(bookingId)
+        val storedShiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
 
         val shiftId = when (storedShiftId) {
             is Either.Right -> storedShiftId.value
             is Either.Left -> {
                 val newId = ShiftId.generateId()
-                axpToDomainMapper.saveAxpBookingToShiftId(bookingId, newId)
+                axpShiftReferences.saveAxpBookingToShiftId(bookingId, newId)
                 newId
             }
         }

@@ -1,7 +1,7 @@
 package dk.rohdef.rfbpa.web.persistance
 
 import dk.rohdef.rfbpa.web.calendar.CalendarTable
-import dk.rohdef.rfbpa.web.persistance.axp.AxpBookingToShift
+import dk.rohdef.rfbpa.web.persistance.axp.ShiftReferenceTable
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable
@@ -19,7 +19,7 @@ object TestDatabaseConnection {
         Database.connect(jdbcURL, driverClassName)
 
         transaction {
-            SchemaUtils.create(AxpBookingToShift)
+            SchemaUtils.create(ShiftReferenceTable)
             SchemaUtils.create(CalendarTable)
             SchemaUtils.create(HelpersTable)
             SchemaUtils.create(ShiftsTable)
