@@ -1,6 +1,7 @@
 package dk.rohdef.rfweeks
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.raise.either
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -35,13 +36,17 @@ data class YearWeekDayAtTime(
             val parsed = parse(text)
             return when (parsed) {
                 is Either.Right -> parsed.value
-                is Either.Left -> TODO()
+                is Either.Left -> throw IllegalArgumentException("Could not parse YearWeekDayAtTime: $text - it should conform to the ISO 8601 format, e.g., Wednesday in week 9 in the year 2011 is: 2011-W09-3")
             }
         }
 
         fun parse(text: String): Either<Unit, YearWeekDayAtTime> = either {
             // TODO: 15/07/2024 rohdef - primitive parsing, assumes dashes exclusively
-            // TODO: 15/07/2024 rohdef - primitive parsing, assumes no errors!
+            // TODO: 15/07/2024 rohdef - primitive parsing, only basic testing
+
+            if (!text.matches("[0-9]{4}-W[0-9]{2}-[1-7]T[0-9]{2}:[0-9]{2}".toRegex())) {
+                return Unit.left()
+            }
 
             val yearWeekDay = text.substring(0, 10).let { YearWeekDay.parse(it) }.mapLeft { }.bind()
             val time = text.substring(11)
@@ -62,11 +67,17 @@ data class YearWeekDayAtTime(
         override val descriptor = PrimitiveSerialDescriptor("YearWeekDayAtTime", PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder): YearWeekDayAtTime {
-            TODO("not implemented")
+            try {
+                val text = decoder.decodeString()
+                return parseUnsafe(text)
+            } catch (e: Exception) {
+                println(e)
+                throw e
+            }
         }
 
         override fun serialize(encoder: Encoder, value: YearWeekDayAtTime) {
-            encoder.encodeString("not implemented")
+            encoder.encodeString(value.toString())
         }
     }
 }
