@@ -36,4 +36,7 @@ class DatabaseAxpShiftReferences : AxpShiftReferences {
             .singleOrNone()
             .toEither { }
     }
+
+    data class BookingIdNotFound(val axpBookingId: AxpBookingId)
+    data class ShiftIdNotFound(val shiftId: ShiftId)
 }

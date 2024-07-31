@@ -13,6 +13,7 @@ import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
 import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
+import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import kotlinx.datetime.Clock
@@ -37,7 +38,7 @@ fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
 
 fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
     singleOf(::DatabaseAxpShiftReferences) bind AxpShiftReferences::class
-    singleOf(::MemoryShiftRepository) bind ShiftRepository::class
+    singleOf(::DatabaseShifts) bind ShiftRepository::class
     singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
     single<AxpHelperReferences> {
         val helpers = Paths.get("helpers.yaml").readText()

@@ -8,7 +8,7 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -69,7 +69,7 @@ class AxpSalarySystem(
 
     override suspend fun bookShift(
         shiftId: ShiftId,
-        helperId: Helper.ID,
+        helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         ensureLoggedIn()
 

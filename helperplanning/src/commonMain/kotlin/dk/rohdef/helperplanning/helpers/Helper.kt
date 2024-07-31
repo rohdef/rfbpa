@@ -1,12 +1,6 @@
 package dk.rohdef.helperplanning.helpers
 
-import kotlinx.uuid.UUID
-
 data class Helper(
-    val id: ID,
+    val id: HelperId = HelperId.generateId(),
     val shortName: String,
-) {
-    data class ID(
-        val uuid: UUID,
-    )
-}
+)

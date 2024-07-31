@@ -2,7 +2,7 @@ package dk.rohdef.rfbpa.web
 
 import arrow.core.Either
 import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -18,7 +18,7 @@ class LoggingSalarySystemRepository(
 
     override suspend fun bookShift(
         shiftId: ShiftId,
-        helper: Helper.ID
+        helper: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         log.debug { "Booking shift $shiftId to helper ${helper}" }
         return salarySystemRepository.bookShift(shiftId, helper)

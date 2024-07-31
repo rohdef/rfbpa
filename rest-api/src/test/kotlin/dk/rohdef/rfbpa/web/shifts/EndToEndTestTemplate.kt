@@ -59,6 +59,7 @@ class EndToEndTestTemplate : FunSpec({
         xtest(name) {}
     }
 
+    // TODO: 31/07/2024 rohdef - do we want the actual repository or is it better to simulate errors?
     val shiftRepository = TestShiftRespository()
     val salarySystem = TestSalarySystemRepository()
     val synchronization = TestWeekSynchronizationRepository()

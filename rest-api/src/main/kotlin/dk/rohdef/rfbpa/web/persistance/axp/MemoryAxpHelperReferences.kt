@@ -5,6 +5,7 @@ import dk.rohdef.axpclient.helper.HelperIdMapping
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 
 // TODO: 25/06/2024 rohdef - delete once proper database actions available
 class MemoryAxpHelperReferences(
@@ -12,7 +13,7 @@ class MemoryAxpHelperReferences(
 ) : AxpHelperReferences {
     private val helpersConverted = helpers.map {
         HelperIdMapping(
-            Helper.ID(it.id),
+            HelperId(it.id),
             HelperTID(it.helperTid),
             HelperNumber(it.helperNumber),
         )
@@ -30,7 +31,7 @@ class MemoryAxpHelperReferences(
         } ?: TODO("not implemented")
     }
 
-    override fun helperById(id: Helper.ID): HelperIdMapping {
+    override fun helperById(id: HelperId): HelperIdMapping {
         return helpersConverted.find {
             it.helperID == id
         } ?: TODO("not implemented")

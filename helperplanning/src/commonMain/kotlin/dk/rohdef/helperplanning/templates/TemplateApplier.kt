@@ -1,10 +1,10 @@
 package dk.rohdef.helperplanning.templates
 
 import arrow.core.Either
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -13,7 +13,7 @@ import kotlinx.datetime.LocalTime
 
 class TemplateApplier(
     val salarySystemRepository: SalarySystemRepository,
-    private val helpers: Map<String, Helper.ID>,
+    private val helpers: Map<String, HelperId>,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -83,7 +83,7 @@ class TemplateApplier(
 
                 val bookingId = salarySystemRepository.bookShift(
                     shiftId,
-                    helper.helperId,
+                    helper.helper,
                 )
 
                 when (bookingId) {

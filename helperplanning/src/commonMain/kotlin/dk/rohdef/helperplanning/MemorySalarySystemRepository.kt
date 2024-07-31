@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning
 import arrow.core.Either
 import arrow.core.right
 import arrow.core.toOption
-import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -21,7 +21,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
 
     override suspend fun bookShift(
         shiftId: ShiftId,
-        helperId: Helper.ID
+        helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         if (!_shifts.containsKey(shiftId)) {
             TODO("Missing shift is currently not handled")
