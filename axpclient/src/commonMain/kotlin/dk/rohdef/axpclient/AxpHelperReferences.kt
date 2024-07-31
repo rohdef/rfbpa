@@ -6,7 +6,9 @@ import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.helpers.HelperId
 
 interface AxpHelperReferences {
+    fun all(): List<HelperIdMapping>
     fun helperByTid(tid: HelperTID): HelperIdMapping
     fun helperByNumber(number: HelperNumber): HelperIdMapping
-    fun helperById(id: HelperId): HelperIdMapping
+    fun helperById(helperId: HelperId): HelperIdMapping
+    fun createHelperReference(tid: HelperTID, number: HelperNumber, helperId: HelperId): AxpHelperReferences
 }

@@ -1,6 +1,9 @@
 package dk.rohdef.helperplanning.templates
 
 import arrow.core.Either
+import arrow.core.getOrElse
+import arrow.core.left
+import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
@@ -13,7 +16,7 @@ import kotlinx.datetime.LocalTime
 
 class TemplateApplier(
     val salarySystemRepository: SalarySystemRepository,
-    private val helpers: Map<String, HelperId>,
+    private val helperRepository: HelpersRepository,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -79,12 +82,21 @@ class TemplateApplier(
     private suspend fun bookHelper(shiftId: ShiftId, helperReservation: HelperReservation) {
         when (helperReservation) {
             is HelperReservation.Helper -> {
-                val helper = HelperBooking.PermanentHelper(helpers[helperReservation.id]!!)
+                val helper = helperRepository.byShortName(helperReservation.id)
+                    .map { it }
 
-                val bookingId = salarySystemRepository.bookShift(
-                    shiftId,
-                    helper.helper,
-                )
+                val bookingId =  when (helper) {
+                    is Either.Right -> salarySystemRepository.bookShift(
+                        shiftId,
+                        helper.value.id,
+                    )
+                    is Either.Left -> {
+                        log.error { "Could not find helper with short name: ${helperReservation.id}" }
+                        Unit.left()
+                    }
+                }
+
+
 
                 when (bookingId) {
                     is Either.Right -> log.info { "Successfully booked ${helper}" }

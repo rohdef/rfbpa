@@ -27,5 +27,6 @@ interface SalarySystemRepository {
 
     sealed interface BookingError {
         data class ShiftNotFound(val shiftId: ShiftId) : BookingError
+        data class HelperNotFound(val helperId: HelperId) : BookingError
     }
 }

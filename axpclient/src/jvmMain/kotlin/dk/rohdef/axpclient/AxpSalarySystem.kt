@@ -5,9 +5,12 @@ import arrow.core.getOrElse
 import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
+import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
+import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
@@ -23,7 +26,8 @@ import java.io.Closeable
 class AxpSalarySystem(
     private val configuration: AxpConfiguration,
     private val axpShiftReferences: AxpShiftReferences,
-    private val helpers: AxpHelperReferences,
+    private val helperReferences: AxpHelperReferences,
+    private val helpersRepository: HelpersRepository,
 ) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
     private val client = HttpClient(OkHttp) {
@@ -55,7 +59,6 @@ class AxpSalarySystem(
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
 
-
         val shift = Shift(
             HelperBooking.NoBooking,
             start,
@@ -73,7 +76,7 @@ class AxpSalarySystem(
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         ensureLoggedIn()
 
-        val helperTid = helpers.helperById(helperId).axpTid
+        val helperTid = helperReferences.helperById(helperId).axpTid
         val axpBookingId = axpShiftReferences.shiftIdToAxpBooking(shiftId)
             .getOrElse { TODO("Handle the optional better") }
         return axpClient.bookHelper(axpBookingId, helperTid)
@@ -86,7 +89,12 @@ class AxpSalarySystem(
     }
 
     internal suspend fun AxpShift.shift(): Shift {
-        val helperBooking = axpHelperBooking.toHelperBooking(helpers)
+        val bookingToHelperId: Map<HelperNumber, HelperId> = helperReferences.all()
+            .associate { it.axpNumber to it.helperId }
+        val helpers: Map<HelperId, Helper> = helpersRepository.all()
+            .associate { it.id to it }
+
+        val helperBooking = axpHelperBooking.toHelperBooking(bookingToHelperId, helpers)
         val storedShiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
 
         val shiftId = when (storedShiftId) {

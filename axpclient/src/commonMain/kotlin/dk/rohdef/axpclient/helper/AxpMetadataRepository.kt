@@ -1,6 +1,10 @@
 package dk.rohdef.axpclient.helper
 
+import arrow.core.getOrElse
+import arrow.core.toOption
 import dk.rohdef.axpclient.AxpHelperReferences
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
 
 sealed interface AxpMetadataRepository {
@@ -10,9 +14,17 @@ sealed interface AxpMetadataRepository {
 
     object NoBooking : AxpMetadataRepository
 
-    fun toHelperBooking(helperRepository: AxpHelperReferences): HelperBooking {
+    fun toHelperBooking(
+        bookingToHelperId: Map<HelperNumber, HelperId>,
+        helpers: Map<HelperId, Helper>,
+    ): HelperBooking {
         return when(this) {
-            is PermanentHelper -> HelperBooking.PermanentHelper(helperNumber.toId(helperRepository))
+            is PermanentHelper -> {
+                helperNumber.toId(bookingToHelperId)
+                    .flatMap { helpers[it].toOption() }
+                    .map { HelperBooking.PermanentHelper(it) }
+                    .getOrElse { HelperBooking.UnknownHelper(helperNumber.id) }
+            }
             is VacancyBooking -> HelperBooking.VacancyHelper
             is NoBooking -> HelperBooking.NoBooking
         }

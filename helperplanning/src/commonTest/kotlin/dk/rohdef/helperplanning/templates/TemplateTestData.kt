@@ -1,5 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
+import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
@@ -29,7 +30,7 @@ object TemplateTestData {
         )
 
         val helpersMap = allHelpers
-            .associate { it.id to it.generateTestId() }
+            .associate { it.id to it.asHelper() }
     }
 
     object ShiftTemplates {
@@ -86,6 +87,13 @@ object TemplateTestData {
     val helperIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
     val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
+    fun HelperReservation.Helper.asHelper(): Helper {
+        return Helper(
+            HelperId(UUID.generateUUID(helperIdNamespace, this.id)),
+            this.id
+        )
+    }
+
     fun HelperReservation.Helper.generateTestId(): HelperId {
         return HelperId(UUID.generateUUID(helperIdNamespace, this.id))
     }
@@ -111,7 +119,7 @@ object TemplateTestData {
 
             val helperBooking = when (helper) {
                 is HelperReservation.Helper -> HelperBooking.PermanentHelper(
-                    (helper as HelperReservation.Helper).generateTestId()
+                    (helper as HelperReservation.Helper).asHelper()
                 )
 
                 HelperReservation.NoReservation -> HelperBooking.NoBooking

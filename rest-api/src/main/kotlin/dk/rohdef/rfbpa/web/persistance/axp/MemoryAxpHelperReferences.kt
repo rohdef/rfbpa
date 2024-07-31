@@ -4,7 +4,6 @@ import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.axpclient.helper.HelperIdMapping
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 
 // TODO: 25/06/2024 rohdef - delete once proper database actions available
@@ -19,6 +18,10 @@ class MemoryAxpHelperReferences(
         )
     }
 
+    override fun all(): List<HelperIdMapping> {
+        return helpersConverted
+    }
+
     override fun helperByTid(tid: HelperTID): HelperIdMapping {
         return helpersConverted.find {
             it.axpTid == tid
@@ -31,9 +34,13 @@ class MemoryAxpHelperReferences(
         } ?: TODO("not implemented")
     }
 
-    override fun helperById(id: HelperId): HelperIdMapping {
+    override fun helperById(helperId: HelperId): HelperIdMapping {
         return helpersConverted.find {
-            it.helperID == id
+            it.helperId == helperId
         } ?: TODO("not implemented")
+    }
+
+    override fun createHelperReference(tid: HelperTID, number: HelperNumber, helperId: HelperId): AxpHelperReferences {
+        TODO("not implemented - this version is immutable for now")
     }
 }

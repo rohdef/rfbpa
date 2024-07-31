@@ -15,7 +15,7 @@ class TemplateApplierTest : FunSpec({
     val weekPlanRepository = TestSalarySystemRepository()
     val templateApplier = TemplateApplier(
         weekPlanRepository,
-        TemplateTestData.Helpers.helpersMap,
+        TODO(),
     )
 
     beforeEach { weekPlanRepository.reset() }

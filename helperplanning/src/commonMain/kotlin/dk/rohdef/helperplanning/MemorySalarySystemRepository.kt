@@ -1,15 +1,15 @@
 package dk.rohdef.helperplanning
 
-import arrow.core.Either
-import arrow.core.right
-import arrow.core.toOption
+import arrow.core.*
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
 
-class MemorySalarySystemRepository : SalarySystemRepository {
+class MemorySalarySystemRepository(
+    val helpersRepository: HelpersRepository,
+) : SalarySystemRepository {
     fun reset() {
         _shifts.clear()
     }
@@ -23,15 +23,20 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
-        if (!_shifts.containsKey(shiftId)) {
-            TODO("Missing shift is currently not handled")
-        }
         val shift = _shifts[shiftId].toOption()
-            .map { it.copy(helperBooking = HelperBooking.PermanentHelper(helperId)) }
-        shift.onSome { _shifts.put(shiftId, it) }
+            .toEither { SalarySystemRepository.BookingError.ShiftNotFound(shiftId) }
+            .flatMap { helper ->
+                helpersRepository.byId(helperId)
+                    .map { HelperBooking.PermanentHelper(it) }
+                    .map { helper.copy(helperBooking = it) }
+                    .mapLeft { SalarySystemRepository.BookingError.HelperNotFound(helperId) }
+
+            }
+        if (shift is Either.Right) {
+            _shifts[shiftId] = shift.value
+        }
 
         return shift.map { shiftId }
-            .toEither { SalarySystemRepository.BookingError.ShiftNotFound(shiftId) }
     }
 
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
@@ -56,7 +61,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         val shiftId = ShiftId.generateId()
         val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
 
-        _shifts.put(shiftId, shift)
+        _shifts[shiftId] = shift
 
         return shift.right()
     }
