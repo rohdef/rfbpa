@@ -8,7 +8,7 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
 
 class MemorySalarySystemRepository(
-    val helpersRepository: HelpersRepository,
+    val helpersRepository: HelpersRepository = MemoryHelpersRepository(),
 ) : SalarySystemRepository {
     fun reset() {
         _shifts.clear()

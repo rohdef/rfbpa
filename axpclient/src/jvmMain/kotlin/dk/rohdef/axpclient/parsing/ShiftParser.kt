@@ -35,7 +35,6 @@ internal class ShiftParser {
         val windowOpenUrl = Url(windowOpenParameter.text)
         val tooltipShiftData = parseTooltip(tooltipParameter.text)
 
-        // TODO replace with AXP model
         val helperBooking = tooltipShiftData.getValue(AxpField.HELPER_ID).map {
             when (it) {
                 "60621" -> AxpMetadataRepository.VacancyBooking

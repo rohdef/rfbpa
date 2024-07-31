@@ -25,8 +25,8 @@ class TemplateApplier(
         templates: List<Template>,
     ) {
         // TODO: 08/06/2024 rohdef - temporary implementation due to expected method signature
-        val schedulingStart: YearWeek = yearWeekInterval.start
-        val schedulingEnd: YearWeek = yearWeekInterval.endInclusive
+        val schedulingStart = yearWeekInterval.start
+        val schedulingEnd = yearWeekInterval.endInclusive
         applyTemplate(schedulingStart, schedulingEnd, templates.first())
     }
 

@@ -47,10 +47,10 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
         MemoryAxpHelperReferences(helpers)
     }
 
-    val loggingMemoryRepository = LoggingSalarySystemRepository(MemorySalarySystemRepository(TODO("How to inject here... can we just call get?")))
+    singleOf<HelpersRepository>(::MemoryHelpersRepository)
     when (rfBpaConfig.runtimeMode) {
-        RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { loggingMemoryRepository }
-        RuntimeMode.TEST -> single<SalarySystemRepository> { loggingMemoryRepository }
+        RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
+        RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
         RuntimeMode.PRODUCTION -> singleOf(::AxpSalarySystem) bind SalarySystemRepository::class
     }
 }

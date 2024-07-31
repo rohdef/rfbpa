@@ -1,5 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
+import dk.rohdef.helperplanning.MemoryHelpersRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.rfweeks.YearWeek
@@ -15,7 +16,7 @@ class TemplateApplierTest : FunSpec({
     val weekPlanRepository = TestSalarySystemRepository()
     val templateApplier = TemplateApplier(
         weekPlanRepository,
-        TODO(),
+        MemoryHelpersRepository(),
     )
 
     beforeEach { weekPlanRepository.reset() }

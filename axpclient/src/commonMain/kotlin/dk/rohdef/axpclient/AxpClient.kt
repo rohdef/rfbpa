@@ -84,7 +84,6 @@ internal class AxpClient(
                 shiftPlan(ShiftPlanAct.SAVE_BOOKING)
 
                 append("booking", booking.axpId)
-                // TODO deal with helper in a good way
                 append("book_temp", helper.id)
             }
         )
@@ -216,7 +215,6 @@ internal class AxpClient(
                 shiftPlan(ShiftPlanAct.SAVE_BOOKING)
 
                 append("booking", bookingId.axpId)
-                // TODO deal with helper in a good way
                 append("clear_temp", "1")
             }
         )
