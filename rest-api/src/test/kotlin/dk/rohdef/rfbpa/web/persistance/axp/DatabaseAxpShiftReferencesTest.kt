@@ -23,8 +23,8 @@ class DatabaseAxpShiftReferencesTest : FunSpec({
         val bookingId = AxpBookingId("ID-10-T")
         val shiftId = ShiftId.generateId()
 
-        shiftReferenceRepository.axpBookingToShiftId(bookingId) shouldBeLeft DatabaseAxpShiftReferences.BookingIdNotFound(bookingId)
-        shiftReferenceRepository.shiftIdToAxpBooking(shiftId) shouldBeLeft DatabaseAxpShiftReferences.ShiftIdNotFound(shiftId)
+        shiftReferenceRepository.axpBookingToShiftId(bookingId) shouldBeLeft AxpShiftReferences.ShiftIdNotFound(bookingId)
+        shiftReferenceRepository.shiftIdToAxpBooking(shiftId) shouldBeLeft AxpShiftReferences.BookingIdNotFound(shiftId)
 
         shiftReferenceRepository.saveAxpBookingToShiftId(bookingId, shiftId)
 

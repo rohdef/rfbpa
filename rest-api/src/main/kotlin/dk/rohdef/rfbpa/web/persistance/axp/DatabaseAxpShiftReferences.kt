@@ -11,13 +11,13 @@ import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 
 class DatabaseAxpShiftReferences : AxpShiftReferences {
-    override suspend fun axpBookingToShiftId(axpBookingId: AxpBookingId): Either<Unit, ShiftId> = dbQuery {
+    override suspend fun axpBookingToShiftId(axpBookingId: AxpBookingId): Either<AxpShiftReferences.ShiftIdNotFound, ShiftId> = dbQuery {
         ShiftReferenceTable
             .select(ShiftReferenceTable.shiftId)
             .where { ShiftReferenceTable.bookingNumber eq axpBookingId.axpId }
             .map { ShiftId(it[ShiftReferenceTable.shiftId].toKotlinUUID()) }
             .singleOrNone()
-            .toEither { }
+            .toEither { AxpShiftReferences.ShiftIdNotFound(axpBookingId) }
     }
 
     override suspend fun saveAxpBookingToShiftId(bookingNumber: AxpBookingId, shiftId: ShiftId) = dbQuery {
@@ -28,15 +28,12 @@ class DatabaseAxpShiftReferences : AxpShiftReferences {
         Unit
     }
 
-    override suspend fun shiftIdToAxpBooking(shiftId: ShiftId): Either<Unit, AxpBookingId> = dbQuery {
+    override suspend fun shiftIdToAxpBooking(shiftId: ShiftId): Either<AxpShiftReferences.BookingIdNotFound, AxpBookingId> = dbQuery {
         ShiftReferenceTable
             .select(ShiftReferenceTable.bookingNumber)
             .where { ShiftReferenceTable.shiftId eq shiftId.id.toJavaUUID() }
             .map { AxpBookingId(it[ShiftReferenceTable.bookingNumber]) }
             .singleOrNone()
-            .toEither { }
+            .toEither { AxpShiftReferences.BookingIdNotFound(shiftId) }
     }
-
-    data class BookingIdNotFound(val axpBookingId: AxpBookingId)
-    data class ShiftIdNotFound(val shiftId: ShiftId)
 }
