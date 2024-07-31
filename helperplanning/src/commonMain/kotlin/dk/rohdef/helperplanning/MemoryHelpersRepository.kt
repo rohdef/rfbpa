@@ -9,6 +9,10 @@ import dk.rohdef.helperplanning.helpers.HelperId
 class MemoryHelpersRepository : HelpersRepository {
     private val _helpers = mutableListOf<Helper>()
 
+    fun reset() {
+        _helpers.clear()
+    }
+
     override suspend fun all(): List<Helper> = _helpers.toList()
 
     override suspend fun byId(helperId: HelperId): Either<Unit, Helper> {

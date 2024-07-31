@@ -1,8 +1,10 @@
 package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.MemoryHelpersRepository
+import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.shifts.HelperBooking
+import dk.rohdef.helperplanning.templates.TemplateTestData.asHelper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import io.kotest.core.spec.style.FunSpec
@@ -13,13 +15,23 @@ import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
 class TemplateApplierTest : FunSpec({
-    val weekPlanRepository = TestSalarySystemRepository()
+    val memoryHelpers = MemoryHelpersRepository()
+    val memoryWeekPlanRepository = MemorySalarySystemRepository(memoryHelpers)
+    val weekPlanRepository = TestSalarySystemRepository(memoryWeekPlanRepository)
+
     val templateApplier = TemplateApplier(
         weekPlanRepository,
-        MemoryHelpersRepository(),
+        memoryHelpers,
     )
 
-    beforeEach { weekPlanRepository.reset() }
+    beforeEach {
+        weekPlanRepository.reset()
+        memoryHelpers.reset()
+
+        TemplateTestData.Helpers.allHelpers
+            .map { it.asHelper() }
+            .forEach { memoryHelpers.create(it) }
+    }
 
     context("Template cutting dates") {
         val schedulingStart = YearWeek(1919, 12)
