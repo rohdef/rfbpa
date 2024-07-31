@@ -38,18 +38,18 @@ class TestShiftRespository(
     internal val shiftList: List<Shift>
         get() = shifts.values.toList()
 
-    override suspend fun createShift(shift: Shift): Either<ShiftsError, Shift> = either {
+    override suspend fun create(shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
-        memoryShiftRepository.createShift(shift).bind()
+        memoryShiftRepository.create(shift).bind()
     }
 
     // Work around wrong decendent bug in delegates
-    override suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
-        yearWeeks.mapOrAccumulate { shifts(it).bind() }.bind()
+    override suspend fun byYearWeekInterval(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
+        yearWeeks.mapOrAccumulate { byYearWeek(it).bind() }.bind()
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
+    override suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
-        memoryShiftRepository.shifts(yearWeek).bind()
+        memoryShiftRepository.byYearWeek(yearWeek).bind()
     }
 }

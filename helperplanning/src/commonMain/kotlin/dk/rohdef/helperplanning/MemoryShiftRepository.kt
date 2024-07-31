@@ -19,7 +19,7 @@ class MemoryShiftRepository : ShiftRepository {
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.toMap()
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
+    override suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
         val weekPlan = WeekPlan(
             yearWeek,
@@ -34,7 +34,7 @@ class MemoryShiftRepository : ShiftRepository {
         return weekPlan.right()
     }
 
-    override suspend fun createShift(
+    override suspend fun create(
         shift: Shift,
     ): Either<ShiftsError, Shift> {
         _shifts.put(shift.shiftId, shift)

@@ -11,11 +11,11 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
 interface ShiftRepository {
-    suspend fun shifts(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
-        yearWeeks.mapOrAccumulate { shifts(it).bind() }.bind()
+    suspend fun byYearWeekInterval(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
+        yearWeeks.mapOrAccumulate { byYearWeek(it).bind() }.bind()
     }
 
-    suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
+    suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createShift(shift: Shift): Either<ShiftsError, Shift>
+    suspend fun create(shift: Shift): Either<ShiftsError, Shift>
 }

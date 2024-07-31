@@ -29,7 +29,7 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = dbQuery {
+    override suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = dbQuery {
         val shifts = ShiftsTable
 //            .innerJoin(
 //                ShiftBookingsTable,
@@ -50,7 +50,7 @@ class DatabaseShifts : ShiftRepository {
         ).right()
     }
 
-    override suspend fun createShift(
+    override suspend fun create(
         shift: Shift,
     ): Either<ShiftsError, Shift> = dbQuery {
         ShiftsTable.insert {

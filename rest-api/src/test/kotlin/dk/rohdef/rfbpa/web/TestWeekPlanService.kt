@@ -2,7 +2,6 @@ package dk.rohdef.rfbpa.web
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
-import arrow.core.getOrElse
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -32,7 +31,7 @@ class TestWeekPlanService  : WeekPlanService {
     }
 
     override suspend fun shifts(yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>> {
-        return shiftRepository.shifts(yearWeekInterval)
+        return shiftRepository.byYearWeekInterval(yearWeekInterval)
             .mapLeft { throw IllegalStateException("This should not be possible") }
     }
 }

@@ -28,7 +28,7 @@ class WeekPlanServiceImplementation(
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             salarySystem.shifts(yearWeek)
-                .flatMap { it.allShifts.mapOrAccumulate { shiftRepository.createShift(it).bind() } }
+                .flatMap { it.allShifts.mapOrAccumulate { shiftRepository.create(it).bind() } }
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
@@ -70,7 +70,7 @@ class WeekPlanServiceImplementation(
                 }.first()
             }.bind()
 
-        shiftRepository.shifts(yearWeekInterval)
+        shiftRepository.byYearWeekInterval(yearWeekInterval)
             .mapLeft {
                WeekPlanServiceError.CannotCommunicateWithShiftsRepository
             }

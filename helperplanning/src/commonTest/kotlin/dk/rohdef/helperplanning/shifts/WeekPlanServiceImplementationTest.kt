@@ -73,7 +73,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
 
         allShiftsInSystem.forEach { salarySystemRepository.addShift(it) }
         shiftsNotInSystem.forEach { salarySystemRepository.addShift(it) }
-        allShiftsInSystem.forEach { shiftRepository.createShift(it) }
+        allShiftsInSystem.forEach { shiftRepository.create(it) }
 
         weekSynchronizationRepository.markSynchronized(year2024Week8).shouldBeRight()
         weekSynchronizationRepository.markSynchronized(year2024Week9).shouldBeRight()
