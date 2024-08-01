@@ -41,12 +41,12 @@ class TestShiftRespository(
         get() = shifts.values.toList()
 
     suspend fun addShift(shift: Shift) {
-        memoryShiftRepository.create(shift)
+        memoryShiftRepository.createOrUpdate(shift)
     }
 
-    override suspend fun create(shift: Shift): Either<ShiftsError, Shift> = either {
+    override suspend fun createOrUpdate(shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
-        memoryShiftRepository.create(shift).bind()
+        memoryShiftRepository.createOrUpdate(shift).bind()
     }
 
     // Work around wrong decendent bug in delegates

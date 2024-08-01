@@ -99,10 +99,8 @@ class AxpSalarySystem(
 
         val shiftId = when (storedShiftId) {
             is Either.Right -> storedShiftId.value
-            is Either.Left -> {
-                val newId = ShiftId.generateId()
-                axpShiftReferences.saveAxpBookingToShiftId(bookingId, newId)
-                newId
+            is Either.Left -> ShiftId.generateId().apply {
+                axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
             }
         }
 

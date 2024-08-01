@@ -5,6 +5,8 @@ import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.AxpShiftReferences
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
@@ -17,6 +19,7 @@ import dk.rohdef.rfbpa.web.persistance.helpers.DatabaseHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.serialization.decodeFromString
 import net.mamoe.yamlkt.Yaml
@@ -27,6 +30,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import java.nio.file.Paths
+import java.util.*
 import kotlin.io.path.readText
 
 fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
@@ -41,14 +45,27 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
     singleOf(::DatabaseAxpShiftReferences) bind AxpShiftReferences::class
     singleOf(::DatabaseShifts) bind ShiftRepository::class
     singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
+
+    // TODO: 01/08/2024 rohdef - find better way to inject test data
+    val helpers = Paths.get("helpers.yaml").readText()
+        .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
+    single<HelpersRepository> {
+        DatabaseHelpers().apply {
+            runBlocking {
+                helpers.map {
+                    Helper(HelperId(it.value.id), it.key)
+                }.forEach {
+                    create(it)
+                }
+            }
+        }
+
+    }
+//    singleOf(::DatabaseHelpers) bind HelpersRepository::class
     single<AxpHelperReferences> {
-        val helpers = Paths.get("helpers.yaml").readText()
-            .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
-            .map { it.value }
-        MemoryAxpHelperReferences(helpers)
+        MemoryAxpHelperReferences(helpers.map { it.value })
     }
 
-    singleOf<HelpersRepository>(::DatabaseHelpers)
     when (rfBpaConfig.runtimeMode) {
         RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
         RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }

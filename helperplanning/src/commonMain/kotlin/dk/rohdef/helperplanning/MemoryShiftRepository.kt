@@ -34,7 +34,7 @@ class MemoryShiftRepository : ShiftRepository {
         return weekPlan.right()
     }
 
-    override suspend fun create(
+    override suspend fun createOrUpdate(
         shift: Shift,
     ): Either<ShiftsError, Shift> {
         _shifts.put(shift.shiftId, shift)
