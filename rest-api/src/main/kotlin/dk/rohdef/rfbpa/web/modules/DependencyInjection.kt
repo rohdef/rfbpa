@@ -13,6 +13,7 @@ import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
 import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
+import dk.rohdef.rfbpa.web.persistance.helpers.DatabaseHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
@@ -47,7 +48,7 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
         MemoryAxpHelperReferences(helpers)
     }
 
-    singleOf<HelpersRepository>(::MemoryHelpersRepository)
+    singleOf<HelpersRepository>(::DatabaseHelpers)
     when (rfBpaConfig.runtimeMode) {
         RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
         RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
