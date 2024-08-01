@@ -1,13 +1,21 @@
 package dk.rohdef.rfbpa.web.persistance.helpers
 
 import arrow.core.Either
+import arrow.core.firstOrNone
 import arrow.core.right
 import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelpersError
+import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.uuid.toJavaUUID
 import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 
+private val log = KotlinLogging.logger {}
 class DatabaseHelpers : HelpersRepository {
     private fun rowToHelper(row: ResultRow): Helper {
         return Helper(
@@ -16,19 +24,30 @@ class DatabaseHelpers : HelpersRepository {
         )
     }
 
-    override suspend fun all(): List<Helper> {
-        return listOf()
+    override suspend fun all(): List<Helper> = dbQuery {
+        HelpersTable
+            .selectAll()
+            .map { rowToHelper(it) }
     }
 
-    override suspend fun byId(helperId: HelperId): Either<Unit, Helper> {
+    override suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper> = dbQuery {
+        HelpersTable
+            .selectAll()
+            .where { HelpersTable.id eq helperId.id.toJavaUUID() }
+            .map { rowToHelper(it) }
+            .firstOrNone()
+            .toEither { HelpersError.CannotFindHelperById(helperId) }
+    }
+
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> = dbQuery {
         TODO("not implemented")
     }
 
-    override suspend fun byShortName(shortName: String): Either<Unit, Helper> {
-        TODO("not implemented")
-    }
-
-    override suspend fun create(helper: Helper): Either<Unit, Helper> {
-        return helper.right()
+    override suspend fun create(helper: Helper): Either<Unit, Helper> = dbQuery {
+        HelpersTable.insert {
+            it[id] = helper.id.id.toJavaUUID()
+            it[shortName] = helper.shortName
+        }
+        helper.right()
     }
 }

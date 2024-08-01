@@ -7,6 +7,7 @@ import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 
 class DatabaseHelpersTest : FunSpec({
@@ -26,7 +27,7 @@ class DatabaseHelpersTest : FunSpec({
         helperRepository.create(TestHelpers.fiktivus)
         helperRepository.create(TestHelpers.realis)
 
-        helperRepository.all() shouldBe listOf(
+        helperRepository.all() shouldContainExactlyInAnyOrder listOf(
             TestHelpers.fiktivus,
             TestHelpers.realis,
         )
@@ -45,7 +46,6 @@ class DatabaseHelpersTest : FunSpec({
     test("Get by short name") {
         helperRepository.create(TestHelpers.fiktivus)
         helperRepository.create(TestHelpers.realis)
-
 
         helperRepository.byShortName(TestHelpers.fiktivus.shortName) shouldBeRight TestHelpers.fiktivus
         helperRepository.byShortName(TestHelpers.realis.shortName) shouldBeRight TestHelpers.realis
