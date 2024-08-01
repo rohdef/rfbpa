@@ -10,5 +10,5 @@ interface HelpersRepository {
     suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper>
     suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper>
 
-    suspend fun create(helper: Helper): Either<Unit, Helper>
+    suspend fun create(helper: Helper): Either<HelpersError.Create, Helper>
 }

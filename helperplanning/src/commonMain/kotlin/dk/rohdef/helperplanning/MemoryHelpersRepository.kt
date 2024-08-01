@@ -26,7 +26,7 @@ class MemoryHelpersRepository : HelpersRepository {
             .toEither { HelpersError.CannotFindHelperByShortName(shortName) }
     }
 
-    override suspend fun create(helper: Helper): Either<Unit, Helper> {
+    override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> {
         _helpers.add(helper)
         return helper.right()
     }

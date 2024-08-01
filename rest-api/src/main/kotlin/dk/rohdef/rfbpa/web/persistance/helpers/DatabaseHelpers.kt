@@ -1,7 +1,9 @@
 package dk.rohdef.rfbpa.web.persistance.helpers
 
 import arrow.core.Either
+import arrow.core.Either.Companion.catchOrThrow
 import arrow.core.firstOrNone
+import arrow.core.raise.catch
 import arrow.core.right
 import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.helpers.Helper
@@ -14,8 +16,10 @@ import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import java.sql.SQLException
 
 private val log = KotlinLogging.logger {}
+
 class DatabaseHelpers : HelpersRepository {
     private fun rowToHelper(row: ResultRow): Helper {
         return Helper(
@@ -39,15 +43,30 @@ class DatabaseHelpers : HelpersRepository {
             .toEither { HelpersError.CannotFindHelperById(helperId) }
     }
 
-    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> = dbQuery {
-        TODO("not implemented")
-    }
-
-    override suspend fun create(helper: Helper): Either<Unit, Helper> = dbQuery {
-        HelpersTable.insert {
-            it[id] = helper.id.id.toJavaUUID()
-            it[shortName] = helper.shortName
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> =
+        dbQuery {
+            HelpersTable
+                .selectAll()
+                .where { HelpersTable.shortName eq shortName }
+                .map { rowToHelper(it) }
+                .firstOrNone()
+                .toEither { HelpersError.CannotFindHelperByShortName(shortName) }
         }
-        helper.right()
+
+    override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> = dbQuery {
+        catchOrThrow<Exception, Helper> {
+            HelpersTable.insert {
+                it[id] = helper.id.id.toJavaUUID()
+                it[shortName] = helper.shortName
+            }
+            helper
+        }.mapLeft { exception ->
+            val message = exception.message
+            when {
+                message == null -> throw exception
+                message.contains("HELPERS_SHORT_NAME_UNIQUE_INDEX") -> HelpersError.Create.DuplicateShortName(helper.shortName)
+                else -> throw exception
+            }
+        }
     }
 }
