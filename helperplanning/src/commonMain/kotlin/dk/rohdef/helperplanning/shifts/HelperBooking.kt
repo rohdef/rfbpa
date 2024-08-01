@@ -3,7 +3,9 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.helperplanning.helpers.Helper
 
 sealed interface HelperBooking {
-    object NoBooking : HelperBooking
+    object NoBooking : HelperBooking {
+        override fun toString(): String = "NoBooking"
+    }
 
     data class PermanentHelper(val helper: Helper) : HelperBooking
 

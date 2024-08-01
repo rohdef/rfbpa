@@ -71,7 +71,6 @@ data class YearWeekDayAtTime(
                 val text = decoder.decodeString()
                 return parseUnsafe(text)
             } catch (e: Exception) {
-                println(e)
                 throw e
             }
         }

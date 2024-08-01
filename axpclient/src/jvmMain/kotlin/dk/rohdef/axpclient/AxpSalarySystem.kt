@@ -88,12 +88,7 @@ class AxpSalarySystem(
             .map { shiftId }
     }
 
-    internal suspend fun AxpShift.shift(): Shift {
-        val bookingToHelperId: Map<HelperNumber, HelperId> = helperReferences.all()
-            .associate { it.axpNumber to it.helperId }
-        val helpers: Map<HelperId, Helper> = helpersRepository.all()
-            .associate { it.id to it }
-
+    internal suspend fun AxpShift.shift(bookingToHelperId: Map<HelperNumber, HelperId>, helpers: Map<HelperId, Helper>): Shift {
         val helperBooking = axpHelperBooking.toHelperBooking(bookingToHelperId, helpers)
         val storedShiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
 
@@ -115,18 +110,25 @@ class AxpSalarySystem(
     override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
         ensureLoggedIn()
 
+        val bookingToHelperId: Map<HelperNumber, HelperId> = helperReferences.all()
+            .associate { it.axpNumber to it.helperId }
+        val helpers: Map<HelperId, Helper> = helpersRepository.all()
+            .associate { it.id to it }
+        println(bookingToHelperId)
+        println(helpers)
+
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
 
         return WeekPlan(
             yearWeek,
-            weekPlan.monday.allShifts.map { it.shift() },
-            weekPlan.tuesday.allShifts.map { it.shift() },
-            weekPlan.wednesday.allShifts.map { it.shift() },
-            weekPlan.thursday.allShifts.map { it.shift() },
-            weekPlan.friday.allShifts.map { it.shift() },
-            weekPlan.saturday.allShifts.map { it.shift() },
-            weekPlan.sunday.allShifts.map { it.shift() },
+            weekPlan.monday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.tuesday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.wednesday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.thursday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.friday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.saturday.allShifts.map { it.shift(bookingToHelperId, helpers) },
+            weekPlan.sunday.allShifts.map { it.shift(bookingToHelperId, helpers) },
         ).right()
     }
 

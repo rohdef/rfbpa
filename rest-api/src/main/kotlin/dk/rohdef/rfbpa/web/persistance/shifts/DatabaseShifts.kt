@@ -14,10 +14,8 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.uuid.toJavaUUID
 import kotlinx.uuid.toKotlinUUID
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
@@ -32,7 +30,6 @@ class DatabaseShifts : ShiftRepository {
             HelperBooking.NoBooking
         }
 
-        println(row)
         return Shift(
             booking,
             ShiftId(
@@ -68,7 +65,7 @@ class DatabaseShifts : ShiftRepository {
     override suspend fun createOrUpdate(
         shift: Shift,
     ): Either<ShiftsError, Shift> = dbQuery {
-        ShiftsTable.insert {
+        ShiftsTable.upsert(ShiftsTable.id) {
             it[id] = shift.shiftId.id.toJavaUUID()
             it[startYear] = shift.start.year
             it[startWeek] = shift.start.week
@@ -78,13 +75,15 @@ class DatabaseShifts : ShiftRepository {
 
         val helperBooking = shift.helperBooking
         when (helperBooking) {
-            HelperBooking.NoBooking -> {}
-            is HelperBooking.PermanentHelper -> ShiftBookingsTable.insert {
+            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.shiftId.id.toJavaUUID() }
+            is HelperBooking.PermanentHelper -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
                 it[shiftId] = shift.shiftId.id.toJavaUUID()
                 it[helperId] = helperBooking.helper.id.id.toJavaUUID()
             }
 
-            is HelperBooking.UnknownHelper -> TODO()
+            is HelperBooking.UnknownHelper -> {
+                println("Helper not known: ${helperBooking.externalReference}")
+            }
             HelperBooking.VacancyHelper -> TODO()
         }
         shift.right()
