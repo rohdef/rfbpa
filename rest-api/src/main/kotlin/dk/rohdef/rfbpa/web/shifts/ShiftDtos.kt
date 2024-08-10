@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
@@ -16,12 +17,25 @@ data class ShiftOut(
     val end: YearWeekDayAtTime,
 ) {
     companion object {
-        fun from(shift: Shift) = ShiftOut(
-            shift.shiftId.id,
-            HelperBookingOut.NoBooking,
-            shift.start,
-            shift.end,
-        )
+        fun from(shift: Shift): ShiftOut {
+            val helperBooking = shift.helperBooking
+            val booking = when (helperBooking) {
+                HelperBooking.NoBooking -> HelperBookingOut.NoBooking
+                is HelperBooking.PermanentHelper -> HelperBookingOut.Booking(
+                    helperBooking.helper.id.id,
+                    helperBooking.helper.shortName,
+                )
+                is HelperBooking.UnknownHelper -> TODO()
+                HelperBooking.VacancyHelper -> TODO()
+            }
+
+            return ShiftOut(
+                shift.shiftId.id,
+                booking,
+                shift.start,
+                shift.end,
+            )
+        }
     }
 }
 
@@ -30,6 +44,13 @@ sealed interface HelperBookingOut {
     @Serializable
     @SerialName("NoBooking")
     object NoBooking : HelperBookingOut
+
+    @Serializable
+    @SerialName("Booking")
+    data class Booking(
+        val id: UUID,
+        val shortName: String,
+    ) : HelperBookingOut
 }
 
 @Serializable

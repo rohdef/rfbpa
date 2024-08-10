@@ -12,8 +12,6 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
-import kotlinx.serialization.Serializable
-import kotlinx.uuid.UUID
 import org.koin.ktor.ext.inject
 
 private val log = KotlinLogging.logger {}

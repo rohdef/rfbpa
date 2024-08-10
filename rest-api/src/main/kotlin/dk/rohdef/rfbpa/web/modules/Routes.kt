@@ -2,6 +2,7 @@ package dk.rohdef.rfbpa.web.modules
 
 import dk.rohdef.rfbpa.web.calendar.calendar
 import dk.rohdef.rfbpa.web.shifts.dbShifts
+import dk.rohdef.rfbpa.web.templates.templates
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -10,8 +11,9 @@ import shifts
 
 fun Application.routes() {
     routing {
-        dbShifts()
+        templates()
         authenticate {
+            dbShifts()
             route("/api/public") {
                 calendar()
                 shifts()

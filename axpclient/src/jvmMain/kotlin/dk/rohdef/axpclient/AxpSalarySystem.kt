@@ -114,8 +114,6 @@ class AxpSalarySystem(
             .associate { it.axpNumber to it.helperId }
         val helpers: Map<HelperId, Helper> = helpersRepository.all()
             .associate { it.id to it }
-        println(bookingToHelperId)
-        println(helpers)
 
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())

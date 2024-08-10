@@ -66,6 +66,8 @@ export default function Menu() {
             },
         }}>
             <MenuItem destination={rfbpaRoutes.home} text="Start"/>
+            <MenuItem destination={rfbpaRoutes.shiftsUnprotected} text="Sh"/>
+            <MenuItem destination={rfbpaRoutes.templates} text="Temp"/>
 
             <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender"/>
             <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender" requiredRole={Role.EMPLOYER_CALENDAR} />

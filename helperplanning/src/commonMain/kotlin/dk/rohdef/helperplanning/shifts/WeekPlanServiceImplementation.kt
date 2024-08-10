@@ -27,8 +27,11 @@ class WeekPlanServiceImplementation(
     override suspend fun synchronize(yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
-            salarySystem.shifts(yearWeek)
-                .flatMap { it.allShifts.mapOrAccumulate { shiftRepository.createOrUpdate(it).bind() } }
+            val salaryWeekPlan = salarySystem.shifts(yearWeek)
+                .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
+                .bind()
+
+            salaryWeekPlan.allShifts.mapOrAccumulate { shiftRepository.createOrUpdate(it).bind() }
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
