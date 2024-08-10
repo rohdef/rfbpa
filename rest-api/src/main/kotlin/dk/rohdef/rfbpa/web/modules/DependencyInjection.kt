@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web.modules
 
+import com.auth0.jwk.JwkProviderBuilder
 import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.AxpShiftReferences
@@ -9,12 +10,13 @@ import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
+import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
-import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
-import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
+import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
+import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
 import dk.rohdef.rfbpa.web.persistance.helpers.DatabaseHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,7 +32,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import java.nio.file.Paths
-import java.util.*
 import kotlin.io.path.readText
 
 fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
@@ -88,9 +89,13 @@ fun Application.dependencyInjection() {
     install(Koin) {
         modules(
             module { single<Clock> { Clock.System } },
+            module { single {
+                JwkProviderBuilder(rfBpaConfig.auth.jwkEndpoint).build()
+            } },
             configuration(rfBpaConfig),
             repositories(rfBpaConfig),
             module { singleOf(::WeekPlanServiceImplementation) bind WeekPlanService::class },
+            module { singleOf(::TemplateApplier) bind TemplateApplier::class },
         )
     }
 }

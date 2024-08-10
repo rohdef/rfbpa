@@ -1,7 +1,9 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import com.auth0.jwk.JwkProvider
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.TestWeekPlanService
 import dk.rohdef.rfbpa.web.modules.configuration
@@ -12,61 +14,18 @@ import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week31
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContainerScope
-import io.kotest.core.spec.style.scopes.FunSpecRootScope
 import io.kotest.matchers.shouldBe
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.testing.*
 import kotlinx.datetime.Clock
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
-class ShiftsDbKtTest : FunSpec({
+class ShiftsDbKtTest : RfbpaSpec({
     val url = "/shifts"
     val urlWeek29To31 = "${url}/${week29To31}"
-
-    fun rfbpaTestApplication(
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
-    ) {
-        testApplication {
-            val client = createClient {
-                install(ContentNegotiation) {
-                    json()
-                }
-            }
-
-            environment {
-                developmentMode = false
-            }
-
-            block(client)
-        }
-    }
-
-    fun FunSpecRootScope.restTest(
-        name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
-    ) = test(name) {
-        rfbpaTestApplication(block)
-    }
-
-    suspend fun FunSpecContainerScope.restTest(
-        name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit,
-    ) = test(name) {
-        rfbpaTestApplication(block)
-    }
-
-    fun FunSpec.xrestTest(name: String, block: suspend ApplicationTestBuilder.() -> Unit) {
-        xtest(name) {}
-    }
 
     val weekPlanService = TestWeekPlanService()
     beforeEach {
@@ -74,9 +33,12 @@ class ShiftsDbKtTest : FunSpec({
 
         startKoin {
             modules(
-                module { single<Clock> { Clock.System } },
                 configuration(TestConfiguration.default),
-                module { single<WeekPlanService> { weekPlanService } },
+                module {
+                    single<Clock> { Clock.System }
+                    single<JwkProvider> { JwkProvider { jwk } }
+                    single<WeekPlanService> { weekPlanService }
+                },
             )
         }
     }
@@ -125,6 +87,8 @@ class ShiftsDbKtTest : FunSpec({
                 WeekPlanOut.from(weekPlanWeek31),
             )
         }
+
+        xrestTest("Helper bookings") {}
     }
 
     xrestTest("Authentication from salary system error should be communicated to the client") {
@@ -145,15 +109,14 @@ class ShiftsDbKtTest : FunSpec({
         val error: String = response.body()
     }
 
-    restTest("Year week parameter is malformed") {
+    restTest("Year week parameter is malformed") { client ->
         val response = client.get("$url/week4--week5")
-
         response.status shouldBe HttpStatusCode.BadRequest
 
         // TODO: 29/07/2024 rohdef - add proper error, references #21
     }
 
-    restTest("Interval separator is missing") {
+    restTest("Interval separator is missing") { client ->
         val response = client.get("$url/2024-W122024-W15")
 
         response.status shouldBe HttpStatusCode.BadRequest

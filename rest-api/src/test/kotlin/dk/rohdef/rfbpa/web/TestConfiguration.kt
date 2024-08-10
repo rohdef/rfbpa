@@ -10,7 +10,7 @@ object TestConfiguration {
     val default = RfBpaConfig(
         Axp("", "", ""),
         Auth(
-            URL("http://localhost:1234/test"),
+            URL("http://localhost:1234/realms/rfbpa/protocol/openid-connect/certs"),
             "http://localhost:1234/test"
         ),
         RuntimeMode.TEST,
