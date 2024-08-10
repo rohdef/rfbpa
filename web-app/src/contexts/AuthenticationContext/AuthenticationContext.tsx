@@ -10,7 +10,6 @@ interface AuthenticationValues {
 }
 
 // @ts-ignore
-// @ts-ignore
 export const AuthenticationContext = React.createContext<AuthenticationValues>(
     {
         authentication: NoAuthentication.instance(),
@@ -39,11 +38,7 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
             const authentication = AuthenticationHelper.fromJSON(JSON.parse(currentAuthenticationSession))
 
             if (authentication instanceof TokenAuthentication) {
-
-                const expiry = authentication.expiry()
-                const now = Date.now()
-
-                if (isAfter(expiry, now)) {
+                if (isAfter(authentication.expiry(), Date.now())) {
                     // TODO probaly a decent place for refresh logic?
                     return authentication
                 } else {

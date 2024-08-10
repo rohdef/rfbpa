@@ -11,11 +11,13 @@ import {WeekPlan} from "./WeekPlan.ts";
 import {Shift} from "./Shift.ts";
 import {ExpandMore} from "@mui/icons-material";
 import CalendarBeforeCellRenderArgs = DayPilot.CalendarBeforeCellRenderArgs;
+import AuthorizationContext from "../../contexts/AuthorizationContext/AuthorizationContext.tsx";
 
 interface Helper {
     color: string
 }
-const helpers: {[name: string]: Helper} = {
+
+const helpers: { [name: string]: Helper } = {
     camilla: {
         color: lightGreen["A100"],
     },
@@ -59,7 +61,7 @@ export default function Shifts() {
     const [weekPlans, setWeekPlans] = useState<WeekPlan[]>([])
     const {authentication} = useAuthentication()
     const client = axios.create({
-        baseURL: "http://localhost:8080/",
+        baseURL: "http://localhost:8080/api/public",
     });
 
     const [startWeek, setStartWeek] = useState("")
@@ -70,68 +72,65 @@ export default function Shifts() {
 
         const yearWeekInterval = `${startWeek}--${endWeek}`
         if (authentication instanceof TokenAuthentication) {
-            console.log("We're authenticated")
-        }
-        client.get(`shifts/${yearWeekInterval}`)
-            // client.get(`shifts/${yearWeekInterval}`, {
-            //     headers: {
-            //         Authorization: `Bearer ${authentication.token}`
-            //     },
-            // })
-            .then((weekPlans: AxiosResponse<WeekPlanDto[], any>) => {
-                const toShift = (shift: ShiftDto) => {
-                    let helper
-                    if (shift.helperBooking.type === "Booking") {
-                        helper = shift.helperBooking.shortName
-                    } else {
-                        helper = "Ikke booket"
-                    }
-                    return Shift.create({
-                        shiftId: shift.shiftId,
-                        start: parseISO(shift.start),
-                        end: parseISO(shift.end),
-                        helper: helper
-                    })
-                }
-                return weekPlans.data.map((weekPlan) => {
-                    return WeekPlan.create({
-                        week: weekPlan.week,
-
-                        monday: weekPlan.monday.map(toShift),
-                        tuesday: weekPlan.tuesday.map(toShift),
-                        wednesday: weekPlan.wednesday.map(toShift),
-                        thursday: weekPlan.thursday.map(toShift),
-                        friday: weekPlan.friday.map(toShift),
-                        saturday: weekPlan.saturday.map(toShift),
-                        sunday: weekPlan.sunday.map(toShift),
-                    })
-                })
+            client.get(`shifts/${yearWeekInterval}`, {
+                headers: {
+                    Authorization: `Bearer ${authentication.token}`
+                },
             })
-            .then((weekPlans: WeekPlan[]) => {
-                const shifts = weekPlans.flatMap(weekPlan => {
-                    return weekPlan.allShifts()
-                })
-
-
-                const shiftStr = shifts
-                    .filter(shift => shift.helper === "Ikke booket")
-                    .map(shift => {
-                        const formattedDate = format(shift.start, "EEEE 'den' d. MMM:", {
-                            locale: da
+                .then((weekPlans: AxiosResponse<WeekPlanDto[], any>) => {
+                    const toShift = (shift: ShiftDto) => {
+                        let helper
+                        if (shift.helperBooking.type === "Booking") {
+                            helper = shift.helperBooking.shortName
+                        } else {
+                            helper = "Ikke booket"
+                        }
+                        return Shift.create({
+                            shiftId: shift.shiftId,
+                            start: parseISO(shift.start),
+                            end: parseISO(shift.end),
+                            helper: helper
                         })
+                    }
+                    return weekPlans.data.map((weekPlan) => {
+                        return WeekPlan.create({
+                            week: weekPlan.week,
 
-                        const formattedStart = format(shift.start, "HH:mm")
-                        const formattedEnd = format(shift.end, "HH:mm")
-                        const formattedInterval = `${formattedStart} - ${formattedEnd}`
+                            monday: weekPlan.monday.map(toShift),
+                            tuesday: weekPlan.tuesday.map(toShift),
+                            wednesday: weekPlan.wednesday.map(toShift),
+                            thursday: weekPlan.thursday.map(toShift),
+                            friday: weekPlan.friday.map(toShift),
+                            saturday: weekPlan.saturday.map(toShift),
+                            sunday: weekPlan.sunday.map(toShift),
+                        })
+                    })
+                })
+                .then((weekPlans: WeekPlan[]) => {
+                    const shifts = weekPlans.flatMap(weekPlan => {
+                        return weekPlan.allShifts()
+                    })
 
-                        return `${formattedDate}\n${formattedInterval}`
-                    }).join("\n\n")
 
-                setUnbooked(shiftStr)
+                    const shiftStr = shifts
+                        .filter(shift => shift.helper === "Ikke booket")
+                        .map(shift => {
+                            const formattedDate = format(shift.start, "EEEE 'den' d. MMM:", {
+                                locale: da
+                            })
 
-                setWeekPlans(weekPlans)
-            })
-        // }
+                            const formattedStart = format(shift.start, "HH:mm")
+                            const formattedEnd = format(shift.end, "HH:mm")
+                            const formattedInterval = `${formattedStart} - ${formattedEnd}`
+
+                            return `${formattedDate}\n${formattedInterval}`
+                        }).join("\n\n")
+
+                    setUnbooked(shiftStr)
+
+                    setWeekPlans(weekPlans)
+                })
+        }
     }
 
     interface WeekPlanViewOptions {
@@ -177,77 +176,76 @@ export default function Shifts() {
     }
 
     return (
-        // <AuthorizationContext>
+        <AuthorizationContext>
+            <div>
+                <h1>Shifts</h1>
 
-        <div>
-            <h1>Shifts</h1>
+                {weekPlans.map((weekPlan, index) => (
+                    <Paper key={index}>
+                        <h2>{weekPlan.week}</h2>
+                        <WeekPlanView weekPlan={weekPlan}/>
+                    </Paper>
+                ))}
 
-            {weekPlans.map((weekPlan, index) => (
-                <Paper key={index}>
-                    <h2>{weekPlan.week}</h2>
-                    <WeekPlanView weekPlan={weekPlan}/>
-                </Paper>
-            ))}
-
-            <Accordion>
-                <AccordionSummary
-                    id="quick-message"
-                    aria-controls="accordion-text-message"
-                    expandIcon={<ExpandMore />} >
-                    Text message
-                </AccordionSummary>
-                <AccordionDetails>
+                <Accordion>
+                    <AccordionSummary
+                        id="quick-message"
+                        aria-controls="accordion-text-message"
+                        expandIcon={<ExpandMore/>}>
+                        Text message
+                    </AccordionSummary>
+                    <AccordionDetails>
                     <pre>
                         {unbooked}
                     </pre>
-                </AccordionDetails>
-            </Accordion>
+                    </AccordionDetails>
+                </Accordion>
 
-            <Accordion>
-                <AccordionSummary
-                    id="filters"
-                    aria-controls="accordion-filters"
-                    expandIcon={<ExpandMore />} >
-                    Filters
-                </AccordionSummary>
-                <AccordionDetails>
-                    Foobar
-                </AccordionDetails>
-            </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        id="filters"
+                        aria-controls="accordion-filters"
+                        expandIcon={<ExpandMore/>}>
+                        Filters
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        Foobar
+                    </AccordionDetails>
+                </Accordion>
 
-            <form autoComplete="off" onSubmit={handleSubmit}>
-                <div>
-                    <TextField
-                        label="From"
-                        onChange={(e) => setStartWeek(e.target.value)}
-                        required={true}
+                <form autoComplete="off" onSubmit={handleSubmit}>
+                    <div>
+                        <TextField
+                            label="From"
+                            onChange={(e) => setStartWeek(e.target.value)}
+                            required={true}
+                            variant="outlined"
+                            color="secondary"
+                            type="week"
+                            value={startWeek}
+                        />
+                    </div>
+
+                    <div>
+                        <TextField
+                            label="To"
+                            onChange={(e) => setEndWeek(e.target.value)}
+                            required={true}
+                            variant="outlined"
+                            color="secondary"
+                            type="week"
+                            value={endWeek}
+                        />
+                    </div>
+
+                    <Button
                         variant="outlined"
                         color="secondary"
-                        type="week"
-                        value={startWeek}
-                    />
-                </div>
-
-                <div>
-                    <TextField
-                        label="To"
-                        onChange={(e) => setEndWeek(e.target.value)}
-                        required={true}
-                        variant="outlined"
-                        color="secondary"
-                        type="week"
-                        value={endWeek}
-                    />
-                </div>
-
-                <Button
-                    variant="outlined"
-                    color="secondary"
-                    type="submit">
-                    Read
-                </Button>
-            </form>
-        </div>
-        // </AuthorizationContext>
+                        type="submit">
+                        Read
+                    </Button>
+                </form>
+            </div>
+        </AuthorizationContext>
     )
 }

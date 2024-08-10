@@ -8,35 +8,36 @@ import Welcome from "./pages/Welcome/Welcome.tsx";
 import Calendar from "./pages/Calendar/Calendar.tsx";
 import Shifts from "./pages/Shifts/Shifts.tsx";
 import Templates from "./pages/Templates/Templates.tsx";
+import Logout from "./pages/Logout.tsx";
 
 interface RfbpaRoutes {
-    home: RouteObject,
     calendar: RouteObject,
+    home: RouteObject,
+    logout: RouteObject,
     shifts: RouteObject,
-    shiftsUnprotected: RouteObject,
     templates: RouteObject,
 }
 
 export const rfbpaRoutes: RfbpaRoutes = {
+    calendar: {
+        path: "/calendar",
+        element: <Calendar />,
+    },
     home: {
         path: "/",
         element: <Welcome />,
     },
-    shiftsUnprotected: {
-        path: "/shifts-unprotected",
+    logout: {
+        path: "/logout",
+        element: <Logout />,
+    },
+    shifts: {
+        path: "/shifts",
         element: <Shifts />,
     },
     templates: {
         path: "/templates",
         element: <Templates />,
-    },
-    calendar: {
-        path: "/calendar",
-        element: <Calendar />,
-    },
-    shifts: {
-        path: "/shifts",
-        element: <Shifts />,
     },
 }
 

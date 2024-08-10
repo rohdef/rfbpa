@@ -1,7 +1,6 @@
-import {Box, Button, useMediaQuery} from "@mui/material";
+import {Box, Button} from "@mui/material";
 import {OverridableStringUnion} from "@mui/types";
 import {ButtonPropsVariantOverrides} from "@mui/material/Button/Button";
-import {useState} from "react";
 import theme from "../../styles/theme.tsx";
 import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
 import {Role, TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
@@ -17,18 +16,6 @@ interface MenuItemOptions {
 
 function MenuItem({destination, text, requiredRole = null, variant = "text"}: MenuItemOptions) {
     const {authentication} = useAuthentication()
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    // TODO probably not the best way to ask if mobile - and also, can this be styled in stead?
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-    const toggleNavigation = () => {
-        if (isMobile) {
-            setDrawerOpen(!drawerOpen);
-
-            // lock page scroll when menu is open
-            // document.getElementsByTagName('body')[0].classList.toggle(classes.noScroll);
-        }
-    }
 
     if (requiredRole && !authentication.roles().includes(requiredRole)) {
         return <></>
@@ -36,27 +23,19 @@ function MenuItem({destination, text, requiredRole = null, variant = "text"}: Me
 
     return (
         <li>
-            {isMobile ? (
-                <Button component="a" href={destination.path} variant={variant}>
-                    {text}
-                </Button>
-            ) : (
-                // TODO find a way to style this using media sizes rather than the if
-                <Button
-                    component="a"
-                    href={destination.path}
-                    variant={variant}
-                    onClick={toggleNavigation}
-                    sx={{ letterSpacing: theme.typography.standard.letterSpacing }}>
-                    {text}
-                </Button>
-            )}
+            <Button
+                component="a"
+                href={destination.path}
+                variant={variant}
+                sx={{letterSpacing: theme.typography.standard.letterSpacing}}>
+                {text}
+            </Button>
         </li>
     )
 }
 
 export default function Menu() {
-    const {authentication, resetAuthentication} = useAuthentication()
+    const {authentication} = useAuthentication()
 
     return (
         <Box component="ul" sx={{
@@ -66,23 +45,16 @@ export default function Menu() {
             },
         }}>
             <MenuItem destination={rfbpaRoutes.home} text="Start"/>
-            <MenuItem destination={rfbpaRoutes.shiftsUnprotected} text="Sh"/>
-            <MenuItem destination={rfbpaRoutes.templates} text="Temp"/>
 
-            <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender"/>
-            <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender" requiredRole={Role.EMPLOYER_CALENDAR} />
-            <MenuItem destination={rfbpaRoutes.shifts} text="Vagter" requiredRole={Role.SHIFT_ADMIN} />
-            <MenuItem destination={rfbpaRoutes.templates} text="Affyr skabelon" requiredRole={Role.TEMPLATE_ADMIN} />
+            <MenuItem destination={rfbpaRoutes.shifts} text="Vagter" requiredRole={Role.SHIFT_ADMIN}/>
+            <MenuItem destination={rfbpaRoutes.templates} text="Skabeloner" requiredRole={Role.TEMPLATE_ADMIN}/>
+            <MenuItem destination={rfbpaRoutes.calendar} text="Min kalender" requiredRole={Role.EMPLOYER_CALENDAR}/>
 
-            {authentication instanceof TokenAuthentication ?
-                (<Button
-                    component="a"
-                    onClick={resetAuthentication}
-                    variant="outlined"
-                    sx={{ letterSpacing: theme.typography.standard.letterSpacing }}>
-                    Logout
-                </Button>) :
-                (<> </>)}
+            {authentication instanceof TokenAuthentication ? (
+                <MenuItem destination={rfbpaRoutes.logout} text="Log ud" variant="outlined"/>
+            ) : (
+                <MenuItem destination={rfbpaRoutes.shifts} text="Log ind" variant="outlined"/>
+            )}
         </Box>
     );
 }

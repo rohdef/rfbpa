@@ -1,9 +1,8 @@
-import {Button, LinearProgress, TextField} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 import axios from "axios";
 import {ChangeEvent, FormEvent, useState} from "react";
 
 export default function Templates() {
-    const [uploadProgress, setUploadProgress] = useState(0)
     const [file, setFile] = useState<File>()
     const client = axios.create({
         baseURL: "http://localhost:8080/",
@@ -21,12 +20,7 @@ export default function Templates() {
         if (!file) return
         formData.append('file', file)
 
-        client.post('/templates', formData, {
-            onUploadProgress: progressEvent => {
-                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                setUploadProgress(percentCompleted)
-            },
-        })
+        client.post('/templates', formData)
             .then(response => {
                 console.log(response);
             })
@@ -38,8 +32,6 @@ export default function Templates() {
     return (
         <div>
             <h1>Templates</h1>
-            <LinearProgress variant="determinate" value={uploadProgress} />
-
             <form onSubmit={handleFileUpload}>
                 <TextField type="file" onChange={handleChange} inputProps={{accept:"text/yaml"}} />
                 <Button
