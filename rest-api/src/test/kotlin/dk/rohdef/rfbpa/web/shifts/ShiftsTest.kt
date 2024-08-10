@@ -23,8 +23,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
-class ShiftsDbKtTest : RfbpaSpec({
-    val url = "/shifts"
+class ShiftsTest : RfbpaSpec({
+    val url = "/api/public/shifts"
     val urlWeek29To31 = "${url}/${week29To31}"
 
     val weekPlanService = TestWeekPlanService()
