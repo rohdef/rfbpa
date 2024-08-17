@@ -1,16 +1,16 @@
-import arrow.core.Either
 import arrow.core.raise.either
-import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ApiError
+import dk.rohdef.rfbpa.web.modules.RfbpaPrincipal
+import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfbpa.web.typedGet
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -21,6 +21,7 @@ fun Route.shifts() {
     typedGet("/shifts/{yearWeekInterval}") {
         either {
             log.info { "Loading shifts for interval: ${call.parameters["yearWeekInterval"]}" }
+            val principal = call.rfbpaPrincipal().bind()
 
             val yearWeekInterval = call.parameters["yearWeekInterval"]!!
                 .let { YearWeekInterval.parse(it) }

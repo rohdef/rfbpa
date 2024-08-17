@@ -1,16 +1,21 @@
 package dk.rohdef.rfbpa.web.modules
 
+import arrow.core.Either
+import arrow.core.toOption
 import com.auth0.jwk.JwkProvider
-import com.auth0.jwk.JwkProviderBuilder
+import com.auth0.jwt.interfaces.Payload
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.helperplanning.RfbpaPrincipal as DomainPrincipal
+import dk.rohdef.helperplanning.RfbpaPrincipal.RfbpaRoles
+import dk.rohdef.rfbpa.web.ApiError
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.koin.ktor.ext.inject
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
+import org.koin.ktor.ext.inject
 
 fun Application.security() {
     val log = KotlinLogging.logger {}
@@ -20,11 +25,9 @@ fun Application.security() {
     install(Authentication) {
         jwt {
             realm = "rfbpa"
-            log.warn { jwkProvider.get("id-10-t") }
             verifier(jwkProvider, config.auth.jwtIssuer)
-            validate { jwtCredential ->
-                log.warn { jwtCredential.toString() }
-                JWTPrincipal(jwtCredential.payload)
+            validate {
+                fromJwtPayload(it.payload)
             }
             challenge { defaultScheme, realm ->
                 log.error { "Token is not valid or has expired" }
@@ -50,4 +53,36 @@ fun Application.security() {
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
         allowHeader(HttpHeaders.ContentType)
     }
+}
+
+fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> {
+    return principal<RfbpaPrincipal>().toOption()
+        .map { it.domainPrincipal }
+        .toEither { ApiError.unauthorized("No way!") }
+}
+
+@JvmInline
+value class RfbpaPrincipal(
+    val domainPrincipal: DomainPrincipal
+) : Principal
+
+fun fromJwtPayload(payload: Payload): RfbpaPrincipal {
+    val realmAccess = payload.getClaim("realm_access").asMap()
+    val rolesRaw = realmAccess.get("roles") as List<String>
+    val roles = rolesRaw.flatMap {
+        when (it.trim()) {
+            "shift admin" -> listOf(RfbpaRoles.SHIFT_ADMIN)
+            "template admin" -> listOf(RfbpaRoles.TEMPLATE_ADMIN)
+            else -> emptyList()
+        }
+    }
+
+    return RfbpaPrincipal(
+        DomainPrincipal(
+            payload.subject,
+            payload.getClaim("name").asString(),
+            payload.getClaim("email").asString(),
+            roles,
+        )
+    )
 }

@@ -16,6 +16,7 @@ import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.upsert
 import java.sql.SQLException
 
 private val log = KotlinLogging.logger {}
@@ -55,7 +56,7 @@ class DatabaseHelpers : HelpersRepository {
 
     override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> = dbQuery {
         catchOrThrow<Exception, Helper> {
-            HelpersTable.insert {
+            HelpersTable.upsert {
                 it[id] = helper.id.id.toJavaUUID()
                 it[shortName] = helper.shortName
             }

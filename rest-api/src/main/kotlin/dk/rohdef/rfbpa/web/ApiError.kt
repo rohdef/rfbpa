@@ -10,5 +10,6 @@ data class ApiError(
         fun badRequest(message: String) = ApiError(HttpStatusCode.BadRequest, message)
         fun internalServerError(message: String) = ApiError(HttpStatusCode.InternalServerError, message)
         fun forbidden(message: String) = ApiError(HttpStatusCode.Forbidden, message)
+        fun unauthorized(message: String) = ApiError(HttpStatusCode.Unauthorized, message)
     }
 }

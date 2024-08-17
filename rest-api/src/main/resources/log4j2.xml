@@ -12,13 +12,13 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="dk.rohdef" additivity="false">
-            <AppenderRef ref="Console" />
-        </Logger>
         <Logger name="io.ktor" level="info">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="io.ktor.server.engine.ApplicationEngineEnvironmentReloading" level="info">
+        <Logger name="Exposed" level="info">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Logger name="io.ktor.server" level="info">
             <AppenderRef ref="Console" />
         </Logger>
         <Logger name="io.netty" level="info">

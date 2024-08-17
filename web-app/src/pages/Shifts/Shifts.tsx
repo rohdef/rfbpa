@@ -1,4 +1,14 @@
-import {Accordion, AccordionDetails, AccordionSummary, Button, Paper, TextField} from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button, Checkbox, FormControlLabel,
+    FormGroup,
+    Grid,
+    Paper,
+    TextField
+} from "@mui/material";
 import {FormEvent, useState} from "react";
 import axios, {AxiosResponse} from "axios";
 import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
@@ -6,7 +16,7 @@ import {TokenAuthentication} from "../../contexts/AuthenticationContext/Authenti
 import {format, parseISO} from "date-fns";
 import {da} from "date-fns/locale";
 import {DayPilot, DayPilotCalendar} from "@daypilot/daypilot-lite-react";
-import {brown, lightGreen, purple, red, yellow} from "@mui/material/colors";
+import {brown, lightGreen, pink, purple, red, yellow} from "@mui/material/colors";
 import {WeekPlan} from "./WeekPlan.ts";
 import {Shift} from "./Shift.ts";
 import {ExpandMore} from "@mui/icons-material";
@@ -15,21 +25,30 @@ import AuthorizationContext from "../../contexts/AuthorizationContext/Authorizat
 
 interface Helper {
     color: string
+    filtedered: boolean
 }
 
 const helpers: { [name: string]: Helper } = {
     camilla: {
         color: lightGreen["A100"],
+        filtedered: true,
     },
     helle: {
         color: purple["100"],
+        filtedered: false,
     },
     jona: {
         color: yellow["100"],
+        filtedered: false,
     },
     tex: {
         color: brown["100"],
-    }
+        filtedered: false,
+    },
+    ulrik: {
+        color: pink["100"],
+        filtedered: false,
+    },
 }
 
 interface HelperBookingDto {
@@ -111,7 +130,6 @@ export default function Shifts() {
                         return weekPlan.allShifts()
                     })
 
-
                     const shiftStr = shifts
                         .filter(shift => shift.helper === "Ikke booket")
                         .map(shift => {
@@ -141,26 +159,28 @@ export default function Shifts() {
         const startDate = parseISO(`${weekPlan.week}-1`)
 
         const events: DayPilot.EventData[] = weekPlan.allShifts()
-            .filter(shift => shift.helper !== "camille")
+            .filter(shift => shift.helper !== "camilla")
             .map(shift => {
+                const helper = helpers[shift.helper]
+                let color
+                if (helper) {
+                    color = helper.color
+                } else {
+                    console.log(`Missing helper: ${shift.helper}`)
+                    color = red["100"]
+                }
+
                 return {
                     id: shift.shiftId,
                     text: shift.helper,
                     start: new DayPilot.Date(shift.start, true),
                     end: new DayPilot.Date(shift.end, true),
-                    backColor: helpers[shift.helper].color || red["100"],
+                    backColor: color,
                 }
             })
 
-        const cellHandler = (event: CalendarBeforeCellRenderArgs) => {
-            if (event.cell.start.getHours() === 11) {
-                event.cell.properties.business = false
-            }
-        }
-
         return (
             <DayPilotCalendar
-                onBeforeCellRender={cellHandler}
                 cellHeight={20}
 
                 heightSpec="Full"
@@ -181,70 +201,88 @@ export default function Shifts() {
                 <h1>Shifts</h1>
 
                 {weekPlans.map((weekPlan, index) => (
-                    <Paper key={index}>
+                    <Paper key={index} sx={{ marginBottom: 2 }}>
                         <h2>{weekPlan.week}</h2>
                         <WeekPlanView weekPlan={weekPlan}/>
                     </Paper>
                 ))}
 
-                <Accordion>
-                    <AccordionSummary
-                        id="quick-message"
-                        aria-controls="accordion-text-message"
-                        expandIcon={<ExpandMore/>}>
-                        Text message
-                    </AccordionSummary>
-                    <AccordionDetails>
+                <Box>
+                    <Accordion sx={{ marginBottom: 2 }}>
+                        <AccordionSummary
+                            id="quick-message"
+                            aria-controls="accordion-text-message"
+                            expandIcon={<ExpandMore/>}>
+                            Text message
+                        </AccordionSummary>
+                        <AccordionDetails>
                     <pre>
                         {unbooked}
                     </pre>
-                    </AccordionDetails>
-                </Accordion>
+                        </AccordionDetails>
+                    </Accordion>
 
-                <Accordion>
-                    <AccordionSummary
-                        id="filters"
-                        aria-controls="accordion-filters"
-                        expandIcon={<ExpandMore/>}>
-                        Filters
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        Foobar
-                    </AccordionDetails>
-                </Accordion>
+                    <Accordion sx={{ marginBottom: 2 }}>
+                        <AccordionSummary
+                            id="filters"
+                            aria-controls="accordion-filters"
+                            expandIcon={<ExpandMore/>}>
+                            Filters
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <FormGroup>
+                                {Object.keys(helpers).map((key) => (
+                                    <FormControlLabel
+                                        key={key}
+                                        label={key}
+                                        control={<Checkbox checked={helpers[key].filtedered} />}
+                                        sx={{ backgroundColor: helpers[key].color }} />
+                                ))}
+                            </FormGroup>
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
 
-                <form autoComplete="off" onSubmit={handleSubmit}>
-                    <div>
-                        <TextField
-                            label="From"
-                            onChange={(e) => setStartWeek(e.target.value)}
-                            required={true}
-                            variant="outlined"
-                            color="secondary"
-                            type="week"
-                            value={startWeek}
-                        />
-                    </div>
+                <Box component="form" autoComplete="off" onSubmit={handleSubmit}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="From"
+                                margin="normal"
+                                fullWidth
+                                required
+                                onChange={(e) => setStartWeek(e.target.value)}
+                                variant="outlined"
+                                color="secondary"
+                                type="week"
+                                value={startWeek}
+                            />
+                        </Grid>
 
-                    <div>
-                        <TextField
-                            label="To"
-                            onChange={(e) => setEndWeek(e.target.value)}
-                            required={true}
-                            variant="outlined"
-                            color="secondary"
-                            type="week"
-                            value={endWeek}
-                        />
-                    </div>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="To"
+                                margin="normal"
+                                fullWidth
+                                required
+                                onChange={(e) => setEndWeek(e.target.value)}
+                                variant="outlined"
+                                color="secondary"
+                                type="week"
+                                value={endWeek}
+                            />
+                        </Grid>
+                    </Grid>
 
                     <Button
-                        variant="outlined"
+                        fullWidth
+                        variant="contained"
                         color="secondary"
-                        type="submit">
+                        type="submit"
+                        sx={{ marginTop: 2, marginBottom: 2 }}>
                         Read
                     </Button>
-                </form>
+                </Box>
             </div>
         </AuthorizationContext>
     )
