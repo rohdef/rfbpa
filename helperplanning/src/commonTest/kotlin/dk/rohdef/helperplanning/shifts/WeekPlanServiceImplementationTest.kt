@@ -4,15 +4,12 @@ import arrow.core.left
 import arrow.core.right
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.ShiftTestData.Fiktivus
-import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import kotlinx.datetime.DayOfWeek
 
 class WeekPlanServiceImplementationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
@@ -33,15 +30,15 @@ class WeekPlanServiceImplementationTest : FunSpec({
         Fiktivus.shiftsNotInSystem.forEach { salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, it) }
         Fiktivus.allShiftsInSystem.forEach { shiftRepository.createOrUpdate(PrincipalsTestData.FiktivusMaximus.subject, it) }
 
-        weekSynchronizationRepository.markSynchronized(year2024Week8).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week9).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week10).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10).shouldBeRight()
     }
 
     test("should synchronize when not") {
-        weekSynchronizationRepository.markForSynchronization(year2024Week8).shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(year2024Week9).shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(year2024Week10).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10).shouldBeRight()
 
         val shifts = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week8..year2024Week10)
             .shouldBeRight()
@@ -57,9 +54,9 @@ class WeekPlanServiceImplementationTest : FunSpec({
     }
 
     test("should fail when synchronization fails") {
-        weekSynchronizationRepository.markForSynchronization(year2024Week8).shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(year2024Week9).shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(year2024Week10).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9).shouldBeRight()
+        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10).shouldBeRight()
         salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week10) ShiftsError.NotAuthorized.left() else Unit.right() }
 
         val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week8..year2024Week10)
@@ -70,9 +67,9 @@ class WeekPlanServiceImplementationTest : FunSpec({
 
     test("when synchronized, should not bump into salary") {
         salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week9) ShiftsError.NotAuthorized.left() else Unit.right() }
-        weekSynchronizationRepository.markSynchronized(year2024Week8).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week9).shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(year2024Week10).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9).shouldBeRight()
+        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10).shouldBeRight()
 
         weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week8..year2024Week10)
             .shouldBeRight()

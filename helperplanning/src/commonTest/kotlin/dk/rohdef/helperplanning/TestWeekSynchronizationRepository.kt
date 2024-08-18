@@ -19,8 +19,8 @@ class TestWeekSynchronizationRepository(
         memoryWeekSynchronizationRepository.reset()
     }
 
-    override fun markSynchronized(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+    override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
         _markSynchronizedPreRunners.map { it(yearWeek).bind() }
-        memoryWeekSynchronizationRepository.markSynchronized(yearWeek)
+        memoryWeekSynchronizationRepository.markSynchronized(subject, yearWeek)
     }
 }

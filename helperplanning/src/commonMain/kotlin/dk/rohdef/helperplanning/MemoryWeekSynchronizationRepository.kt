@@ -12,21 +12,28 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
         synchronizedWeeks.clear()
     }
 
-    override fun markForSynchronization(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
+    override fun markForSynchronization(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
         synchronizedWeeks.remove(yearWeek)
             return Unit.right()
     }
 
-    override fun markSynchronized(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
+    override fun markPossiblyOutOfDate(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek
+    ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
+        TODO("not implemented")
+    }
+
+    override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
         synchronizedWeeks.add(yearWeek)
         return Unit.right()
     }
 
-    override fun synchronizationStates(yearWeekInterval: YearWeekInterval): Map<YearWeek, WeekSynchronizationRepository.SynchronizationState> {
-        return yearWeekInterval.associate { it to synchronizationState(it) }
+    override fun synchronizationStates(subject: RfbpaPrincipal.Subject, yearWeekInterval: YearWeekInterval): Map<YearWeek, WeekSynchronizationRepository.SynchronizationState> {
+        return yearWeekInterval.associate { it to synchronizationState(subject, it) }
     }
 
-    override fun synchronizationState(yearWeek: YearWeek): WeekSynchronizationRepository.SynchronizationState {
+    override fun synchronizationState(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): WeekSynchronizationRepository.SynchronizationState {
         return if (synchronizedWeeks.contains(yearWeek)) {
             WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         } else {

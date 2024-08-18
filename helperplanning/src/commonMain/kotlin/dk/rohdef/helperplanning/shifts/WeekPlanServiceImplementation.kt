@@ -17,7 +17,7 @@ class WeekPlanServiceImplementation(
 ) : WeekPlanService {
     override suspend fun synchronize(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> =
         either {
-            val synchronizationStates = weekSynchronizationRepository.synchronizationStates(yearWeekInterval)
+            val synchronizationStates = weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
             val weeksToSynchronize = synchronizationStates
                 .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
                 .keys
@@ -26,7 +26,7 @@ class WeekPlanServiceImplementation(
         }
 
     override suspend fun synchronize(principal: RfbpaPrincipal, yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
-        val synchronizationState = weekSynchronizationRepository.synchronizationState(yearWeek)
+        val synchronizationState = weekSynchronizationRepository.synchronizationState(principal.subject, yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             val salaryWeekPlan = salarySystem.shifts(yearWeek)
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
@@ -36,7 +36,7 @@ class WeekPlanServiceImplementation(
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
-            weekSynchronizationRepository.markSynchronized(yearWeek)
+            weekSynchronizationRepository.markSynchronized(principal.subject, yearWeek)
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
         }
@@ -49,7 +49,7 @@ class WeekPlanServiceImplementation(
     ) = either {
         // TODO mark possibly-synced
         // TODO improve domain errors (i.e., create them)
-        weekSynchronizationRepository.markForSynchronization(start.yearWeek)
+        weekSynchronizationRepository.markForSynchronization(principal.subject, start.yearWeek)
             .mapLeft { }
             .bind()
 
