@@ -7,9 +7,11 @@ sealed interface HelperBooking {
         override fun toString(): String = "NoBooking"
     }
 
-    data class PermanentHelper(val helper: Helper) : HelperBooking
+    @JvmInline
+    value class PermanentHelper(val helper: Helper) : HelperBooking
 
-    data class UnknownHelper(val externalReference: String) : HelperBooking
+    @JvmInline
+    value class UnknownHelper(val externalReference: String) : HelperBooking
 
     object VacancyHelper : HelperBooking
 }

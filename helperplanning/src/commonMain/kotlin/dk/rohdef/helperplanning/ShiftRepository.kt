@@ -17,5 +17,5 @@ interface ShiftRepository {
 
     suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createOrUpdate(shift: Shift): Either<ShiftsError, Shift>
+    suspend fun createOrUpdate(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift>
 }

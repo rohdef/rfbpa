@@ -35,6 +35,7 @@ class MemoryShiftRepository : ShiftRepository {
     }
 
     override suspend fun createOrUpdate(
+        subject: RfbpaPrincipal.Subject,
         shift: Shift,
     ): Either<ShiftsError, Shift> {
         _shifts.put(shift.shiftId, shift)

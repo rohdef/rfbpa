@@ -2,7 +2,6 @@ import arrow.core.raise.either
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ApiError
-import dk.rohdef.rfbpa.web.modules.RfbpaPrincipal
 import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfbpa.web.typedGet
@@ -10,7 +9,6 @@ import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -30,24 +28,26 @@ fun Route.shifts() {
                     when (it) {
                         is YearWeekIntervalParseError.NoSeparatorError ->
                             ApiError.badRequest("Could not find interval separator, please use double hyphen '--'")
+
                         is YearWeekIntervalParseError.YearWeekComponentParseError ->
                             ApiError.badRequest("Parsing of year weeks failed")
                     }
                 }
                 .bind()
 
-                val weekPlans = weekPlanService.shifts(yearWeekInterval)
-                    .mapLeft {
-                        when (it) {
-                            WeekPlanServiceError.AccessDeniedToSalarySystem ->
-                                ApiError.forbidden("Access to salary system denied, please check configuration of credentials")
-                            WeekPlanServiceError.CannotCommunicateWithShiftsRepository ->
-                                ApiError.internalServerError("Shifts repository unreachable right now, try again later")
-                        }
-                    }
-                    .bind()
+            val weekPlans = weekPlanService.shifts(principal, yearWeekInterval)
+                .mapLeft {
+                    when (it) {
+                        WeekPlanServiceError.AccessDeniedToSalarySystem ->
+                            ApiError.forbidden("Access to salary system denied, please check configuration of credentials")
 
-                weekPlans.map { WeekPlanOut.from(it) }
+                        WeekPlanServiceError.CannotCommunicateWithShiftsRepository ->
+                            ApiError.internalServerError("Shifts repository unreachable right now, try again later")
+                    }
+                }
+                .bind()
+
+            weekPlans.map { WeekPlanOut.from(it) }
         }
     }
 }

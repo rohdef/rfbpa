@@ -11,7 +11,7 @@ internal sealed interface ShiftData {
     data class Shifts(val axpShifts: List<AxpShift>) : ShiftData {
         override operator fun plus(shiftData: ShiftData): Shifts {
             return when (shiftData) {
-                is NoData -> this
+                NoData -> this
                 is Shifts -> Shifts(this.axpShifts + shiftData.axpShifts)
             }
         }

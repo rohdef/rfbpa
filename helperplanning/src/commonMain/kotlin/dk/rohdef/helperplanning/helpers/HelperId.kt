@@ -3,7 +3,8 @@ package dk.rohdef.helperplanning.helpers
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 
-data class HelperId(
+@JvmInline
+value class HelperId(
     val id: UUID,
 ) {
     companion object {

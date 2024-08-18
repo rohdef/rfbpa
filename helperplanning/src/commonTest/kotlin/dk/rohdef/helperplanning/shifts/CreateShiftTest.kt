@@ -1,9 +1,6 @@
 package dk.rohdef.helperplanning.shifts
 
-import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
-import dk.rohdef.helperplanning.TestSalarySystemRepository
-import dk.rohdef.helperplanning.TestShiftRespository
-import dk.rohdef.helperplanning.WeekSynchronizationRepository
+import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -21,8 +18,7 @@ class CreateShiftTest : FunSpec({
     val shift1End = YearWeekDayAtTime.parseUnsafe("2024-W13-1T14:30")
 
     test("create shift") {
-        // TODO: 21/07/2024 rohdef - mark synchronized?
-        weekPlanService.createShift(shift1Start, shift1End)
+        weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
         salarySystemRepository.shiftList
             .shouldContainExactly(
@@ -40,5 +36,8 @@ class CreateShiftTest : FunSpec({
         weekSynchronizationRepository.synchronizationStates(all2024Weeks) shouldContainExactly expectedSynchronizationStates
     }
 
-    test("shift not created in shift repository") {}
+    test("shift not created in shift repository") {
+        shiftRepository.addCreateShiftErrorRunner { TODO() }
+        weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+    }
 })
