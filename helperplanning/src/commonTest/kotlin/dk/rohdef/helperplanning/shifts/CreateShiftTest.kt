@@ -5,6 +5,7 @@ import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
@@ -32,10 +33,18 @@ class CreateShiftTest : FunSpec({
         shift1End,
     )
 
+    beforeEach {
+        salarySystemRepository.reset()
+        shiftRepository.reset()
+        weekSynchronizationRepository.reset()
+    }
+
     test("Create shift while not synchronized - synchronization state is unchanged") {
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
         salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
+        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
+
         val expectedSynchronizationStates = all2024Weeks.associate {
             it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
         }
@@ -45,7 +54,7 @@ class CreateShiftTest : FunSpec({
         ) shouldContainExactly expectedSynchronizationStates
     }
 
-    test("Create shift while not synchronized - synchronization is marked possibly out of date") {
+    test("Create shift while synchronized - synchronization is marked possibly out of date") {
         all2024Weeks.forEach {
             weekSynchronizationRepository.markSynchronized(
                 PrincipalsTestData.FiktivusMaximus.subject,
@@ -55,6 +64,7 @@ class CreateShiftTest : FunSpec({
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
         salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
+        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
 
         val expectedSynchronizationWeek1To12 = week1to12.associate {
             it to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
@@ -81,6 +91,7 @@ class CreateShiftTest : FunSpec({
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
         salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
+        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
 
         val expectedSynchronizationWeek1To12 = week1to12.associate {
             it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
@@ -105,9 +116,19 @@ class CreateShiftTest : FunSpec({
     test("shift not created in shift repository") {
         shiftRepository.addCreateShiftErrorRunner { ShiftsError.NotAuthorized.left() }
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+            .shouldBeLeft()
 
-        salarySystemRepository.shiftList
-            .shouldContainExactly(listOf())
+        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
+        shiftRepository.shiftList shouldContainExactly listOf()
+    }
+
+    test("shift not created in salary system") {
+        shiftRepository.addCreateShiftErrorRunner { ShiftsError.NotAuthorized.left() }
+        weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+            .shouldBeLeft()
+
+        salarySystemRepository.shiftList shouldContainExactly listOf()
+        shiftRepository.shiftList shouldContainExactly listOf()
     }
 
     test("Create shift distinguished between subject") {

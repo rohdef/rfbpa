@@ -10,10 +10,16 @@ import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
 typealias SalaryShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
+typealias CreateSalaryShiftErrorRunner = (start: YearWeekDayAtTime, end: YearWeekDayAtTime) -> Either<ShiftsError, Unit>
 
 class TestSalarySystemRepository(
     val memoryWeekPlanRepository: MemorySalarySystemRepository = MemorySalarySystemRepository(),
 ) : SalarySystemRepository by memoryWeekPlanRepository {
+    private val _createShiftErrorRunners = mutableListOf<CreateSalaryShiftErrorRunner>()
+    fun addCreateShiftErrorRunner(errorRunner: CreateSalaryShiftErrorRunner) {
+        _createShiftErrorRunners.add(errorRunner)
+    }
+
     private val _shiftsErrorRunners = mutableListOf<SalaryShiftsErrorRunner>()
     fun addShiftsErrorRunner(errorRunner: SalaryShiftsErrorRunner) {
         _shiftsErrorRunners.add(errorRunner)
@@ -22,6 +28,7 @@ class TestSalarySystemRepository(
     internal fun reset() {
         memoryWeekPlanRepository.reset()
         _shiftsErrorRunners.clear()
+        _createShiftErrorRunners.clear()
     }
 
     internal val shifts: Map<ShiftId, Shift>
@@ -41,13 +48,11 @@ class TestSalarySystemRepository(
         memoryWeekPlanRepository.shifts(yearWeek).bind()
     }
 
-    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {
+    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime) = either {
+        _createShiftErrorRunners.map { it(start, end).bind() }
         val shiftId = generateTestShiftId(start, end)
-        val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
-
-        memoryWeekPlanRepository._shifts.put(shiftId, shift)
-
-        return shift.right()
+        Shift(HelperBooking.NoBooking, shiftId, start, end)
+            .also { memoryWeekPlanRepository._shifts.put(shiftId, it) }
     }
 
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =

@@ -6,7 +6,7 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
 class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
-    internal val synchronizedWeeks = mutableSetOf<YearWeek>()
+    internal val synchronizedWeeks = mutableMapOf<YearWeek, WeekSynchronizationRepository.SynchronizationState>().withDefault { WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
 
     fun reset() {
         synchronizedWeeks.clear()
@@ -21,11 +21,12 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
     ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        TODO("not implemented")
+        synchronizedWeeks[yearWeek] = WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE
+        return Unit.right()
     }
 
     override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        synchronizedWeeks.add(yearWeek)
+        synchronizedWeeks[yearWeek] = WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         return Unit.right()
     }
 
@@ -34,10 +35,6 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
     }
 
     override fun synchronizationState(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): WeekSynchronizationRepository.SynchronizationState {
-        return if (synchronizedWeeks.contains(yearWeek)) {
-            WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
-        } else {
-            WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
-        }
+        return synchronizedWeeks.getOrDefault(yearWeek, WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
     }
 }

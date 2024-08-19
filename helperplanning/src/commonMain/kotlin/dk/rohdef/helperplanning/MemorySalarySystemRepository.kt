@@ -57,7 +57,7 @@ class MemorySalarySystemRepository(
     override suspend fun createShift(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, Shift> {
+    ): Either<ShiftsError, Shift> {
         val shiftId = ShiftId.generateId()
         val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
 

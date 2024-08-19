@@ -23,7 +23,7 @@ interface SalarySystemRepository {
 
     suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan>
 
-    suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift>
+    suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<ShiftsError, Shift>
 
     sealed interface BookingError {
         data class ShiftNotFound(val shiftId: ShiftId) : BookingError
