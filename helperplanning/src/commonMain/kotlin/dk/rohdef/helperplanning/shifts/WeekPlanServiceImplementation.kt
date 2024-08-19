@@ -47,22 +47,25 @@ class WeekPlanServiceImplementation(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ) = either {
-        // TODO mark possibly-synced
-        // TODO improve domain errors (i.e., create them)
-        weekSynchronizationRepository.markForSynchronization(principal.subject, start.yearWeek)
-            .mapLeft { }
-            .bind()
+        // TODO: 19/08/2024 rohdef -  #41 improve domain errors (i.e., create them)
+        when (weekSynchronizationRepository.synchronizationState(principal.subject, start.yearWeek)) {
+            WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED ->
+                weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, start.yearWeek)
+                    .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
+                    .bind()
+            WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE -> {}
+            WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE -> {}
+        }
 
         val shift = salarySystem.createShift(start, end)
-            // TODO try add shift repository
-//            .flatMap { shiftRepository.createShift(it) }
+            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
             .bind()
+
+        shiftRepository.createOrUpdate(principal.subject, shift)
+            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
+            .bind()
+
         shift
-
-        // TODO: 16/07/2024 rohdef
-        // systemet detecter når vi booker - er det nok?
-        // måske sync skal have strategi til conflict?
-
     }
 
     override suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>> = either {

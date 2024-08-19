@@ -123,7 +123,7 @@ class CreateShiftTest : FunSpec({
     }
 
     test("shift not created in salary system") {
-        shiftRepository.addCreateShiftErrorRunner { ShiftsError.NotAuthorized.left() }
+        salarySystemRepository.addCreateShiftErrorRunner { start, end -> ShiftsError.NotAuthorized.left() }
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
             .shouldBeLeft()
 
