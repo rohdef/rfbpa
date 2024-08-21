@@ -78,7 +78,7 @@ class WeekPlanServiceImplementation(
                 }.first()
             }.bind()
 
-        shiftRepository.byYearWeekInterval(yearWeekInterval)
+        shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
             .mapLeft {
                WeekPlanServiceError.CannotCommunicateWithShiftsRepository
             }

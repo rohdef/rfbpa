@@ -6,10 +6,12 @@ import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import java.time.DayOfWeek
 
 class CreateShiftTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
@@ -18,19 +20,28 @@ class CreateShiftTest : FunSpec({
     val weekPlanService =
         WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
-    val shift1Start = YearWeekDayAtTime.parseUnsafe("2024-W13-1T13:30")
-    val shift1End = YearWeekDayAtTime.parseUnsafe("2024-W13-1T14:30")
 
     val all2024Weeks = YearWeek(2024, 1)..YearWeek(2024, 52)
     val week1to12 = YearWeek(2024, 1)..YearWeek(2024, 12)
     val week13 = YearWeek(2024, 13)
     val week14to52 = YearWeek(2024, 14)..YearWeek(2024, 52)
 
+    val shift1Start = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(13, 30)
+    val shift1End = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(14, 30)
     val testShift1 = Shift(
         HelperBooking.NoBooking,
         generateTestShiftId(shift1Start, shift1End),
         shift1Start,
         shift1End,
+    )
+
+    val shift2Start = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(8, 15)
+    val shift2End = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(19, 15)
+    val testShift2 = Shift(
+        HelperBooking.NoBooking,
+        generateTestShiftId(shift2Start, shift2End),
+        shift2Start,
+        shift2End,
     )
 
     beforeEach {
@@ -132,6 +143,22 @@ class CreateShiftTest : FunSpec({
     }
 
     test("Create shift distinguished between subject") {
+        weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+            .shouldBeRight()
+        weekPlanService.createShift(PrincipalsTestData.RealisMinimalis.allRoles, shift2Start, shift2End)
+            .shouldBeRight()
+
+        val fiktivusWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.FiktivusMaximus.subject, week13)
+            .shouldBeRight()
+        val realisWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
+            .shouldBeRight()
+
+        val fiktivusYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.FiktivusMaximus.subject, all2024Weeks)
+            .shouldBeRight()
+        val realisYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.RealisMinimalis.subject, all2024Weeks)
+            .shouldBeRight()
+
+        fiktivusWeek13
         TODO()
     }
 })
