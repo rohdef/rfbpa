@@ -1,6 +1,8 @@
 package dk.rohdef.helperplanning.shifts
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.NonEmptyList
+import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
@@ -15,9 +17,13 @@ class WeekPlanServiceImplementation(
     private val shiftRepository: ShiftRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) : WeekPlanService {
-    override suspend fun synchronize(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> =
+    override suspend fun synchronize(
+        principal: RfbpaPrincipal,
+        yearWeekInterval: YearWeekInterval
+    ): Either<NonEmptyList<SynchronizationError>, Unit> =
         either {
-            val synchronizationStates = weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
+            val synchronizationStates =
+                weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
             val weeksToSynchronize = synchronizationStates
                 .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
                 .keys
@@ -25,10 +31,13 @@ class WeekPlanServiceImplementation(
                 .bind()
         }
 
-    override suspend fun synchronize(principal: RfbpaPrincipal, yearWeek: YearWeek): Either<SynchronizationError, Unit> = either {
+    override suspend fun synchronize(
+        principal: RfbpaPrincipal,
+        yearWeek: YearWeek
+    ): Either<SynchronizationError, Unit> = either {
         val synchronizationState = weekSynchronizationRepository.synchronizationState(principal.subject, yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
-            val salaryWeekPlan = salarySystem.shifts(yearWeek)
+            val salaryWeekPlan = salarySystem.shifts(principal.subject, yearWeek)
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
@@ -53,11 +62,12 @@ class WeekPlanServiceImplementation(
                 weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, start.yearWeek)
                     .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
                     .bind()
+
             WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE -> {}
             WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE -> {}
         }
 
-        val shift = salarySystem.createShift(start, end)
+        val shift = salarySystem.createShift(principal.subject, start, end)
             .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
             .bind()
 
@@ -68,7 +78,10 @@ class WeekPlanServiceImplementation(
         shift
     }
 
-    override suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>> = either {
+    override suspend fun shifts(
+        principal: RfbpaPrincipal,
+        yearWeekInterval: YearWeekInterval
+    ): Either<WeekPlanServiceError, List<WeekPlan>> = either {
         synchronize(principal, yearWeekInterval)
             .mapLeft {
                 it.map {
@@ -80,7 +93,7 @@ class WeekPlanServiceImplementation(
 
         shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
             .mapLeft {
-               WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+                WeekPlanServiceError.CannotCommunicateWithShiftsRepository
             }
             .bind()
     }

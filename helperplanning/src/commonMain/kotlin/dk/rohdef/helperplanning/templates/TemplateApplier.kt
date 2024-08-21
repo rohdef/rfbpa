@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.left
 import dk.rohdef.helperplanning.HelpersRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
@@ -21,16 +22,18 @@ class TemplateApplier(
     private val log = KotlinLogging.logger {}
 
     suspend fun applyTemplates(
+        principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval,
         templates: List<Template>,
     ) {
         // TODO: 08/06/2024 rohdef - temporary implementation due to expected method signature
         val schedulingStart = yearWeekInterval.start
         val schedulingEnd = yearWeekInterval.endInclusive
-        applyTemplate(schedulingStart, schedulingEnd, templates.first())
+        applyTemplate(principal, schedulingStart, schedulingEnd, templates.first())
     }
 
     suspend fun applyTemplate(
+        principal: RfbpaPrincipal,
         schedulingStart: YearWeek,
         schedulingEnd: YearWeek,
         template: Template,
@@ -48,11 +51,11 @@ class TemplateApplier(
         (templateStart..schedulingEnd).forEachIndexed { index, yearWeek ->
             val weekIndex = (index + indexAdjustment) % template.weeks.size
             val weekTemplate = template.weeks[weekIndex]
-            applyWeekTemplates(yearWeek, weekTemplate)
+            applyWeekTemplates(principal.subject, yearWeek, weekTemplate)
         }
     }
 
-    private suspend fun applyWeekTemplates(week: YearWeek, weekTemplate: WeekTemplate) {
+    private suspend fun applyWeekTemplates(subject: RfbpaPrincipal.Subject, week: YearWeek, weekTemplate: WeekTemplate) {
         log.info { "Creating shifts for week $week - using template ${weekTemplate.name}" }
 
         weekTemplate.shifts.forEach {
@@ -62,12 +65,12 @@ class TemplateApplier(
                 val start = yearWeekDay.atTime(it.start)
                 val end = start.untilTime(it.end)
 
-                val shift = salarySystemRepository.createShift(start, end)
+                val shift = salarySystemRepository.createShift(subject, start, end)
                 log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
 
                 when (shift) {
                     is Either.Right -> {
-                        bookHelper(shift.value.shiftId, it.helper)
+                        bookHelper(subject, shift.value.shiftId, it.helper)
                     }
 
                     is Either.Left -> {
@@ -79,7 +82,7 @@ class TemplateApplier(
     }
 
     // TODO: 25/06/2024 rohdef - this probably needs a bit of rework
-    private suspend fun bookHelper(shiftId: ShiftId, helperReservation: HelperReservation) {
+    private suspend fun bookHelper(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, helperReservation: HelperReservation) {
         when (helperReservation) {
             is HelperReservation.Helper -> {
                 val helper = helperRepository.byShortName(helperReservation.id)
@@ -87,6 +90,7 @@ class TemplateApplier(
 
                 val bookingId =  when (helper) {
                     is Either.Right -> salarySystemRepository.bookShift(
+                        subject,
                         shiftId,
                         helper.value.id,
                     )

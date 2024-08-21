@@ -1,6 +1,9 @@
 package dk.rohdef.helperplanning
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.right
+import arrow.core.toOption
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
@@ -20,6 +23,7 @@ class MemorySalarySystemRepository(
         get() = _shifts.toMap()
 
     override suspend fun bookShift(
+        subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
@@ -39,7 +43,10 @@ class MemorySalarySystemRepository(
         return shift.map { shiftId }
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
+    override suspend fun shifts(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek
+    ): Either<ShiftsError, WeekPlan> {
         val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
         val weekPlan = WeekPlan(
             yearWeek,
@@ -55,6 +62,7 @@ class MemorySalarySystemRepository(
     }
 
     override suspend fun createShift(
+        subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ): Either<ShiftsError, Shift> {

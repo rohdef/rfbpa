@@ -4,7 +4,6 @@ import arrow.core.left
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
@@ -148,24 +147,20 @@ class CreateShiftTest : FunSpec({
         weekPlanService.createShift(PrincipalsTestData.RealisMinimalis.allRoles, shift2Start, shift2End)
             .shouldBeRight()
 
-        val fiktivusWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.FiktivusMaximus.subject, week13)
+        val fiktivusSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.FiktivusMaximus.subject, week13)
             .shouldBeRight()
-        val realisWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
+        val fiktivusShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.FiktivusMaximus.subject, week13)
             .shouldBeRight()
-
-        val fiktivusExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
-        val realisExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
-        fiktivusWeek13 shouldBe fiktivusExpected
-        realisWeek13 shouldBe realisExpected
-
-        val fiktivusYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.FiktivusMaximus.subject, all2024Weeks)
+        val realisSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.RealisMinimalis.subject, week13)
             .shouldBeRight()
-        val realisYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.RealisMinimalis.subject, all2024Weeks)
+        val realisShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
             .shouldBeRight()
 
-        val emptyPlansWeek1to12 = week1to12.map { WeekPlan.emptyPlan(it) }
-        val emptyPlansWeek14to52 = week14to52.map { WeekPlan.emptyPlan(it) }
-        fiktivusYear2024 shouldBe (emptyPlansWeek1to12 + listOf(testShift1) + emptyPlansWeek14to52)
-        realisYear2024 shouldBe (emptyPlansWeek1to12 + listOf(testShift2) + emptyPlansWeek14to52)
+        val fiktivusShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
+        val realisShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
+        fiktivusSalaryWeek13 shouldBe fiktivusShiftsExpected
+        fiktivusShiftsWeek13 shouldBe fiktivusShiftsExpected
+        realisSalaryWeek13 shouldBe realisShiftsExpected
+        realisShiftsWeek13 shouldBe realisShiftsExpected
     }
 })

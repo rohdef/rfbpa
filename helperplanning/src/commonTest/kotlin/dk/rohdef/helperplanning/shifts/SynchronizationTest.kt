@@ -50,7 +50,8 @@ class SynchronizationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
     val weekSynchronizationRepository = TestWeekSynchronizationRepository()
-    val weekPlanService = WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val weekPlanService =
+        WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
 
     val year2024Week13 = YearWeek(2024, 13)
 
@@ -97,22 +98,28 @@ class SynchronizationTest : FunSpec({
         salarySystemRepository.apply {
             reset()
 
-            createShift(week13Shift1.start, week13Shift1.end)
-            createShift(week13Shift2.start, week13Shift2.end)
-            createShift(week13Shift3.start, week13Shift3.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift1.start, week13Shift1.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift2.start, week13Shift2.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift3.start, week13Shift3.end)
         }
     }
 
     context("Single week") {
-        test("No syncronized") {
+        test("Not syncronized") {
             shiftRepository.shiftList.shouldBeEmpty()
-            weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+            weekSynchronizationRepository.synchronizationState(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                year2024Week13
+            ) shouldBe WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
 
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13)
                 .shouldBeRight()
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder week13Shifts
-            weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
+            weekSynchronizationRepository.synchronizationState(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                year2024Week13
+            ) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Aleady synchronized - synchronization only happens when requested") {
@@ -123,19 +130,28 @@ class SynchronizationTest : FunSpec({
                 .shouldBeRight()
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder week13Shifts
-            weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
+            weekSynchronizationRepository.synchronizationState(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                year2024Week13
+            ) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Synchronized but marked for synchronization") {
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13)
-            weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13)
+            weekSynchronizationRepository.markForSynchronization(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                year2024Week13
+            )
             salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, shiftNotInSystem)
 
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13)
                 .shouldBeRight()
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + shiftNotInSystem)
-            weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
+            weekSynchronizationRepository.synchronizationState(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                year2024Week13
+            ) shouldBe WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
 
         test("Create shift marks for synchhronization") {
@@ -143,29 +159,48 @@ class SynchronizationTest : FunSpec({
             weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, targetYearWeek)
             salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, shiftNotInSystem)
 
-            weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shiftNotInSystem.start, shiftNotInSystem.end)
+            weekPlanService.createShift(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                shiftNotInSystem.start,
+                shiftNotInSystem.end
+            )
                 .shouldBeRight()
 
             salarySystemRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + shiftNotInSystem)
-            weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, targetYearWeek) shouldBe WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+            weekSynchronizationRepository.synchronizationState(
+                PrincipalsTestData.FiktivusMaximus.subject,
+                targetYearWeek
+            ) shouldBe WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE
         }
     }
 
     context("Multiple weeks") {
         beforeEach {
-            additionalShifts.forEach { salarySystemRepository.createShift(it.start, it.end) }
+            additionalShifts.forEach {
+                salarySystemRepository.createShift(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    it.start,
+                    it.end,
+                )
+            }
         }
 
         test("week interval") {
             val synchronizationStates =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                ).values
             synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
 
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13..year2024Week16)
                 .shouldBeRight()
 
             val synchronizationStatesSync =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                ).values
             synchronizationStatesSync shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED)
 
             shiftRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + additionalShifts)
@@ -177,7 +212,10 @@ class SynchronizationTest : FunSpec({
             weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week15)
 
             val synchronizationStates =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16)
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                )
             synchronizationStates shouldContainExactly mapOf(
                 year2024Week13 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
                 year2024Week14 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
@@ -191,7 +229,10 @@ class SynchronizationTest : FunSpec({
                 .shouldBeRight()
 
             val synchronizationStatesSync =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                ).values
             synchronizationStatesSync shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED)
 
             val tuesdays = shiftRepository.shiftList
@@ -203,21 +244,36 @@ class SynchronizationTest : FunSpec({
 
     context("Error scenarios") {
         beforeEach {
-            additionalShifts.forEach { salarySystemRepository.createShift(it.start, it.end) }
+            additionalShifts.forEach {
+                salarySystemRepository.createShift(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    it.start,
+                    it.end,
+                )
+            }
         }
 
         context("Salary system") {
             test("Fail as domain failure") {
                 val synchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    ).values
                 synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
                 salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week13) ShiftsError.NotAuthorized.left() else Unit.right() }
 
-                val errors = weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13..year2024Week16)
+                val errors = weekPlanService.synchronize(
+                    PrincipalsTestData.FiktivusMaximus.shiftAdmin,
+                    year2024Week13..year2024Week16
+                )
                     .shouldBeLeft()
 
                 val updatedSynchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16)
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    )
                 updatedSynchronizationStates shouldContainExactly mapOf(
                     year2024Week13 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
                     year2024Week14 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
@@ -236,14 +292,23 @@ class SynchronizationTest : FunSpec({
             test("Fail as domain failure") {
                 shiftRepository.addCreateShiftErrorRunner { if (it == shift11) ShiftsError.NotAuthorized.left() else Unit.right() }
                 val synchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    ).values
                 synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
 
-                val errors = weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13..year2024Week16)
+                val errors = weekPlanService.synchronize(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    year2024Week13..year2024Week16
+                )
                     .shouldBeLeft()
 
                 val updatedSynchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16)
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    )
                 updatedSynchronizationStates shouldContainExactly mapOf(
                     year2024Week13 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
                     year2024Week14 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
@@ -260,16 +325,30 @@ class SynchronizationTest : FunSpec({
 
         context("Synchronization repository") {
             test("Fail as domain failure") {
-                weekSynchronizationRepository.addMarkSynchronizedPreRunners { if (it == year2024Week16) WeekSynchronizationRepository.CannotChangeSyncronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13).left() else Unit.right() }
+                weekSynchronizationRepository.addMarkSynchronizedPreRunners {
+                    if (it == year2024Week16) WeekSynchronizationRepository.CannotChangeSyncronizationState(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13
+                    ).left() else Unit.right()
+                }
                 val synchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    ).values
                 synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
 
-                val errors = weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13..year2024Week16)
+                val errors = weekPlanService.synchronize(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    year2024Week13..year2024Week16
+                )
                     .shouldBeLeft()
 
                 val updatedSynchronizationStates =
-                    weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16)
+                    weekSynchronizationRepository.synchronizationStates(
+                        PrincipalsTestData.FiktivusMaximus.subject,
+                        year2024Week13..year2024Week16
+                    )
                 updatedSynchronizationStates shouldContainExactly mapOf(
                     year2024Week13 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
                     year2024Week14 to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED,
@@ -286,20 +365,30 @@ class SynchronizationTest : FunSpec({
 
         test("Multiple errors in combination") {
             weekSynchronizationRepository.addMarkSynchronizedPreRunners {
-                if (it == year2024Week14) WeekSynchronizationRepository.CannotChangeSyncronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13).left()
+                if (it == year2024Week14) WeekSynchronizationRepository.CannotChangeSyncronizationState(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13
+                ).left()
                 else Unit.right()
             }
             shiftRepository.addCreateShiftErrorRunner { if (it == week13Shift1) ShiftsError.NotAuthorized.left() else Unit.right() }
             salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week15) ShiftsError.NotAuthorized.left() else Unit.right() }
             val synchronizationStates =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16).values
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                ).values
             synchronizationStates shouldContainOnly listOf(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
 
-            val errors = weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13..year2024Week16)
-                .shouldBeLeft()
+            val errors =
+                weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13..year2024Week16)
+                    .shouldBeLeft()
 
             val updatedSynchronizationStates =
-                weekSynchronizationRepository.synchronizationStates(PrincipalsTestData.FiktivusMaximus.subject, year2024Week13..year2024Week16)
+                weekSynchronizationRepository.synchronizationStates(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week13..year2024Week16
+                )
             updatedSynchronizationStates shouldContainExactly mapOf(
                 year2024Week13 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,
                 year2024Week14 to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE,

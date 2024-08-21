@@ -43,12 +43,19 @@ class TestSalarySystemRepository(
         memoryWeekPlanRepository._shifts[shift.shiftId] = shift
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
+    override suspend fun shifts(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek
+    ): Either<ShiftsError, WeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
-        memoryWeekPlanRepository.shifts(yearWeek).bind()
+        memoryWeekPlanRepository.shifts(subject, yearWeek).bind()
     }
 
-    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime) = either {
+    override suspend fun createShift(
+        subject: RfbpaPrincipal.Subject,
+        start: YearWeekDayAtTime,
+        end: YearWeekDayAtTime
+    ) = either {
         _createShiftErrorRunners.map { it(start, end).bind() }
         val shiftId = generateTestShiftId(start, end)
         Shift(HelperBooking.NoBooking, shiftId, start, end)
