@@ -153,12 +153,19 @@ class CreateShiftTest : FunSpec({
         val realisWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
             .shouldBeRight()
 
+        val fiktivusExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
+        val realisExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
+        fiktivusWeek13 shouldBe fiktivusExpected
+        realisWeek13 shouldBe realisExpected
+
         val fiktivusYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.FiktivusMaximus.subject, all2024Weeks)
             .shouldBeRight()
         val realisYear2024 = shiftRepository.byYearWeekInterval(PrincipalsTestData.RealisMinimalis.subject, all2024Weeks)
             .shouldBeRight()
 
-        fiktivusWeek13
-        TODO()
+        val emptyPlansWeek1to12 = week1to12.map { WeekPlan.emptyPlan(it) }
+        val emptyPlansWeek14to52 = week14to52.map { WeekPlan.emptyPlan(it) }
+        fiktivusYear2024 shouldBe (emptyPlansWeek1to12 + listOf(testShift1) + emptyPlansWeek14to52)
+        realisYear2024 shouldBe (emptyPlansWeek1to12 + listOf(testShift2) + emptyPlansWeek14to52)
     }
 })
