@@ -17,17 +17,19 @@ class MemorySalarySystemRepository(
         _shifts.clear()
     }
 
-    val _shifts = mutableMapOf<ShiftId, Shift>()
+    internal val _shifts = mutableMapOf<RfbpaPrincipal.Subject, MutableMap<ShiftId, Shift>>().withDefault { mutableMapOf() }
 
     val shifts: Map<ShiftId, Shift>
-        get() = _shifts.toMap()
+        get() = _shifts.map { it.value }
+            .fold(emptyMap()) { accumulator, value -> accumulator + value }
 
     override suspend fun bookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
-        val shift = _shifts[shiftId].toOption()
+        _shifts[subject] = _shifts.getValue(subject)
+        val shift = _shifts.getValue(subject)[shiftId].toOption()
             .toEither { SalarySystemRepository.BookingError.ShiftNotFound(shiftId) }
             .flatMap { helper ->
                 helpersRepository.byId(helperId)
@@ -37,7 +39,7 @@ class MemorySalarySystemRepository(
 
             }
         if (shift is Either.Right) {
-            _shifts[shiftId] = shift.value
+            _shifts.getValue(subject)[shiftId] = shift.value
         }
 
         return shift.map { shiftId }
@@ -47,7 +49,7 @@ class MemorySalarySystemRepository(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
     ): Either<ShiftsError, WeekPlan> {
-        val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
+        val shiftsForWeek = _shifts.getValue(subject).values.filter { it.start.yearWeek == yearWeek }
         val weekPlan = WeekPlan(
             yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
@@ -66,10 +68,11 @@ class MemorySalarySystemRepository(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ): Either<ShiftsError, Shift> {
+        _shifts[subject] = _shifts.getValue(subject)
         val shiftId = ShiftId.generateId()
         val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
 
-        _shifts[shiftId] = shift
+        _shifts.getValue(subject)[shiftId] = shift
 
         return shift.right()
     }

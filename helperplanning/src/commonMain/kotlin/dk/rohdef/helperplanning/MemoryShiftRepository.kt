@@ -14,16 +14,17 @@ class MemoryShiftRepository : ShiftRepository {
         _shifts.clear()
     }
 
-    private val _shifts = mutableMapOf<ShiftId, Shift>()
+    private val _shifts = mutableMapOf<RfbpaPrincipal.Subject, MutableMap<ShiftId, Shift>>().withDefault { mutableMapOf() }
 
     val shifts: Map<ShiftId, Shift>
-        get() = _shifts.toMap()
+        get() = _shifts.map { it.value }
+            .fold(emptyMap()) { accumulator, value -> accumulator + value}
 
     override suspend fun byYearWeek(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
     ): Either<ShiftsError, WeekPlan> {
-        val shiftsForWeek = _shifts.values.filter { it.start.yearWeek == yearWeek }
+        val shiftsForWeek = _shifts.getValue(subject).values.filter { it.start.yearWeek == yearWeek }
         val weekPlan = WeekPlan(
             yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
@@ -41,7 +42,8 @@ class MemoryShiftRepository : ShiftRepository {
         subject: RfbpaPrincipal.Subject,
         shift: Shift,
     ): Either<ShiftsError, Shift> {
-        _shifts.put(shift.shiftId, shift)
+        _shifts[subject] = _shifts.getValue(subject)
+        _shifts.getValue(subject).put(shift.shiftId, shift)
         return shift.right()
     }
 }
