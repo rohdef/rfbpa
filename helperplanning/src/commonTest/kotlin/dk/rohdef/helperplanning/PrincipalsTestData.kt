@@ -1,53 +1,60 @@
 package dk.rohdef.helperplanning
 
+import arrow.core.NonEmptySet
+import arrow.core.nonEmptySetOf
+import arrow.core.toNonEmptySetOrNull
+import io.kotest.assertions.arrow.core.shouldBeRight
+import java.security.Principal
+
 object PrincipalsTestData {
     object FiktivusMaximus {
         val subject = RfbpaPrincipal.Subject("f1kt1vus")
-        val name = "Fiktivus Maximus"
-        val email = "fiktivus@rfbpa.dk"
+        val name = RfbpaPrincipal.Name("Fiktivus Maximus")
+        val email = RfbpaPrincipal.Email("fiktivus@rfbpa.dk")
 
-        val noRoles = RfbpaPrincipal(
+        fun principal(roles: NonEmptySet<RfbpaPrincipal.RfbpaRoles>) = RfbpaPrincipal(
             subject,
             name,
             email,
-            listOf(),
+            roles,
         )
 
-        val shiftAdmin = noRoles.copy(
-            roles = listOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
-        )
+        val shiftAdmin = principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
+        ).shouldBeRight()
 
-        val templateAdmin = noRoles.copy(
-            roles = listOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
-        )
+        val templateAdmin = principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN, RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
+        ).shouldBeRight()
 
-        val allRoles = noRoles.copy(
-            roles = RfbpaPrincipal.RfbpaRoles.entries,
-        )
+        val allRoles = principal(
+            RfbpaPrincipal.RfbpaRoles.entries.toNonEmptySetOrNull()!!,
+        ).shouldBeRight()
     }
 
     object RealisMinimalis {
         val subject = RfbpaPrincipal.Subject("r34l1s")
-        val name = "Realis Minimalis"
-        val email = "realis@rfbpa.dk"
+        val name = RfbpaPrincipal.Name("Realis Minimalis")
+        val email = RfbpaPrincipal.Email("realis@rfbpa.dk")
 
-        val noRoles = RfbpaPrincipal(
+
+        fun principal(roles: NonEmptySet<RfbpaPrincipal.RfbpaRoles>) = RfbpaPrincipal(
             subject,
             name,
             email,
-            listOf(),
+            roles,
         )
 
-        val shiftAdmin = noRoles.copy(
-            roles = listOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
-        )
+        val shiftAdmin = principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
+        ).shouldBeRight()
 
-        val templateAdmin = noRoles.copy(
-            roles = listOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
-        )
+        val templateAdmin = principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
+        ).shouldBeRight()
 
-        val allRoles = noRoles.copy(
-            roles = RfbpaPrincipal.RfbpaRoles.entries,
-        )
+        val allRoles = principal(
+            RfbpaPrincipal.RfbpaRoles.entries.toNonEmptySetOrNull()!!,
+        ).shouldBeRight()
     }
 }

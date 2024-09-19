@@ -59,7 +59,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
-    implementation("app.softwork:kotlinx-uuid-core:0.0.18")
 
     val koinVersion = "3.6.0-Beta5"
     implementation("io.insert-koin:koin-core:$koinVersion")

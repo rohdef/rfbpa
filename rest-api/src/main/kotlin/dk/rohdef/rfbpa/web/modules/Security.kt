@@ -1,7 +1,6 @@
 package dk.rohdef.rfbpa.web.modules
 
-import arrow.core.Either
-import arrow.core.toOption
+import arrow.core.*
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwt.interfaces.Payload
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
@@ -27,7 +26,8 @@ fun Application.security() {
             realm = "rfbpa"
             verifier(jwkProvider, config.auth.jwtIssuer)
             validate {
-                fromJwtPayload(it.payload)
+                // TODO: 19/09/2024 rohdef - deal a bit better with this I think
+                fromJwtPayload(it.payload).getOrNull()
             }
             challenge { defaultScheme, realm ->
                 log.error { "Token is not valid or has expired" }
@@ -66,23 +66,26 @@ value class RfbpaPrincipal(
     val domainPrincipal: DomainPrincipal
 ) : Principal
 
-fun fromJwtPayload(payload: Payload): RfbpaPrincipal {
+fun fromJwtPayload(payload: Payload): Either<Nothing, RfbpaPrincipal> {
     val realmAccess = payload.getClaim("realm_access").asMap()
     val rolesRaw = realmAccess.get("roles") as List<String>
-    val roles = rolesRaw.flatMap {
-        when (it.trim()) {
-            "shift admin" -> listOf(RfbpaRoles.SHIFT_ADMIN)
-            "template admin" -> listOf(RfbpaRoles.TEMPLATE_ADMIN)
-            else -> emptyList()
+    val roles = rolesRaw.fold(emptySet<RfbpaRoles>()) { acc, s ->
+        when (s.trim()) {
+            "shift admin" -> acc + RfbpaRoles.SHIFT_ADMIN
+            "template admin" -> acc + RfbpaRoles.TEMPLATE_ADMIN
+            else -> acc
         }
-    }
+    }.toNonEmptySetOrNone()
 
-    return RfbpaPrincipal(
-        DomainPrincipal(
-            payload.subject,
-            payload.getClaim("name").asString(),
-            payload.getClaim("email").asString(),
-            roles,
-        )
-    )
+    return roles
+        .toEither { TODO() }
+        .flatMap {
+            DomainPrincipal(
+                DomainPrincipal.Subject(payload.subject),
+                DomainPrincipal.Name(payload.getClaim("name").asString()),
+                DomainPrincipal.Email(payload.getClaim("email").asString()),
+                it,
+            ).mapLeft { TODO() }
+        }
+        .map { RfbpaPrincipal(it) }
 }

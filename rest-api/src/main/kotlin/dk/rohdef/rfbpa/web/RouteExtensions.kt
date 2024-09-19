@@ -19,3 +19,17 @@ fun Route.typedGet(
         }
     }
 }
+
+fun Route.typedPost(
+    path: String,
+    body: suspend PipelineContext<Unit, ApplicationCall>.() -> Either<ApiError, Any>,
+) {
+    post(path) {
+        val res = body()
+
+        when (res) {
+            is Either.Left -> call.respond(res.value.status, res.value.message)
+            is Either.Right -> call.respond(res.value)
+        }
+    }
+}

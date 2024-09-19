@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web
 
 import arrow.core.Either
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.Shift
@@ -17,24 +18,29 @@ class LoggingSalarySystemRepository(
     private val log = KotlinLogging.logger {}
 
     override suspend fun bookShift(
+        subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helper: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
         log.debug { "Booking shift $shiftId to helper ${helper}" }
-        return salarySystemRepository.bookShift(shiftId, helper)
+        return salarySystemRepository.bookShift(subject, shiftId, helper)
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
+    override suspend fun shifts(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<ShiftsError, WeekPlan> {
         log.debug { "Reading shifts for $yearWeek" }
-        return salarySystemRepository.shifts(yearWeek)
+        return salarySystemRepository.shifts(subject, yearWeek)
     }
 
     override suspend fun createShift(
+        subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, Shift> {
+    ): Either<ShiftsError, Shift> {
         log.debug { "Creating shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
-        val shift = salarySystemRepository.createShift(start, end)
+        val shift = salarySystemRepository.createShift(subject, start, end)
 
         when (shift) {
             is Either.Right -> log.debug { "Successfully created shift ${shift.value}" }

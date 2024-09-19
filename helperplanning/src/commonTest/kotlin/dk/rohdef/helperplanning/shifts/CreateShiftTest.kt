@@ -141,26 +141,32 @@ class CreateShiftTest : FunSpec({
         shiftRepository.shiftList shouldContainExactly listOf()
     }
 
-    test("Create shift distinguished between subject") {
-        weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
-            .shouldBeRight()
-        weekPlanService.createShift(PrincipalsTestData.RealisMinimalis.allRoles, shift2Start, shift2End)
-            .shouldBeRight()
+    context("Principals") {
+        test("Distinguishing between subjects") {
+            weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+                .shouldBeRight()
+            weekPlanService.createShift(PrincipalsTestData.RealisMinimalis.allRoles, shift2Start, shift2End)
+                .shouldBeRight()
 
-        val fiktivusSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.FiktivusMaximus.subject, week13)
-            .shouldBeRight()
-        val fiktivusShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.FiktivusMaximus.subject, week13)
-            .shouldBeRight()
-        val realisSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.RealisMinimalis.subject, week13)
-            .shouldBeRight()
-        val realisShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
-            .shouldBeRight()
+            val fiktivusSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.FiktivusMaximus.subject, week13)
+                .shouldBeRight()
+            val fiktivusShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.FiktivusMaximus.subject, week13)
+                .shouldBeRight()
+            val realisSalaryWeek13 = salarySystemRepository.shifts(PrincipalsTestData.RealisMinimalis.subject, week13)
+                .shouldBeRight()
+            val realisShiftsWeek13 = shiftRepository.byYearWeek(PrincipalsTestData.RealisMinimalis.subject, week13)
+                .shouldBeRight()
 
-        val fiktivusShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
-        val realisShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
-        fiktivusSalaryWeek13 shouldBe fiktivusShiftsExpected
-        fiktivusShiftsWeek13 shouldBe fiktivusShiftsExpected
-        realisSalaryWeek13 shouldBe realisShiftsExpected
-        realisShiftsWeek13 shouldBe realisShiftsExpected
+            val fiktivusShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
+            val realisShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
+            fiktivusSalaryWeek13 shouldBe fiktivusShiftsExpected
+            fiktivusShiftsWeek13 shouldBe fiktivusShiftsExpected
+            realisSalaryWeek13 shouldBe realisShiftsExpected
+            realisShiftsWeek13 shouldBe realisShiftsExpected
+        }
+
+        test("Ensure correct permissions") {
+            TODO()
+        }
     }
 })

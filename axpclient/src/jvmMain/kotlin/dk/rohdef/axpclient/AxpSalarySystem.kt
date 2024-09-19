@@ -9,6 +9,7 @@ import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.HelpersRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
@@ -47,9 +48,10 @@ class AxpSalarySystem(
     private val weekPlanParser = WeekPlanParser()
 
     override suspend fun createShift(
+        subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<Unit, Shift> = either {
+    ): Either<ShiftsError, Shift> = either {
         ensureLoggedIn()
 
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
@@ -71,6 +73,7 @@ class AxpSalarySystem(
     }
 
     override suspend fun bookShift(
+        subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> {
@@ -107,7 +110,10 @@ class AxpSalarySystem(
         )
     }
 
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> {
+    override suspend fun shifts(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<ShiftsError, WeekPlan> {
         ensureLoggedIn()
 
         val bookingToHelperId: Map<HelperNumber, HelperId> = helperReferences.all()

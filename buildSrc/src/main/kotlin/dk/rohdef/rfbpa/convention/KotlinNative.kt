@@ -4,6 +4,7 @@ import org.gradle.api.*
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
+@OptIn(ExperimentalKotlinGradlePluginApi::class)
 fun Project.configureCommon() {
     nativeTarget()
 
@@ -11,12 +12,17 @@ fun Project.configureCommon() {
     val arrowKtVersion = "1.2.4"
 
     kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
+        }
+
         sourceSets {
             val commonMain by getting {
                 dependencies {
                     // Base functionality
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
                     implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
+                    implementation("com.marcinmoskala:DiscreteMathToolkit:1.0.3")
 
                     // Base types
                     implementation("io.arrow-kt:arrow-core:$arrowKtVersion")

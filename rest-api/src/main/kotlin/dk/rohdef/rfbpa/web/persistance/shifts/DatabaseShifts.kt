@@ -2,6 +2,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 
 import arrow.core.Either
 import arrow.core.right
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
@@ -44,7 +45,10 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
-    override suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = dbQuery {
+    override suspend fun byYearWeek(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<ShiftsError, WeekPlan> = dbQuery {
         val shifts = ShiftsTable
             .leftJoin(ShiftBookingsTable)
             .leftJoin(HelpersTable)
@@ -63,6 +67,7 @@ class DatabaseShifts : ShiftRepository {
     }
 
     override suspend fun createOrUpdate(
+        subject: RfbpaPrincipal.Subject,
         shift: Shift,
     ): Either<ShiftsError, Shift> = dbQuery {
         ShiftsTable.upsert(ShiftsTable.id) {
@@ -84,6 +89,7 @@ class DatabaseShifts : ShiftRepository {
             is HelperBooking.UnknownHelper -> {
                 println("Helper not known: ${helperBooking.externalReference}")
             }
+
             HelperBooking.VacancyHelper -> TODO()
         }
         shift.right()

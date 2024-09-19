@@ -21,6 +21,7 @@ fun Route.shifts() {
             log.info { "Loading shifts for interval: ${call.parameters["yearWeekInterval"]}" }
             val principal = call.rfbpaPrincipal().bind()
 
+            // // TODO: 15/09/2024 rohdef - make extention method or similar, perhaps something on parameters?
             val yearWeekInterval = call.parameters["yearWeekInterval"]!!
                 .let { YearWeekInterval.parse(it) }
                 .mapLeft { it.first() }
