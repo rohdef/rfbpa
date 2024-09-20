@@ -90,24 +90,13 @@ class WeekPlanServiceImplementationTest : FunSpec({
     }
 
     context("Principals") {
-        test("should reject principal with missing role") {
-            TODO()
-//            val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.noRoles, year2024Week8..year2024Week10)
-//                .shouldBeLeft()
-//
-//            error shouldBe WeekPlanServiceError.InsufficientPermissions(
-//                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-//                listOf(),
-//            )
-        }
-
         test("should reject principal with wrong role(s)") {
             val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.templateAdmin, year2024Week8..year2024Week10)
                 .shouldBeLeft()
 
             error shouldBe WeekPlanServiceError.InsufficientPermissions(
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                listOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
+                setOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
             )
         }
 

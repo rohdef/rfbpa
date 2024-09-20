@@ -56,7 +56,7 @@ data class RfbpaPrincipal private constructor(
     enum class RfbpaRoles {
         SHIFT_ADMIN,
         TEMPLATE_ADMIN,
-        DUMMY,
+        HELPER_ADMIN,
     }
 
     sealed interface Error {

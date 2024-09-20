@@ -8,6 +8,6 @@ sealed interface WeekPlanServiceError {
 
     data class InsufficientPermissions(
         val expectedRole: RfbpaPrincipal.RfbpaRoles,
-        val actualRoles: List<RfbpaPrincipal.RfbpaRoles>,
-    )
+        val actualRoles: Set<RfbpaPrincipal.RfbpaRoles>,
+    ) : WeekPlanServiceError
 }

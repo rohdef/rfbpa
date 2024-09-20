@@ -165,8 +165,22 @@ class CreateShiftTest : FunSpec({
             realisShiftsWeek13 shouldBe realisShiftsExpected
         }
 
-        test("Ensure correct permissions") {
-            TODO()
+        test("Requires the role ${RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN}") {
+            // TODO: 20/09/2024 rohdef - find a way to do data heavy testing
+            weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
+                .shouldBeRight()
+            weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.shiftAdmin, shift1Start, shift1End)
+                .shouldBeRight()
+            weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.templateAdmin, shift1Start, shift1End)
+                .shouldBeRight()
+
+            val error = weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.helperAdmin, shift1Start, shift1End)
+                .shouldBeLeft()
+
+            error shouldBe WeekPlanServiceError.InsufficientPermissions(
+                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+                PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
+            )
         }
     }
 })

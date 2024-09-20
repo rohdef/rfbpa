@@ -4,7 +4,6 @@ import arrow.core.NonEmptySet
 import arrow.core.nonEmptySetOf
 import arrow.core.toNonEmptySetOrNull
 import io.kotest.assertions.arrow.core.shouldBeRight
-import java.security.Principal
 
 object PrincipalsTestData {
     object FiktivusMaximus {
@@ -18,6 +17,10 @@ object PrincipalsTestData {
             email,
             roles,
         )
+
+        val helperAdmin = principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.HELPER_ADMIN),
+        ).shouldBeRight()
 
         val shiftAdmin = principal(
             nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
@@ -37,7 +40,6 @@ object PrincipalsTestData {
         val name = RfbpaPrincipal.Name("Realis Minimalis")
         val email = RfbpaPrincipal.Email("realis@rfbpa.dk")
 
-
         fun principal(roles: NonEmptySet<RfbpaPrincipal.RfbpaRoles>) = RfbpaPrincipal(
             subject,
             name,
@@ -45,12 +47,16 @@ object PrincipalsTestData {
             roles,
         )
 
+        val helperAdmin = FiktivusMaximus.principal(
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.HELPER_ADMIN),
+        ).shouldBeRight()
+
         val shiftAdmin = principal(
             nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
         ).shouldBeRight()
 
         val templateAdmin = principal(
-            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
+            nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN, RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
         ).shouldBeRight()
 
         val allRoles = principal(

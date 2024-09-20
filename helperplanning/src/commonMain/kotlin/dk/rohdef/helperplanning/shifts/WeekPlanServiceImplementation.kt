@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
+import arrow.core.raise.ensure
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
@@ -56,6 +57,10 @@ class WeekPlanServiceImplementation(
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ) = either {
+        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
+            WeekPlanServiceError.InsufficientPermissions(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN, principal.roles)
+        }
+
         // TODO: 19/08/2024 rohdef -  #41 improve domain errors (i.e., create them)
         when (weekSynchronizationRepository.synchronizationState(principal.subject, start.yearWeek)) {
             WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED ->
