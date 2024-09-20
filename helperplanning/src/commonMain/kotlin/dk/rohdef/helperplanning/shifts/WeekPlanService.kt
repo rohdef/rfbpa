@@ -10,6 +10,7 @@ import dk.rohdef.rfweeks.YearWeekInterval
 interface WeekPlanService {
     suspend fun synchronize(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit>
     suspend fun synchronize(principal: RfbpaPrincipal, yearWeek: YearWeek): Either<SynchronizationError, Unit>
+
     suspend fun createShift(principal: RfbpaPrincipal, start: YearWeekDayAtTime, end: YearWeekDayAtTime) : Either<WeekPlanServiceError, Shift>
     suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>>
 }

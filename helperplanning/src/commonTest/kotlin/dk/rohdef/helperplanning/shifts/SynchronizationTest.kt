@@ -475,7 +475,6 @@ class SynchronizationTest : FunSpec({
                 .shouldBeLeft()
 
             error shouldBe SynchronizationError.InsufficientPermissions(
-                year2024Week13,
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
                 PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
             )
@@ -506,7 +505,12 @@ class SynchronizationTest : FunSpec({
             )
                 .shouldBeLeft()
 
-            error shouldBe nonEmptyListOf(TODO())
+            error shouldBe nonEmptyListOf(
+                SynchronizationError.InsufficientPermissions(
+                    RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+                    PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
+                )
+            )
         }
     }
 })

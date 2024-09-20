@@ -3,6 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
+import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import dk.rohdef.helperplanning.RfbpaPrincipal
@@ -23,6 +24,15 @@ class WeekPlanServiceImplementation(
         yearWeekInterval: YearWeekInterval
     ): Either<NonEmptyList<SynchronizationError>, Unit> =
         either {
+            ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
+                nonEmptyListOf(
+                    SynchronizationError.InsufficientPermissions(
+                        RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+                        principal.roles,
+                    )
+                )
+            }
+
             val synchronizationStates =
                 weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
             val weeksToSynchronize = synchronizationStates
@@ -36,6 +46,13 @@ class WeekPlanServiceImplementation(
         principal: RfbpaPrincipal,
         yearWeek: YearWeek
     ): Either<SynchronizationError, Unit> = either {
+        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
+            SynchronizationError.InsufficientPermissions(
+                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+                principal.roles,
+            )
+        }
+
         val synchronizationState = weekSynchronizationRepository.synchronizationState(principal.subject, yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
             val salaryWeekPlan = salarySystem.shifts(principal.subject, yearWeek)
@@ -92,6 +109,7 @@ class WeekPlanServiceImplementation(
                 it.map {
                     when (it) {
                         is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
+                        is SynchronizationError.InsufficientPermissions -> TODO()
                     }
                 }.first()
             }.bind()
