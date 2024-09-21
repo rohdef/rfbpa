@@ -102,7 +102,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
         }
 
         test("should distinguish between different principals") {
-            // set up shift plan for each user
+            // TODO set up shift plan for each user
 
             val fiktivusShifts = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week8..year2024Week10)
                 .shouldBeRight()
