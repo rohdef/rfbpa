@@ -6,6 +6,7 @@ import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.templates.TemplateTestData.asHelper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -272,9 +273,43 @@ class TemplateApplierTest : FunSpec({
         }
 
         test("Requires the role ${RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN}") {
-//            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.allRoles, schedulingStart, schedulingEnd, template1)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_monday)
+            )
+                .shouldBeRight()
 
-            TODO()
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.templateAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_monday)
+            )
+                .shouldBeRight()
+
+            val shiftAdminError = templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.shiftAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_monday)
+            )
+                .shouldBeLeft()
+
+            val helperAdminError = templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.helperAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_monday)
+            )
+                .shouldBeLeft()
+
+            shiftAdminError shouldBe TemplateApplier.Error.InsufficientPermissions(
+                RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN,
+                PrincipalsTestData.FiktivusMaximus.shiftAdmin.roles,
+            )
+
+            helperAdminError shouldBe TemplateApplier.Error.InsufficientPermissions(
+                RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN,
+                PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
+            )
         }
     }
 })
