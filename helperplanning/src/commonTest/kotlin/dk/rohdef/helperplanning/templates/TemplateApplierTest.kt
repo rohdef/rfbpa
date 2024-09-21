@@ -1,9 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.MemoryHelpersRepository
-import dk.rohdef.helperplanning.MemorySalarySystemRepository
-import dk.rohdef.helperplanning.PrincipalsTestData
-import dk.rohdef.helperplanning.TestSalarySystemRepository
+import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.templates.TemplateTestData.asHelper
 import dk.rohdef.rfweeks.YearWeek

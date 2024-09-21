@@ -1,7 +1,7 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
-import arrow.core.right
+import arrow.core.raise.either
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -14,7 +14,7 @@ class MemoryShiftRepository : ShiftRepository {
         _shifts.clear()
     }
 
-    private val _shifts = mutableMapOf<RfbpaPrincipal.Subject, MutableMap<ShiftId, Shift>>().withDefault { mutableMapOf() }
+    private val _shifts = mutableMapOf<RfbpaPrincipal.Subject, Map<ShiftId, Shift>>().withDefault { emptyMap() }
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.map { it.value }
@@ -23,9 +23,9 @@ class MemoryShiftRepository : ShiftRepository {
     override suspend fun byYearWeek(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
-    ): Either<ShiftsError, WeekPlan> {
+    ): Either<ShiftsError, WeekPlan> = either {
         val shiftsForWeek = _shifts.getValue(subject).values.filter { it.start.yearWeek == yearWeek }
-        val weekPlan = WeekPlan(
+        WeekPlan(
             yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.TUESDAY },
@@ -35,15 +35,13 @@ class MemoryShiftRepository : ShiftRepository {
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SATURDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SUNDAY },
         )
-        return weekPlan.right()
     }
 
     override suspend fun createOrUpdate(
         subject: RfbpaPrincipal.Subject,
         shift: Shift,
-    ): Either<ShiftsError, Shift> {
-        _shifts[subject] = _shifts.getValue(subject)
-        _shifts.getValue(subject).put(shift.shiftId, shift)
-        return shift.right()
+    ): Either<ShiftsError, Shift> = either {
+        _shifts.letValue(subject) { it + (shift.shiftId to shift) }
+        shift
     }
 }

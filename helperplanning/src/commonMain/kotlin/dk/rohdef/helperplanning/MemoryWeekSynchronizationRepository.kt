@@ -1,36 +1,40 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
-import arrow.core.right
+import arrow.core.raise.either
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
 class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
-    internal val synchronizedWeeks = mutableMapOf<RfbpaPrincipal.Subject, MutableMap<YearWeek, WeekSynchronizationRepository.SynchronizationState>>()
-        .withDefault { mutableMapOf<YearWeek, WeekSynchronizationRepository.SynchronizationState>().withDefault { WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE } }
+    val defaultSynchronization = WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+    internal val synchronizedWeeks = mutableMapOf<RfbpaPrincipal.Subject, Map<YearWeek, WeekSynchronizationRepository.SynchronizationState>>()
+        .withDefault { emptyMap<YearWeek, WeekSynchronizationRepository.SynchronizationState>().withDefault { defaultSynchronization } }
 
     fun reset() {
         synchronizedWeeks.clear()
     }
 
-    override fun markForSynchronization(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        synchronizedWeeks.getValue(subject).remove(yearWeek)
-            return Unit.right()
+    override fun markForSynchronization(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+        synchronizedWeeks.letValue(subject) {
+            (it - yearWeek).withDefault { defaultSynchronization }
+        }
     }
 
     override fun markPossiblyOutOfDate(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
-    ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        synchronizedWeeks[subject] = synchronizedWeeks.getValue(subject)
-        synchronizedWeeks.getValue(subject)[yearWeek] = WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE
-        return Unit.right()
+    ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+        synchronizedWeeks.letValue(subject) {
+            ((it - yearWeek) + (yearWeek to WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE))
+                .withDefault { defaultSynchronization }
+        }
     }
 
-    override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> {
-        synchronizedWeeks[subject] = synchronizedWeeks.getValue(subject)
-        synchronizedWeeks.getValue(subject)[yearWeek] = WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
-        return Unit.right()
+    override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+        synchronizedWeeks.letValue(subject) {
+            ((it - yearWeek) + (yearWeek to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED))
+                .withDefault { defaultSynchronization }
+        }
     }
 
     override fun synchronizationStates(subject: RfbpaPrincipal.Subject, yearWeekInterval: YearWeekInterval): Map<YearWeek, WeekSynchronizationRepository.SynchronizationState> {

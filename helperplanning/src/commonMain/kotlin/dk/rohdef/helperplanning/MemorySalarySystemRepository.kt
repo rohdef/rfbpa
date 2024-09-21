@@ -1,9 +1,9 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
-import arrow.core.flatMap
-import arrow.core.right
-import arrow.core.toOption
+import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
+import arrow.core.raise.withError
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
@@ -17,7 +17,8 @@ class MemorySalarySystemRepository(
         _shifts.clear()
     }
 
-    internal val _shifts = mutableMapOf<RfbpaPrincipal.Subject, MutableMap<ShiftId, Shift>>().withDefault { mutableMapOf() }
+    internal val _shifts =
+        mutableMapOf<RfbpaPrincipal.Subject, Map<ShiftId, Shift>>().withDefault { emptyMap() }
 
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.map { it.value }
@@ -27,30 +28,28 @@ class MemorySalarySystemRepository(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
-    ): Either<SalarySystemRepository.BookingError, ShiftId> {
-        _shifts[subject] = _shifts.getValue(subject)
-        val shift = _shifts.getValue(subject)[shiftId].toOption()
-            .toEither { SalarySystemRepository.BookingError.ShiftNotFound(shiftId) }
-            .flatMap { helper ->
-                helpersRepository.byId(helperId)
-                    .map { HelperBooking.PermanentHelper(it) }
-                    .map { helper.copy(helperBooking = it) }
-                    .mapLeft { SalarySystemRepository.BookingError.HelperNotFound(helperId) }
-
-            }
-        if (shift is Either.Right) {
-            _shifts.getValue(subject)[shiftId] = shift.value
+    ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
+        val helperBooking = withError({ SalarySystemRepository.BookingError.HelperNotFound(helperId) }) {
+            helpersRepository.byId(helperId)
+                .map { HelperBooking.PermanentHelper(it) }
+                .bind()
         }
 
-        return shift.map { shiftId }
+        val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
+            SalarySystemRepository.BookingError.ShiftNotFound(shiftId)
+        }.copy(helperBooking = helperBooking)
+
+        _shifts.letValue(subject) { it + (shiftId to shift) }
+
+        shiftId
     }
 
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
-    ): Either<ShiftsError, WeekPlan> {
+    ): Either<ShiftsError, WeekPlan> = either {
         val shiftsForWeek = _shifts.getValue(subject).values.filter { it.start.yearWeek == yearWeek }
-        val weekPlan = WeekPlan(
+        WeekPlan(
             yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.TUESDAY },
@@ -60,20 +59,17 @@ class MemorySalarySystemRepository(
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SATURDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SUNDAY },
         )
-        return weekPlan.right()
     }
 
     override suspend fun createShift(
         subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<ShiftsError, Shift> {
+    ): Either<ShiftsError, Shift> = either {
         _shifts[subject] = _shifts.getValue(subject)
-        val shiftId = ShiftId.generateId()
-        val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
-
-        _shifts.getValue(subject)[shiftId] = shift
-
-        return shift.right()
+        Shift(HelperBooking.NoBooking, ShiftId.generateId(), start, end)
+            .also { shift ->
+                _shifts.letValue(subject) { it + (shift.shiftId to shift)}
+            }
     }
 }

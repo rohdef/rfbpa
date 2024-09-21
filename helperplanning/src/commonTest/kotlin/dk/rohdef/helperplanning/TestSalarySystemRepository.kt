@@ -2,7 +2,6 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.raise.either
-import arrow.core.right
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
@@ -40,8 +39,9 @@ class TestSalarySystemRepository(
         get() = shiftList.sortedBy { it.start.localDateTime }
 
     fun addShift(subject: RfbpaPrincipal.Subject, shift: Shift) {
-        memoryWeekPlanRepository._shifts[subject] = memoryWeekPlanRepository._shifts.getValue(subject)
-        memoryWeekPlanRepository._shifts.getValue(subject)[shift.shiftId] = shift
+        memoryWeekPlanRepository._shifts.letValue(subject) {
+            it + (shift.shiftId to shift)
+        }
     }
 
     override suspend fun shifts(
@@ -61,7 +61,7 @@ class TestSalarySystemRepository(
         memoryWeekPlanRepository._shifts[subject] = memoryWeekPlanRepository._shifts.getValue(subject)
         val shiftId = generateTestShiftId(start, end)
         Shift(HelperBooking.NoBooking, shiftId, start, end)
-            .also { memoryWeekPlanRepository._shifts.getValue(subject).put(shiftId, it) }
+            .also { shift -> memoryWeekPlanRepository._shifts.letValue(subject) { it + (shiftId to shift) } }
     }
 
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
