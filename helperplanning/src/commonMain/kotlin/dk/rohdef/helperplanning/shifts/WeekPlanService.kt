@@ -8,6 +8,7 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
 interface WeekPlanService {
+    // TODO: 21/09/2024 rohdef - change the interval version to have its own error model, and use composition for the NEL
     suspend fun synchronize(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit>
     suspend fun synchronize(principal: RfbpaPrincipal, yearWeek: YearWeek): Either<SynchronizationError, Unit>
 

@@ -6,6 +6,7 @@ import arrow.core.mapOrAccumulate
 import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
+import arrow.core.raise.withError
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
@@ -104,20 +105,30 @@ class WeekPlanServiceImplementation(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval
     ): Either<WeekPlanServiceError, List<WeekPlan>> = either {
-        synchronize(principal, yearWeekInterval)
-            .mapLeft {
-                it.map {
-                    when (it) {
-                        is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
-                        is SynchronizationError.InsufficientPermissions -> TODO()
-                    }
-                }.first()
-            }.bind()
+        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
+            WeekPlanServiceError.InsufficientPermissions(
+                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+                principal.roles,
+            )
+        }
 
-        shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
-            .mapLeft {
-                WeekPlanServiceError.CannotCommunicateWithShiftsRepository
-            }
-            .bind()
+        withError({ it.first().toServiceError() }) {
+            synchronize(principal, yearWeekInterval).bind()
+        }
+
+        withError({ it.first().toServiceError() }) {
+            shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval).bind()
+        }
+    }
+
+    private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+
+    private fun SynchronizationError.toServiceError(): WeekPlanServiceError {
+        return when(this) {
+            is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
+            is SynchronizationError.InsufficientPermissions -> WeekPlanServiceError.InsufficientPermissions(
+                expectedRole, actualRoles,
+            )
+        }
     }
 }

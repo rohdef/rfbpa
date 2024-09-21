@@ -1,6 +1,7 @@
 package dk.rohdef.helperplanning.shifts
 
 import arrow.core.left
+import arrow.core.nonEmptySetOf
 import arrow.core.right
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.ShiftTestData.Fiktivus
@@ -91,12 +92,12 @@ class WeekPlanServiceImplementationTest : FunSpec({
 
     context("Principals") {
         test("should reject principal with wrong role(s)") {
-            val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.templateAdmin, year2024Week8..year2024Week10)
+            val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.helperAdmin, year2024Week8..year2024Week10)
                 .shouldBeLeft()
 
             error shouldBe WeekPlanServiceError.InsufficientPermissions(
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                setOf(RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN),
+                nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.HELPER_ADMIN),
             )
         }
 
