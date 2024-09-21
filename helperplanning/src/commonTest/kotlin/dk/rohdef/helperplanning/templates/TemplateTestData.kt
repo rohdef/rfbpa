@@ -242,5 +242,15 @@ object TemplateTestData {
                 WeekTemplates.template_week3_saturday,
             ),
         )
+
+        val template_monday = Template(
+            YearWeek(1919, 3),
+            listOf(WeekTemplates.template_week1_monday)
+        )
+
+        val template_wednesday = Template(
+            YearWeek(1919, 3),
+            listOf(WeekTemplates.template_week2_wednesday)
+        )
     }
 }

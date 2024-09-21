@@ -3,6 +3,8 @@ package dk.rohdef.helperplanning.templates
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.left
+import arrow.core.raise.either
+import arrow.core.right
 import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
@@ -24,22 +26,24 @@ class TemplateApplier(
     suspend fun applyTemplates(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval,
+        // TODO: 21/09/2024 rohdef - change to NEL
         templates: List<Template>,
-    ) {
+    ) : Either<Unit, Unit> = either {
         // TODO: 08/06/2024 rohdef - temporary implementation due to expected method signature
         val schedulingStart = yearWeekInterval.start
         val schedulingEnd = yearWeekInterval.endInclusive
-        applyTemplate(principal, schedulingStart, schedulingEnd, templates.first())
-    }
-
-    suspend fun applyTemplate(
-        principal: RfbpaPrincipal,
-        schedulingStart: YearWeek,
-        schedulingEnd: YearWeek,
-        template: Template,
-    ) {
+//        applyTemplate(principal, schedulingStart, schedulingEnd, templates.first())
+//    }
+//
+//    suspend fun applyTemplate(
+//        principal: RfbpaPrincipal,
+//        schedulingStart: YearWeek,
+//        schedulingEnd: YearWeek,
+//        template: Template,
+//    ) : Either<Unit, Unit> = either {
+        val template = templates.first()
         if (template.start > schedulingEnd) {
-            return // Template is for later than current scheduling
+            return Unit.right()// Template is for later than current scheduling
         }
 
         val weeksUntilTemplate = schedulingStart.weeksUntil(template.start)

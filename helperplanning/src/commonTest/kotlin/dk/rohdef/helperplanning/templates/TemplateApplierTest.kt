@@ -1,12 +1,15 @@
 package dk.rohdef.helperplanning.templates
 
+import arrow.core.nonEmptyListOf
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.templates.TemplateTestData.asHelper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -41,11 +44,10 @@ class TemplateApplierTest : FunSpec({
                 val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 3))
 
-                templateApplier.applyTemplate(
+                templateApplier.applyTemplates(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    schedulingStart,
-                    schedulingEnd,
-                    template
+                    schedulingStart..schedulingEnd,
+                    nonEmptyListOf(template),
                 )
 
                 val expectedWeekCount = 4
@@ -59,7 +61,11 @@ class TemplateApplierTest : FunSpec({
                 val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 13))
 
-                templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.templateAdmin, schedulingStart, schedulingEnd, template)
+                templateApplier.applyTemplates(
+                    PrincipalsTestData.FiktivusMaximus.templateAdmin,
+                    schedulingStart..schedulingEnd,
+                    nonEmptyListOf(template)
+                )
 
                 val expectedWeekCount = 3
                 val expectedShiftCount = expectedWeekCount * weekShiftCount
@@ -72,7 +78,11 @@ class TemplateApplierTest : FunSpec({
                 val template = TemplateTestData.Templates.template_single_week_template_complex
                     .copy(start = YearWeek(1919, 16))
 
-                templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.allRoles, schedulingStart, schedulingEnd, template)
+                templateApplier.applyTemplates(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    schedulingStart..schedulingEnd,
+                    nonEmptyListOf(template),
+                )
 
                 weekPlanRepository.shiftList.shouldBeEmpty()
             }
@@ -99,7 +109,11 @@ class TemplateApplierTest : FunSpec({
             val schedulingStart = TemplateTestData.Templates.template_single_week_template_complex.start
             val schedulingEnd = schedulingStart
 
-            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.templateAdmin, schedulingStart, schedulingEnd, TemplateTestData.Templates.template_single_week_template_complex)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.templateAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_single_week_template_complex),
+            )
 
             val mondayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.MONDAY))
             val tuesdayShifts = weekPlanRepository.shiftListOnDay(YearWeekDay(schedulingStart, DayOfWeek.TUESDAY))
@@ -123,7 +137,11 @@ class TemplateApplierTest : FunSpec({
             val schedulingStart = TemplateTestData.Templates.template_single_week_template_complex.start
             val schedulingEnd = schedulingStart
 
-            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.allRoles, schedulingStart, schedulingEnd, TemplateTestData.Templates.template_single_week_template_complex)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(TemplateTestData.Templates.template_single_week_template_complex),
+            )
 
             val mondayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.MONDAY))
             val tuesdayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.TUESDAY))
@@ -136,7 +154,10 @@ class TemplateApplierTest : FunSpec({
             // TODO: 25/06/2024 rohdef - the dealing with Helper.ID typing should probably be improved
             val helpersMap = TemplateTestData.Helpers.helpersMap
             mondayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("jazz")!!))
-            tuesdayHelpers shouldBe listOf(HelperBooking.NoBooking, HelperBooking.PermanentHelper(helpersMap.get("rockabilly")!!))
+            tuesdayHelpers shouldBe listOf(
+                HelperBooking.NoBooking,
+                HelperBooking.PermanentHelper(helpersMap.get("rockabilly")!!)
+            )
             wednesdayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("blues")!!))
             thurdayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("metal")!!))
             fridayHelpers shouldBe listOf()
@@ -157,12 +178,19 @@ class TemplateApplierTest : FunSpec({
         test("Scheduling starts at same date as template start") {
             val template = template.copy(start = schedulingStart)
 
-            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.templateAdmin, schedulingStart, schedulingEnd, template)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.templateAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(template),
+            )
 
             val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
-            val expectedMondays = listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.monday_day }
-            val expectedWednesdays = listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.wednesday_day }
-            val expectedSaturdays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.saturday_day }
+            val expectedMondays =
+                listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.monday_day }
+            val expectedWednesdays =
+                listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.wednesday_day }
+            val expectedSaturdays =
+                listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.saturday_day }
 
             val expectedShifts = expectedMondays + expectedWednesdays + expectedSaturdays
             weekPlanRepository.shiftList shouldContainExactlyInAnyOrder expectedShifts
@@ -172,12 +200,19 @@ class TemplateApplierTest : FunSpec({
             val weekStart = schedulingStart.week - template.weeks.size + 1
             val template = template.copy(start = schedulingStart.copy(week = weekStart))
 
-            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.allRoles, schedulingStart, schedulingEnd, template)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(template),
+            )
 
             val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
-            val expectedMondays = listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.monday_day }
-            val expectedWednesdays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.wednesday_day }
-            val expectedSaturdays = listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.saturday_day }
+            val expectedMondays =
+                listOf(weeksInInterval[1], weeksInInterval[4], weeksInInterval[7]).map { it.monday_day }
+            val expectedWednesdays =
+                listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.wednesday_day }
+            val expectedSaturdays =
+                listOf(weeksInInterval[0], weeksInInterval[3], weeksInInterval[6]).map { it.saturday_day }
 
             val expectedShifts = expectedMondays + expectedWednesdays + expectedSaturdays
             weekPlanRepository.shiftList shouldContainExactlyInAnyOrder expectedShifts
@@ -187,10 +222,15 @@ class TemplateApplierTest : FunSpec({
             val weekStart = schedulingStart.week + template.weeks.size - 1
             val template = template.copy(start = schedulingStart.copy(week = weekStart))
 
-            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.templateAdmin, schedulingStart, schedulingEnd, template)
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.templateAdmin,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(template),
+            )
 
             val weeksInInterval = (schedulingStart..schedulingEnd).map { TemplateTestData.TestRepositoryShifts(it) }
-            val expectedMondays = listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.monday_day }
+            val expectedMondays =
+                listOf(weeksInInterval[2], weeksInInterval[5], weeksInInterval[8]).map { it.monday_day }
             val expectedWednesdays = listOf(weeksInInterval[3], weeksInInterval[6]).map { it.wednesday_day }
             val expectedSaturdays = listOf(weeksInInterval[4], weeksInInterval[7]).map { it.saturday_day }
 
@@ -200,7 +240,40 @@ class TemplateApplierTest : FunSpec({
     }
 
     context("Principal") {
-        test("Should differentiate") {
+        val schedulingStart = YearWeek(1919, 12)
+        val schedulingEnd = YearWeek(1919, 13)
+
+        test("Distinguishing between subjects") {
+            val template1 = TemplateTestData.Templates.template_monday
+            val template2 = TemplateTestData.Templates.template_wednesday
+
+            templateApplier.applyTemplates(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(template1),
+            )
+            templateApplier.applyTemplates(
+                PrincipalsTestData.RealisMinimalis.allRoles,
+                schedulingStart..schedulingEnd,
+                nonEmptyListOf(template2),
+            )
+
+            val maximusShifts =
+                weekPlanRepository.shifts(PrincipalsTestData.FiktivusMaximus.subject, schedulingStart..schedulingEnd)
+                    .shouldBeRight()
+            val realisShifts =
+                weekPlanRepository.shifts(PrincipalsTestData.RealisMinimalis.subject, schedulingStart..schedulingEnd)
+                    .shouldBeRight()
+
+            maximusShifts.flatMap { it.allShifts }
+                .map { it.start.dayOfWeek } shouldContainExactly listOf(DayOfWeek.MONDAY, DayOfWeek.MONDAY)
+            realisShifts.flatMap { it.allShifts }
+                .map { it.start.dayOfWeek } shouldContainExactly listOf(DayOfWeek.WEDNESDAY, DayOfWeek.WEDNESDAY)
+        }
+
+        test("Requires the role ${RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN}") {
+//            templateApplier.applyTemplate(PrincipalsTestData.FiktivusMaximus.allRoles, schedulingStart, schedulingEnd, template1)
+
             TODO()
         }
     }
