@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.MemoryWeekSynchronizationRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.rfweeks.YearWeek
 
@@ -21,8 +22,11 @@ class TestWeekSynchronizationRepository(
         memoryWeekSynchronizationRepository.reset()
     }
 
-    override fun markSynchronized(yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
+    override fun markSynchronized(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
         _markSynchronizedPreRunners.map { it(yearWeek).bind() }
-        memoryWeekSynchronizationRepository.markSynchronized(yearWeek)
+        memoryWeekSynchronizationRepository.markSynchronized(subject, yearWeek)
     }
 }

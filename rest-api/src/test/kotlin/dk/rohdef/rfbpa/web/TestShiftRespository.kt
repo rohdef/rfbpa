@@ -5,6 +5,7 @@ import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.MemoryShiftRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
@@ -37,26 +38,36 @@ class TestShiftRespository(
 
     internal val shifts: Map<ShiftId, Shift>
         get() = memoryShiftRepository.shifts
-    internal val shiftList: List<Shift>
-        get() = shifts.values.toList()
 
-    suspend fun addShift(shift: Shift) {
-        memoryShiftRepository.createOrUpdate(shift)
+    suspend fun addShift(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift,
+    ) {
+        memoryShiftRepository.createOrUpdate(subject, shift)
     }
 
-    override suspend fun createOrUpdate(shift: Shift): Either<ShiftsError, Shift> = either {
+    override suspend fun createOrUpdate(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift,
+    ): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
-        memoryShiftRepository.createOrUpdate(shift).bind()
+        memoryShiftRepository.createOrUpdate(subject, shift).bind()
     }
 
     // Work around wrong decendent bug in delegates
-    override suspend fun byYearWeekInterval(yearWeeks: YearWeekInterval): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> =
+    override suspend fun byYearWeekInterval(
+        subject: RfbpaPrincipal.Subject,
+        yearWeeks: YearWeekInterval,
+    ): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> =
         either {
-            yearWeeks.mapOrAccumulate { byYearWeek(it).bind() }.bind()
+            yearWeeks.mapOrAccumulate { byYearWeek(subject, it).bind() }.bind()
         }
 
-    override suspend fun byYearWeek(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
+    override suspend fun byYearWeek(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<ShiftsError, WeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
-        memoryShiftRepository.byYearWeek(yearWeek).bind()
+        memoryShiftRepository.byYearWeek(subject, yearWeek).bind()
     }
 }

@@ -1,6 +1,8 @@
 package dk.rohdef.rfbpa.web.modules
 
 import arrow.core.*
+import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwt.interfaces.Payload
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
@@ -55,10 +57,10 @@ fun Application.security() {
     }
 }
 
-fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> {
-    return principal<RfbpaPrincipal>().toOption()
-        .map { it.domainPrincipal }
-        .toEither { ApiError.unauthorized("No way!") }
+fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either {
+    ensureNotNull(principal<RfbpaPrincipal>()) {
+        ApiError.unauthorized("No way!")
+    }.domainPrincipal
 }
 
 @JvmInline

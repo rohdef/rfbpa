@@ -20,7 +20,6 @@ import {brown, lightGreen, pink, purple, red, yellow} from "@mui/material/colors
 import {WeekPlan} from "./WeekPlan.ts";
 import {Shift} from "./Shift.ts";
 import {ExpandMore} from "@mui/icons-material";
-import CalendarBeforeCellRenderArgs = DayPilot.CalendarBeforeCellRenderArgs;
 import AuthorizationContext from "../../contexts/AuthorizationContext/AuthorizationContext.tsx";
 
 interface Helper {

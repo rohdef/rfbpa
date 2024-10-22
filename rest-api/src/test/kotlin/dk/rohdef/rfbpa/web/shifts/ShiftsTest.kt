@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web.shifts
 import com.auth0.jwk.JwkProvider
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.rfbpa.web.PrincipalsTestData
 import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.TestWeekPlanService
@@ -47,6 +48,7 @@ class ShiftsTest : RfbpaSpec({
         stopKoin()
     }
 
+    val fiktivusSubject = PrincipalsTestData.FiktivusMaximus.subject
     context("Reading shifts") {
         restTest("Requesting single week") { client ->
             val response = client.get("$url/$week29--$week29")
@@ -73,9 +75,9 @@ class ShiftsTest : RfbpaSpec({
         restTest("Querying multiple shifts") { client ->
             // TODO add items to system - maybe lift to all tests
             // query multiple weeks
-            weekPlanWeek29.allShifts.forEach { weekPlanService.addShift(it) }
-            weekPlanWeek30.allShifts.forEach { weekPlanService.addShift(it) }
-            weekPlanWeek31.allShifts.forEach { weekPlanService.addShift(it) }
+            weekPlanWeek29.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
+            weekPlanWeek30.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
+            weekPlanWeek31.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
 
             val response = client.get(urlWeek29To31)
 
@@ -91,7 +93,7 @@ class ShiftsTest : RfbpaSpec({
         xrestTest("Helper bookings") {}
     }
 
-    xrestTest("Authentication from salary system error should be communicated to the client") {
+    xrestTest("Authentication from salary system error should be communicated to the client") { client ->
         val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.Unauthorized
@@ -99,7 +101,7 @@ class ShiftsTest : RfbpaSpec({
         val error: String = response.body()
     }
 
-    xrestTest("Sync and shift error should be communicated to the client as server failure") {
+    xrestTest("Sync and shift error should be communicated to the client as server failure") { client ->
         // TODO: 26/07/2024 rohdef - set the status for error
 
         val response = client.get(url)

@@ -10,13 +10,14 @@ import shifts
 
 fun Application.routes() {
     routing {
-        templates()
         authenticate {
             route("/api/public") {
+                templates()
                 calendar()
                 shifts()
             }
         }
+        shifts()
 
         get("/health") {
             call.respondText("I am healthy!")

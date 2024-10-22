@@ -61,7 +61,9 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
         .withJWTId("some-id-jwt")
         .withIssuer(TestConfiguration.default.auth.jwtIssuer)
         .withAudience("account")
-        .withSubject("aeb2d15c-04e1-415d-9520-ad61ce0a1a6f")
+        // TODO: 22/09/2024 rohdef - make testable
+        .withSubject("f1kt1vus")
+//        .withSubject("aeb2d15c-04e1-415d-9520-ad61ce0a1a6f")
         .withClaim("typ", "Bearer")
         .withClaim("azp", "rfbpa")
         .withClaim("sid", "session-3")
@@ -90,7 +92,7 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
         .sign(Algorithm.RSA256(publicKey, privateKey))
 
     fun rfbpaTestApplication(
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
+        block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit
     ) {
         testApplication {
             val client = createClient {
@@ -107,35 +109,37 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
                 developmentMode = false
             }
 
-            block(client)
+            RfBpaSpecScope().block(client)
         }
     }
 
     fun FunSpecRootScope.restTest(
         name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
+        block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit
     ) = test(name) {
         rfbpaTestApplication(block)
     }
 
     suspend fun FunSpecContainerScope.restTest(
         name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit,
+        block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit,
     ) = test(name) {
         rfbpaTestApplication(block)
     }
 
     fun FunSpecRootScope.xrestTest(
         name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
+        block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit
     ) = xtest(name) {
         rfbpaTestApplication(block)
     }
 
     suspend fun FunSpecContainerScope.xrestTest(
         name: String,
-        block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
+        block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit
     ) = xtest(name) {
         rfbpaTestApplication(block)
     }
 }
+
+class RfBpaSpecScope

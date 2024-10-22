@@ -21,23 +21,23 @@ interface RfbpaRoutes {
 export const rfbpaRoutes: RfbpaRoutes = {
     calendar: {
         path: "/calendar",
-        element: <Calendar />,
+        element: <Calendar/>,
     },
     home: {
         path: "/",
-        element: <Welcome />,
+        element: <Welcome/>,
     },
     logout: {
         path: "/logout",
-        element: <Logout />,
+        element: <Logout/>,
     },
     shifts: {
         path: "/shifts",
-        element: <Shifts />,
+        element: <Shifts/>,
     },
     templates: {
         path: "/templates",
-        element: <Templates />,
+        element: <Templates/>,
     },
 }
 

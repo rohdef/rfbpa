@@ -1,7 +1,6 @@
 package dk.rohdef.helperplanning.templates
 
 import arrow.core.Either
-import arrow.core.getOrElse
 import arrow.core.left
 import arrow.core.raise.either
 import arrow.core.raise.ensure
@@ -9,8 +8,6 @@ import arrow.core.right
 import dk.rohdef.helperplanning.HelpersRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -103,8 +100,6 @@ class TemplateApplier(
                         Unit.left()
                     }
                 }
-
-
 
                 when (bookingId) {
                     is Either.Right -> log.info { "Successfully booked ${helper}" }

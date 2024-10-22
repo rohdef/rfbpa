@@ -17,7 +17,8 @@ class MemorySalarySystemRepository(
         _shifts.clear()
     }
 
-    internal val _shifts =
+    // TODO: 21/09/2024 rohdef - find isolation level - internal doesn't work
+    val _shifts =
         mutableMapOf<RfbpaPrincipal.Subject, Map<ShiftId, Shift>>().withDefault { emptyMap() }
 
     val shifts: Map<ShiftId, Shift>

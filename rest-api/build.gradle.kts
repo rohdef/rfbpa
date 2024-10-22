@@ -56,8 +56,8 @@ dependencies {
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
 
     val koinVersion = "3.6.0-Beta5"
@@ -76,6 +76,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auto-head-response")
     implementation("io.ktor:ktor-server-call-logging")
     implementation("io.ktor:ktor-server-netty")
+    implementation("io.ktor:ktor-server-resources")
 
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-client-content-negotiation")

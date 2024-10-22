@@ -2,6 +2,7 @@ package dk.rohdef.rfbpa.web
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -14,24 +15,40 @@ class TestWeekPlanService  : WeekPlanService {
         shiftRepository.reset()
     }
 
-    internal suspend fun addShift(shift: Shift) {
-        shiftRepository.addShift(shift)
+    internal suspend fun addShift(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift,
+    ) {
+        shiftRepository.addShift(subject, shift)
     }
 
-    override suspend fun synchronize(yearWeekInterval: YearWeekInterval): Either<NonEmptyList<SynchronizationError>, Unit> {
+    override suspend fun synchronize(
+        principal: RfbpaPrincipal,
+        yearWeekInterval: YearWeekInterval,
+    ): Either<NonEmptyList<SynchronizationError>, Unit> {
         TODO("not implemented")
     }
 
-    override suspend fun synchronize(yearWeek: YearWeek): Either<SynchronizationError, Unit> {
+    override suspend fun synchronize(
+        principal: RfbpaPrincipal,
+        yearWeek: YearWeek,
+    ): Either<SynchronizationError, Unit> {
         TODO("not implemented")
     }
 
-    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {
+    override suspend fun createShift(
+        principal: RfbpaPrincipal,
+        start: YearWeekDayAtTime,
+        end: YearWeekDayAtTime,
+    ): Either<WeekPlanServiceError, Shift> {
         TODO("not implemented")
     }
 
-    override suspend fun shifts(yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>> {
-        return shiftRepository.byYearWeekInterval(yearWeekInterval)
+    override suspend fun shifts(
+        principal: RfbpaPrincipal,
+        yearWeekInterval: YearWeekInterval,
+    ): Either<WeekPlanServiceError, List<WeekPlan>> {
+        return shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
             .mapLeft { throw IllegalStateException("This should not be possible") }
     }
 }

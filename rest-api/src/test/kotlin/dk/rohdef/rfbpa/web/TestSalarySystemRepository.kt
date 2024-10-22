@@ -4,10 +4,11 @@ import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.helperplanning.MemorySalarySystemRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.letValue
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
-import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import generateTestShiftId
 
@@ -28,53 +29,26 @@ class TestSalarySystemRepository(
 
     internal val shifts: Map<ShiftId, Shift>
         get() = memoryWeekPlanRepository.shifts
-    internal val shiftList: List<Shift>
-        get() = shifts.values.toList()
-    internal val sortedByStartShifts: List<Shift>
-        // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
-        get() = shiftList.sortedBy { it.start.localDateTime }
 
-    fun addShift(shift: Shift) {
-        memoryWeekPlanRepository._shifts[shift.shiftId] = shift
-    }
-
-    override suspend fun shifts(yearWeek: YearWeek): Either<ShiftsError, WeekPlan> = either {
+    override suspend fun shifts(
+        subject: RfbpaPrincipal.Subject,
+        yearWeek: YearWeek,
+    ): Either<ShiftsError, WeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
-        memoryWeekPlanRepository.shifts(yearWeek).bind()
+        memoryWeekPlanRepository.shifts(subject, yearWeek).bind()
     }
 
-    override suspend fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Either<Unit, Shift> {
+    override suspend fun createShift(
+        subject: RfbpaPrincipal.Subject,
+        start: YearWeekDayAtTime, end: YearWeekDayAtTime,
+    ): Either<ShiftsError, Shift> {
         val shiftId = generateTestShiftId(start, end)
         val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
 
-        memoryWeekPlanRepository._shifts.put(shiftId, shift)
+        memoryWeekPlanRepository._shifts.letValue(subject) {
+            it + (shiftId to shift)
+        }
 
         return shift.right()
-    }
-
-    internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
-        shiftList.filter { it.start.yearWeekDay == yearWeekDay }
-
-    internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
-        return shiftsOnDay(yearWeekDay).values
-            .map { it.helperBooking }
-    }
-
-    internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {
-        return shifts.filter { it.value.start.yearWeekDay == yearWeekDay }
-    }
-
-    internal fun firstShiftStart(): YearWeekDay {
-        return this.sortedByStartShifts
-            .first()
-            .start
-            .yearWeekDay
-    }
-
-    internal fun lastShiftStart(): YearWeekDay {
-        return this.sortedByStartShifts
-            .last()
-            .start
-            .yearWeekDay
     }
 }
