@@ -17,14 +17,6 @@ import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
-internal fun interface ShiftBuilderOnDay {
-    fun start(hours: Int, minutes: Int): ShiftBuilderAtStart
-}
-
-internal fun interface ShiftBuilderAtStart {
-    fun end(hours: Int, minutes: Int): Shift
-}
-
 class SynchronizationTest : FunSpec({
     fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
         return Shift(

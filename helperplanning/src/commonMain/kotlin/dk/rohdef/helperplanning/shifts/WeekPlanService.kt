@@ -14,4 +14,6 @@ interface WeekPlanService {
 
     suspend fun createShift(principal: RfbpaPrincipal, start: YearWeekDayAtTime, end: YearWeekDayAtTime) : Either<WeekPlanServiceError, Shift>
     suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>>
+
+    suspend fun changeHelperBooking(principal: RfbpaPrincipal, shiftId: ShiftId, helperBooking: HelperBooking): Either<WeekPlanServiceError, Unit>
 }

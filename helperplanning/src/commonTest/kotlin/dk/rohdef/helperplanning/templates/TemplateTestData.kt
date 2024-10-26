@@ -1,7 +1,7 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelperTestData
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
@@ -14,23 +14,12 @@ import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 
 object TemplateTestData {
-    object Helpers {
-        val jazz = HelperReservation.Helper("jazz")
-        val hiphop = HelperReservation.Helper("hiphop")
-        val blues = HelperReservation.Helper("blues")
-        val metal = HelperReservation.Helper("metal")
-        val rockabilly = HelperReservation.Helper("rockabilly")
-
-        val allHelpers = listOf(
-            jazz,
-            hiphop,
-            blues,
-            metal,
-            rockabilly
-        )
-
-        val helpersMap = allHelpers
-            .associate { it.id to it.asHelper() }
+    private object Helpers {
+        val jazz = HelperReservation.Helper(HelperTestData.permanentJazz.shortName)
+        val hiphop = HelperReservation.Helper(HelperTestData.permanentHipHop.shortName)
+        val blues = HelperReservation.Helper(HelperTestData.permanentBlues.shortName)
+        val metal = HelperReservation.Helper(HelperTestData.permanentMetal.shortName)
+        val rockabilly = HelperReservation.Helper(HelperTestData.permanentRockabilly.shortName)
     }
 
     object ShiftTemplates {
@@ -87,11 +76,8 @@ object TemplateTestData {
     val helperIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
     val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
-    fun HelperReservation.Helper.asHelper(): Helper {
-        return Helper(
-            HelperId(UUID.generateUUID(helperIdNamespace, this.id)),
-            this.id
-        )
+    fun HelperReservation.Helper.asHelper(): HelperId {
+        return HelperId(UUID.generateUUID(helperIdNamespace, this.id))
     }
 
     fun HelperReservation.Helper.generateTestId(): HelperId {
@@ -118,8 +104,9 @@ object TemplateTestData {
             }.atTime(this.end)
 
             val helperBooking = when (helper) {
-                is HelperReservation.Helper -> HelperBooking.PermanentHelper(
-                    (helper as HelperReservation.Helper).asHelper()
+                is HelperReservation.Helper -> HelperBooking.Booked(
+                    TODO("Fix once made ID based")
+//                    (helper as HelperReservation.Helper).asHelper()
                 )
 
                 HelperReservation.NoReservation -> HelperBooking.NoBooking

@@ -62,7 +62,7 @@ class DatabaseShiftsTest : FunSpec({
     context("Bookings") {
         test("Shifts with bookings") {
             val fiktivus = TestHelpers.fiktivus
-            val shift = shiftW29Wednesday1.copy(helperBooking = HelperBooking.PermanentHelper(fiktivus))
+            val shift = shiftW29Wednesday1.copy(helperBooking = HelperBooking.Booked(fiktivus))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shift)
 
             val expectedWeekPlanShift1 = WeekPlan.emptyPlan(week29).copy(wednesday = listOf(shift))
@@ -72,7 +72,7 @@ class DatabaseShiftsTest : FunSpec({
         test("Shift with no booking becoming booked") {
             val realis = TestHelpers.realis
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday1)
-            val shift = shiftW30Tuesday1.copy(helperBooking = HelperBooking.PermanentHelper(realis))
+            val shift = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(realis))
 
             val expectedWeekPlanUnbooked = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftW30Tuesday1))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanUnbooked
@@ -85,9 +85,9 @@ class DatabaseShiftsTest : FunSpec({
             val fiktivus = TestHelpers.fiktivus
             val realis = TestHelpers.realis
 
-            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.PermanentHelper(fiktivus))
+            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(fiktivus))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftInitial)
-            val shiftRebooked = shiftW30Tuesday1.copy(helperBooking = HelperBooking.PermanentHelper(realis))
+            val shiftRebooked = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(realis))
 
             val expectedWeekPlanInitial = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftInitial))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanInitial
@@ -99,7 +99,7 @@ class DatabaseShiftsTest : FunSpec({
         test("Shift already booked becoming unbooked") {
             val fiktivus = TestHelpers.fiktivus
 
-            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.PermanentHelper(fiktivus))
+            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(fiktivus))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftInitial)
             val expectedWeekPlanBooked = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftInitial))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanBooked

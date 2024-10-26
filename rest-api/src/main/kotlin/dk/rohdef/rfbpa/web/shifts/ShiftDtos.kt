@@ -1,5 +1,7 @@
 package dk.rohdef.rfbpa.web.shifts
 
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlan
@@ -17,16 +19,11 @@ data class ShiftOut(
     val end: YearWeekDayAtTime,
 ) {
     companion object {
-        fun from(shift: Shift): ShiftOut {
+        fun from(shift: Shift, helpers: Map<HelperId, Helper>): ShiftOut {
             val helperBooking = shift.helperBooking
             val booking = when (helperBooking) {
                 HelperBooking.NoBooking -> HelperBookingOut.NoBooking
-                is HelperBooking.PermanentHelper -> HelperBookingOut.Booking(
-                    helperBooking.helper.id.id,
-                    helperBooking.helper.shortName,
-                )
-                is HelperBooking.UnknownHelper -> TODO()
-                HelperBooking.VacancyHelper -> TODO()
+                is HelperBooking.Booked -> HelperBookingOut.Booking.from(helpers.getValue(helperBooking.helper.id))
             }
 
             return ShiftOut(
@@ -49,8 +46,15 @@ sealed interface HelperBookingOut {
     @SerialName("Booking")
     data class Booking(
         val id: UUID,
-        val shortName: String,
-    ) : HelperBookingOut
+        val name: String,
+    ) : HelperBookingOut {
+        companion object {
+            fun from(helper: Helper) = Booking(
+                helper.id.id,
+                helper.name,
+            )
+        }
+    }
 }
 
 @Serializable
@@ -66,16 +70,16 @@ data class WeekPlanOut(
     val sunday: List<ShiftOut>,
 ) {
     companion object {
-        fun from(weekPlan: WeekPlan): WeekPlanOut = with(weekPlan) {
+        fun from(weekPlan: WeekPlan, helpers: Map<HelperId, Helper>): WeekPlanOut = with(weekPlan) {
             WeekPlanOut(
                 week,
-                monday.map { ShiftOut.from(it) },
-                tuesday.map { ShiftOut.from(it) },
-                wednesday.map { ShiftOut.from(it) },
-                thursday.map { ShiftOut.from(it) },
-                friday.map { ShiftOut.from(it) },
-                saturday.map { ShiftOut.from(it) },
-                sunday.map { ShiftOut.from(it) },
+                monday.map { ShiftOut.from(it, helpers) },
+                tuesday.map { ShiftOut.from(it, helpers) },
+                wednesday.map { ShiftOut.from(it, helpers) },
+                thursday.map { ShiftOut.from(it, helpers) },
+                friday.map { ShiftOut.from(it, helpers) },
+                saturday.map { ShiftOut.from(it, helpers) },
+                sunday.map { ShiftOut.from(it, helpers) },
             )
         }
     }

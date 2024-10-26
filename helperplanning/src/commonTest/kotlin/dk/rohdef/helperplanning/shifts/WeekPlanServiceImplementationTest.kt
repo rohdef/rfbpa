@@ -4,6 +4,7 @@ import arrow.core.left
 import arrow.core.nonEmptySetOf
 import arrow.core.right
 import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.helpers.HelperTestData
 import dk.rohdef.helperplanning.shifts.ShiftTestData.Fiktivus
 import dk.rohdef.rfweeks.YearWeek
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -88,6 +89,66 @@ class WeekPlanServiceImplementationTest : FunSpec({
             .shouldBeLeft()
 
         error shouldBe WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+    }
+
+    context("Helper bookings") {
+        test("booking a helper") {
+            val shift2 = Fiktivus.week8Shift2
+
+            val booking = weekPlanService.changeHelperBooking(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                shift2.shiftId,
+                HelperBooking.Booked(HelperTestData.permanentHipHop),
+            )
+
+            val expectedShift = Shift(
+                HelperBooking.Booked(HelperTestData.permanentHipHop),
+                shift2.shiftId,
+                shift2.start,
+                shift2.end,
+            )
+
+            booking shouldBeRight expectedShift
+            shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
+            salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
+        }
+
+        test("unbooking a helper") {
+            val shift2 = Fiktivus.week10Shift2
+
+            val booking = weekPlanService.changeHelperBooking(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                shift2.shiftId,
+                HelperBooking.NoBooking,
+            )
+
+            val expectedShift = Shift(
+                HelperBooking.NoBooking,
+                shift2.shiftId,
+                shift2.start,
+                shift2.end,
+            )
+
+            booking shouldBeRight expectedShift
+            shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
+            salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
+        }
+
+        test("vacancy booking") {
+            // TODO: 22/10/2024 rohdef - should this somehow be more explicit? - logic must be metadata only
+            TODO()
+        }
+
+        test("unknown helper") {
+            val shift1 = Fiktivus.week9Shift1
+            val booking = weekPlanService.changeHelperBooking(
+                PrincipalsTestData.FiktivusMaximus.allRoles,
+                shift1.shiftId,
+                HelperBooking.Booked(HelperTestData.unknown2),
+            ).shouldBeLeft()
+
+            booking shouldBe TODO("Something that says not allowed")
+        }
     }
 
     context("Principals") {

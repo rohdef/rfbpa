@@ -121,6 +121,14 @@ class WeekPlanServiceImplementation(
         }
     }
 
+    override suspend fun changeHelperBooking(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId,
+        helperBooking: HelperBooking
+    ): Either<WeekPlanServiceError, Unit> {
+        TODO("not implemented")
+    }
+
     private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository
 
     private fun SynchronizationError.toServiceError(): WeekPlanServiceError {

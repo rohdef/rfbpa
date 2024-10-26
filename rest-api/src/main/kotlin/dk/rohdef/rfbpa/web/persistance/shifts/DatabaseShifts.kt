@@ -21,10 +21,12 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
         val booking = if (row[HelpersTable.id] != null) {
-            HelperBooking.PermanentHelper(
-                Helper(
+            // TODO: 26/10/2024 rohdef - this is definitely faulty!
+            HelperBooking.Booked(
+                Helper.Permanent(
+                    row[HelpersTable.name],
+                    row[HelpersTable.shortName]!!,
                     HelperId(row[HelpersTable.id].toKotlinUUID()),
-                    row[HelpersTable.shortName],
                 )
             )
         } else {
@@ -81,16 +83,11 @@ class DatabaseShifts : ShiftRepository {
         val helperBooking = shift.helperBooking
         when (helperBooking) {
             HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.shiftId.id.toJavaUUID() }
-            is HelperBooking.PermanentHelper -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
+
+            is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
                 it[shiftId] = shift.shiftId.id.toJavaUUID()
                 it[helperId] = helperBooking.helper.id.id.toJavaUUID()
             }
-
-            is HelperBooking.UnknownHelper -> {
-                println("Helper not known: ${helperBooking.externalReference}")
-            }
-
-            HelperBooking.VacancyHelper -> TODO()
         }
         shift.right()
     }

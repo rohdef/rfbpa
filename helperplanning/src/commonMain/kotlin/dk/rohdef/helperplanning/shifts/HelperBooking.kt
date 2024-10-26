@@ -8,10 +8,5 @@ sealed interface HelperBooking {
     }
 
     @JvmInline
-    value class PermanentHelper(val helper: Helper) : HelperBooking
-
-    @JvmInline
-    value class UnknownHelper(val externalReference: String) : HelperBooking
-
-    object VacancyHelper : HelperBooking
+    value class Booked(val helper: Helper) : HelperBooking
 }

@@ -5,7 +5,7 @@ import arrow.core.left
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.right
-import dk.rohdef.helperplanning.HelpersRepository
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.shifts.ShiftId

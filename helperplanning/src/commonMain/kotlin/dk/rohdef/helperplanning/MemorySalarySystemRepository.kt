@@ -5,6 +5,7 @@ import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import arrow.core.raise.withError
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -32,7 +33,7 @@ class MemorySalarySystemRepository(
     ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
         val helperBooking = withError({ SalarySystemRepository.BookingError.HelperNotFound(helperId) }) {
             helpersRepository.byId(helperId)
-                .map { HelperBooking.PermanentHelper(it) }
+                .map { HelperBooking.Booked(it) }
                 .bind()
         }
 

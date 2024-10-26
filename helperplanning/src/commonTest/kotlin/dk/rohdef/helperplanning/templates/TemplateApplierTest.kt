@@ -2,8 +2,8 @@ package dk.rohdef.helperplanning.templates
 
 import arrow.core.nonEmptyListOf
 import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.helpers.HelperTestData
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.templates.TemplateTestData.asHelper
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -30,9 +30,7 @@ class TemplateApplierTest : FunSpec({
         weekPlanRepository.reset()
         memoryHelpers.reset()
 
-        TemplateTestData.Helpers.allHelpers
-            .map { it.asHelper() }
-            .forEach { memoryHelpers.create(it) }
+        HelperTestData.allHelpers.forEach { memoryHelpers.create(it) }
     }
 
     context("Template cutting dates") {
@@ -153,17 +151,16 @@ class TemplateApplierTest : FunSpec({
             val sundayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.SUNDAY))
 
             // TODO: 25/06/2024 rohdef - the dealing with Helper.ID typing should probably be improved
-            val helpersMap = TemplateTestData.Helpers.helpersMap
-            mondayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("jazz")!!))
+            mondayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentJazz))
             tuesdayHelpers shouldBe listOf(
                 HelperBooking.NoBooking,
-                HelperBooking.PermanentHelper(helpersMap.get("rockabilly")!!)
+                HelperBooking.Booked(HelperTestData.permanentRockabilly)
             )
-            wednesdayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("blues")!!))
-            thurdayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("metal")!!))
+            wednesdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentBlues))
+            thurdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentMetal))
             fridayHelpers shouldBe listOf()
             saturdayHelpers shouldBe listOf(HelperBooking.NoBooking)
-            sundayHelpers shouldBe listOf(HelperBooking.PermanentHelper(helpersMap.get("hiphop")!!))
+            sundayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentHipHop))
         }
     }
 

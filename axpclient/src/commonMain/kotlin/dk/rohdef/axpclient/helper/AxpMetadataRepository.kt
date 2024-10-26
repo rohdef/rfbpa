@@ -2,7 +2,6 @@ package dk.rohdef.axpclient.helper
 
 import arrow.core.getOrElse
 import arrow.core.toOption
-import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
@@ -22,10 +21,10 @@ sealed interface AxpMetadataRepository {
             is PermanentHelper -> {
                 helperNumber.toId(bookingToHelperId)
                     .flatMap { helpers[it].toOption() }
-                    .map { HelperBooking.PermanentHelper(it) }
-                    .getOrElse { HelperBooking.UnknownHelper(helperNumber.id) }
+                    .getOrElse { Helper.Unknown(TODO("Find the anme")) }
+                    .let { HelperBooking.Booked(it) }
             }
-            is VacancyBooking -> HelperBooking.VacancyHelper
+            is VacancyBooking -> HelperBooking.Booked(Helper.Temp(TODO("Find the name")))
             is NoBooking -> HelperBooking.NoBooking
         }
     }

@@ -3,6 +3,8 @@ import arrow.core.nonEmptySetOf
 import arrow.core.raise.either
 import arrow.core.raise.withError
 import dk.rohdef.helperplanning.RfbpaPrincipal
+import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ApiError
@@ -21,6 +23,7 @@ import org.koin.ktor.ext.inject
 private val log = KotlinLogging.logger {}
 fun Route.shifts() {
     val weekPlanService: WeekPlanService by inject()
+    val helperService: HelperService by inject()
 
     val principal = RfbpaPrincipal(
         RfbpaPrincipal.Subject("rohde"),
@@ -38,17 +41,18 @@ fun Route.shifts() {
             val weekPlans = withError({ it.toApiError() }) {
                 weekPlanService.shifts(principal, it.yearWeekInterval).bind()
             }
+            val helpers = helperService.all()
+                .associate { it.id to it }
+                .withDefault { Helper.Unknown("Helper not found in system", it) }
 
-            weekPlans.map { WeekPlanOut.from(it) }.httpOk()
+            weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
         }
     }
 
-    get<Shift.ById> { iv ->
+    get<Shift.ById> { shiftById ->
         either {
-            log.info { iv.id }
-            "Having fun ${iv.id}?".httpOk()
-
-
+            log.info { "Getting shift by ID: ${shiftById.id}" }
+            "Having fun ${shiftById.id}?".httpOk()
         }
     }
 }

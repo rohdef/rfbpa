@@ -8,7 +8,7 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
-import dk.rohdef.helperplanning.HelpersRepository
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.Helper

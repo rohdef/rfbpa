@@ -7,6 +7,7 @@ import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
@@ -91,6 +92,7 @@ object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
         TODO("not implemented")
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): YearWeekInterval {
         return deserializeEither(decoder).getOrElse {
             it.map {

@@ -8,6 +8,7 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.helperplanning.templates.TemplateApplier
@@ -54,7 +55,7 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
         DatabaseHelpers().apply {
             runBlocking {
                 helpers.map {
-                    Helper(HelperId(it.value.id), it.key)
+                    Helper.Permanent(it.key, it.key, HelperId(it.value.id))
                 }.forEach {
                     create(it)
                 }

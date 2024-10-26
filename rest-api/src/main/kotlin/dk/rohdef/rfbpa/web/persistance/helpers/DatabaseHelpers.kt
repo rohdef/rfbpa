@@ -3,9 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.helpers
 import arrow.core.Either
 import arrow.core.Either.Companion.catchOrThrow
 import arrow.core.firstOrNone
-import arrow.core.raise.catch
-import arrow.core.right
-import dk.rohdef.helperplanning.HelpersRepository
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersError
@@ -14,18 +12,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.uuid.toJavaUUID
 import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.upsert
-import java.sql.SQLException
-
-private val log = KotlinLogging.logger {}
 
 class DatabaseHelpers : HelpersRepository {
+    private val log = KotlinLogging.logger {}
+
     private fun rowToHelper(row: ResultRow): Helper {
-        return Helper(
+        return Helper.Permanent(
+            row[HelpersTable.name],
+            row[HelpersTable.shortName]!!,
             HelperId(row[HelpersTable.id].toKotlinUUID()),
-            row[HelpersTable.shortName]
         )
     }
 
@@ -44,12 +41,13 @@ class DatabaseHelpers : HelpersRepository {
             .toEither { HelpersError.CannotFindHelperById(helperId) }
     }
 
-    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> =
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper.Permanent> =
         dbQuery {
             HelpersTable
                 .selectAll()
                 .where { HelpersTable.shortName eq shortName }
-                .map { rowToHelper(it) }
+                // TODO: 26/10/2024 rohdef - find a nicer way, even though this is a given
+                .map { rowToHelper(it) as Helper.Permanent }
                 .firstOrNone()
                 .toEither { HelpersError.CannotFindHelperByShortName(shortName) }
         }
@@ -58,14 +56,25 @@ class DatabaseHelpers : HelpersRepository {
         catchOrThrow<Exception, Helper> {
             HelpersTable.upsert {
                 it[id] = helper.id.id.toJavaUUID()
-                it[shortName] = helper.shortName
+
+                when (helper) {
+                    is Helper.Permanent -> {
+                        it[name] = helper.name
+                        it[shortName] = helper.shortName
+                    }
+                    is Helper.Temp -> {
+                        it[name] = helper.name
+                    }
+                    is Helper.Unknown -> {
+                        it[name] = helper.name
+                    }
+                }
             }
             helper
         }.mapLeft { exception ->
             val message = exception.message
             when {
                 message == null -> throw exception
-                message.contains("HELPERS_SHORT_NAME_UNIQUE_INDEX") -> HelpersError.Create.DuplicateShortName(helper.shortName)
                 else -> throw exception
             }
         }

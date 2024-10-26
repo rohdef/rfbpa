@@ -6,6 +6,7 @@ import arrow.core.right
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersError
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 
 class MemoryHelpersRepository : HelpersRepository {
     private val _helpers = mutableListOf<Helper>()
@@ -21,8 +22,10 @@ class MemoryHelpersRepository : HelpersRepository {
             .toEither { HelpersError.CannotFindHelperById(helperId) }
     }
 
-    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> {
-        return _helpers.firstOrNone { it.shortName == shortName }
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper.Permanent> {
+        return _helpers
+            .filterIsInstance<Helper.Permanent>()
+            .firstOrNone { it.shortName == shortName }
             .toEither { HelpersError.CannotFindHelperByShortName(shortName) }
     }
 
