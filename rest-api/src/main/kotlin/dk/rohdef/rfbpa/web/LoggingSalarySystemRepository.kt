@@ -21,9 +21,17 @@ class LoggingSalarySystemRepository(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helper: HelperId,
-    ): Either<SalarySystemRepository.BookingError, ShiftId> {
+    ): Either<SalarySystemRepository.BookingError, Unit> {
         log.debug { "Booking shift $shiftId to helper ${helper}" }
         return salarySystemRepository.bookShift(subject, shiftId, helper)
+    }
+
+    override suspend fun unbookShift(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId
+    ): Either<SalarySystemRepository.BookingError, Unit> {
+        log.debug { "Unbooking shift $shiftId" }
+        return salarySystemRepository.unbookShift(subject, shiftId)
     }
 
     override suspend fun shifts(

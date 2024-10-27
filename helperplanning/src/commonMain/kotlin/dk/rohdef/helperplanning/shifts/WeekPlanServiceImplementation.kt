@@ -7,6 +7,7 @@ import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.withError
+import arrow.core.right
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
@@ -126,7 +127,18 @@ class WeekPlanServiceImplementation(
         shiftId: ShiftId,
         helperBooking: HelperBooking
     ): Either<WeekPlanServiceError, Unit> {
-        TODO("not implemented")
+        // TODO: 27/10/2024 rohdef - ... dealing with synchronization
+        // TODO: 27/10/2024 rohdef - deal with principal
+        // TODO: 27/10/2024 rohdef - deal with errors
+
+        when (helperBooking) {
+            is HelperBooking.Booked -> salarySystem.bookShift(principal.subject, shiftId, helperBooking.helper)
+            HelperBooking.NoBooking -> salarySystem.unbookShift(principal.subject, shiftId)
+        }
+
+        shiftRepository.changeBooking(principal.subject, shiftId, helperBooking)
+
+        return Unit.right()
     }
 
     private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository

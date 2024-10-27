@@ -16,7 +16,9 @@ interface SalarySystemRepository {
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
-    ): Either<BookingError, ShiftId>
+    ): Either<BookingError, Unit>
+
+    suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<BookingError, Unit>
 
     suspend fun shifts(
         subject: RfbpaPrincipal.Subject,

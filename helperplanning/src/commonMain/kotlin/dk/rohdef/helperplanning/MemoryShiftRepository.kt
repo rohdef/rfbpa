@@ -2,6 +2,8 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
+import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -19,6 +21,12 @@ class MemoryShiftRepository : ShiftRepository {
     val shifts: Map<ShiftId, Shift>
         get() = _shifts.map { it.value }
             .fold(emptyMap()) { accumulator, value -> accumulator + value}
+
+    private fun byId(shift: ShiftId): Either<ShiftsError, Shift> = either {
+        ensureNotNull(shifts[shift]) {
+            ShiftsError.ShiftNotFound(shift)
+        }
+    }
 
     override suspend fun byYearWeek(
         subject: RfbpaPrincipal.Subject,
@@ -43,5 +51,17 @@ class MemoryShiftRepository : ShiftRepository {
     ): Either<ShiftsError, Shift> = either {
         _shifts.letValue(subject) { it + (shift.shiftId to shift) }
         shift
+    }
+
+    override suspend fun changeBooking(
+        subject: RfbpaPrincipal.Subject,
+        shift: ShiftId,
+        booking: HelperBooking
+    ): Either<ShiftsError, Shift> = either {
+        val shift = byId(shift)
+            .map { it.copy(helperBooking = booking) }
+            .bind()
+
+        createOrUpdate(subject, shift).bind()
     }
 }

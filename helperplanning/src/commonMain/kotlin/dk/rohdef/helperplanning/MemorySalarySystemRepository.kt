@@ -26,7 +26,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
-    ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
+    ): Either<SalarySystemRepository.BookingError, Unit> = either {
         val helperBooking = HelperBooking.Booked(helperId)
 
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
@@ -34,8 +34,19 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         }.copy(helperBooking = helperBooking)
 
         _shifts.letValue(subject) { it + (shiftId to shift) }
+    }
 
-        shiftId
+    override suspend fun unbookShift(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId
+    ): Either<SalarySystemRepository.BookingError, Unit> = either {
+        val helperBooking = HelperBooking.NoBooking
+
+        val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
+            SalarySystemRepository.BookingError.ShiftNotFound(shiftId)
+        }.copy(helperBooking = helperBooking)
+
+        _shifts.letValue(subject) { it + (shiftId to shift) }
     }
 
     override suspend fun shifts(

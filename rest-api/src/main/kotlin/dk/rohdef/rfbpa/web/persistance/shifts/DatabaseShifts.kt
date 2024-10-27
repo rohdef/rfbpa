@@ -18,14 +18,10 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DatabaseShifts : ShiftRepository {
-    // TODO: 27/10/2024 rohdef - database structure needs change, we're no longer referencing entire helper
     private fun rowToShift(row: ResultRow): Shift {
-        val booking = if (row[HelpersTable.id] != null) {
-            // TODO: 26/10/2024 rohdef - this is definitely faulty!
-            HelperBooking.Booked(HelperId(row[HelpersTable.id].toKotlinUUID()))
-        } else {
-            HelperBooking.NoBooking
-        }
+        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUUID()
+            ?.let { HelperId(it) }
+        val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
         return Shift(
             booking,
@@ -41,13 +37,26 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
+    private suspend fun byId(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+    ) : Either<ShiftsError, Shift> {
+        val shifts = ShiftsTable
+            .leftJoin(ShiftBookingsTable)
+            .selectAll()
+            .where { ShiftsTable.id eq shiftId.id.toJavaUUID() }
+            .map { rowToShift(it) }
+
+        // TODO: 27/10/2024 rohdef - deal properly with 0 and many cases
+        return shifts.single().right()
+    }
+
     override suspend fun byYearWeek(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
     ): Either<ShiftsError, WeekPlan> = dbQuery {
         val shifts = ShiftsTable
             .leftJoin(ShiftBookingsTable)
-            .leftJoin(HelpersTable)
             .selectAll()
             // TODO map selection to date types that exposed can deal with
             .where {
@@ -74,15 +83,23 @@ class DatabaseShifts : ShiftRepository {
             it[end] = shift.end.localDateTime.toJavaLocalDateTime()
         }
 
-        val helperBooking = shift.helperBooking
-        when (helperBooking) {
-            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.shiftId.id.toJavaUUID() }
+        changeBooking(subject, shift.shiftId, shift.helperBooking)
+    }
+
+    override suspend fun changeBooking(
+        subject: RfbpaPrincipal.Subject,
+        shift: ShiftId,
+        booking: HelperBooking
+    ): Either<ShiftsError, Shift> = dbQuery {
+        when (booking) {
+            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.id.toJavaUUID() }
 
             is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
-                it[shiftId] = shift.shiftId.id.toJavaUUID()
-                it[helperId] = helperBooking.helper.id.toJavaUUID()
+                it[shiftId] = shift.id.toJavaUUID()
+                it[helperId] = booking.helper.id.toJavaUUID()
             }
         }
-        shift.right()
+
+        byId(subject, shift)
     }
 }

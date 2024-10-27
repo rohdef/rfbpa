@@ -108,7 +108,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 shift2.end,
             )
 
-            booking shouldBeRight expectedShift
+            booking.shouldBeRight()
             shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
             salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
         }
@@ -129,7 +129,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 shift2.end,
             )
 
-            booking shouldBeRight expectedShift
+            booking.shouldBeRight()
             shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
             salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
         }

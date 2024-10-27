@@ -73,7 +73,7 @@ class AxpSalarySystem(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
-    ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
+    ): Either<SalarySystemRepository.BookingError, Unit> = either {
         ensureLoggedIn()
 
         val helperTid = helperReferences.helperById(helperId)
@@ -93,6 +93,13 @@ class AxpSalarySystem(
             }
             .map { shiftId }
             .bind()
+    }
+
+    override suspend fun unbookShift(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId
+    ): Either<SalarySystemRepository.BookingError, Unit> {
+        TODO("not implemented")
     }
 
     internal suspend fun AxpShift.shift(): Either<Unit, Shift> = either {
