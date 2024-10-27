@@ -23,7 +23,7 @@ data class ShiftOut(
             val helperBooking = shift.helperBooking
             val booking = when (helperBooking) {
                 HelperBooking.NoBooking -> HelperBookingOut.NoBooking
-                is HelperBooking.Booked -> HelperBookingOut.Booking.from(helpers.getValue(helperBooking.helper.id))
+                is HelperBooking.Booked -> HelperBookingOut.Booking.from(helpers.getValue(helperBooking.helper))
             }
 
             return ShiftOut(

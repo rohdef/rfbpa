@@ -8,6 +8,8 @@ import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelperService
+import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
@@ -69,8 +71,8 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
     }
 
     when (rfBpaConfig.runtimeMode) {
-        RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
-        RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository(get())) }
+        RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository()) }
+        RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository()) }
         RuntimeMode.PRODUCTION -> singleOf(::AxpSalarySystem) bind SalarySystemRepository::class
     }
 }
@@ -95,6 +97,7 @@ fun Application.dependencyInjection() {
             } },
             configuration(rfBpaConfig),
             repositories(rfBpaConfig),
+            module { singleOf(::HelperServiceImplementation) bind HelperService::class },
             module { singleOf(::WeekPlanServiceImplementation) bind WeekPlanService::class },
             module { singleOf(::TemplateApplier) bind TemplateApplier::class },
         )

@@ -4,7 +4,6 @@ import arrow.core.Either
 import arrow.core.right
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.ShiftRepository
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
@@ -19,16 +18,11 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DatabaseShifts : ShiftRepository {
+    // TODO: 27/10/2024 rohdef - database structure needs change, we're no longer referencing entire helper
     private fun rowToShift(row: ResultRow): Shift {
         val booking = if (row[HelpersTable.id] != null) {
             // TODO: 26/10/2024 rohdef - this is definitely faulty!
-            HelperBooking.Booked(
-                Helper.Permanent(
-                    row[HelpersTable.name],
-                    row[HelpersTable.shortName]!!,
-                    HelperId(row[HelpersTable.id].toKotlinUUID()),
-                )
-            )
+            HelperBooking.Booked(HelperId(row[HelpersTable.id].toKotlinUUID()))
         } else {
             HelperBooking.NoBooking
         }
@@ -86,7 +80,7 @@ class DatabaseShifts : ShiftRepository {
 
             is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
                 it[shiftId] = shift.shiftId.id.toJavaUUID()
-                it[helperId] = helperBooking.helper.id.id.toJavaUUID()
+                it[helperId] = helperBooking.helper.id.toJavaUUID()
             }
         }
         shift.right()

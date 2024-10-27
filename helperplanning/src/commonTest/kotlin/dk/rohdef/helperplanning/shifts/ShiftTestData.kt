@@ -13,11 +13,11 @@ object ShiftTestData {
 
     object Fiktivus {
         val week8Shift1 = year2024Week8.shift(DayOfWeek.MONDAY)
-            .helper(HelperBooking.Booked(HelperTestData.permanentJazz))
+            .helper(HelperBooking.Booked(HelperTestData.permanentJazz.id))
             .start(13, 30)
             .end(14, 30)
         val week8Shift2 = year2024Week8.shift(DayOfWeek.WEDNESDAY)
-            .helper(HelperBooking.Booked(HelperTestData.unknown1))
+            .helper(HelperBooking.Booked(HelperTestData.unknown1.id))
             .start(17, 30)
             .end(21, 30)
         val week8Shifts = listOf(week8Shift1, week8Shift2)
@@ -28,11 +28,11 @@ object ShiftTestData {
         val week9Shifts = listOf(week9Shift1)
 
         val week10Shift1 = year2024Week10.shift(DayOfWeek.WEDNESDAY)
-            .helper(HelperBooking.Booked(HelperTestData.permanentHipHop))
+            .helper(HelperBooking.Booked(HelperTestData.permanentHipHop.id))
             .start(10, 45)
             .end(20, 30)
         val week10Shift2 = year2024Week10.shift(DayOfWeek.SUNDAY)
-            .helper(HelperBooking.Booked(HelperTestData.temp1))
+            .helper(HelperBooking.Booked(HelperTestData.temp1.id))
             .start(6, 0)
             .end(23, 0)
         val week10Shifts = listOf(week10Shift1, week10Shift2)
@@ -40,14 +40,14 @@ object ShiftTestData {
         val allShiftsInSystem = week8Shifts + week9Shifts + week10Shifts
 
         val week8ShiftNotInSystem = year2024Week8.shift(DayOfWeek.SATURDAY)
-            .helper(HelperBooking.Booked(HelperTestData.temp2))
+            .helper(HelperBooking.Booked(HelperTestData.temp2.id))
             .start(8, 0)
             .end(15, 45)
         val week9ShiftNotInSystem = year2024Week9.shift(DayOfWeek.MONDAY)
             .start(21, 0)
             .end(22, 45)
         val week10ShiftNotInSystem = year2024Week10.shift(DayOfWeek.THURSDAY)
-            .helper(HelperBooking.Booked(HelperTestData.unknown2))
+            .helper(HelperBooking.Booked(HelperTestData.unknown2.id))
             .start(8, 0)
             .end(15, 45)
 

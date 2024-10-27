@@ -18,7 +18,7 @@ import kotlinx.datetime.DayOfWeek
 
 class TemplateApplierTest : FunSpec({
     val memoryHelpers = MemoryHelpersRepository()
-    val memoryWeekPlanRepository = MemorySalarySystemRepository(memoryHelpers)
+    val memoryWeekPlanRepository = MemorySalarySystemRepository()
     val weekPlanRepository = TestSalarySystemRepository(memoryWeekPlanRepository)
 
     val templateApplier = TemplateApplier(
@@ -151,16 +151,16 @@ class TemplateApplierTest : FunSpec({
             val sundayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.SUNDAY))
 
             // TODO: 25/06/2024 rohdef - the dealing with Helper.ID typing should probably be improved
-            mondayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentJazz))
+            mondayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentJazz.id))
             tuesdayHelpers shouldBe listOf(
                 HelperBooking.NoBooking,
-                HelperBooking.Booked(HelperTestData.permanentRockabilly)
+                HelperBooking.Booked(HelperTestData.permanentRockabilly.id)
             )
-            wednesdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentBlues))
-            thurdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentMetal))
+            wednesdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentBlues.id))
+            thurdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentMetal.id))
             fridayHelpers shouldBe listOf()
             saturdayHelpers shouldBe listOf(HelperBooking.NoBooking)
-            sundayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentHipHop))
+            sundayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentHipHop.id))
         }
     }
 

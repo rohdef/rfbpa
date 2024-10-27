@@ -98,11 +98,11 @@ class WeekPlanServiceImplementationTest : FunSpec({
             val booking = weekPlanService.changeHelperBooking(
                 PrincipalsTestData.FiktivusMaximus.allRoles,
                 shift2.shiftId,
-                HelperBooking.Booked(HelperTestData.permanentHipHop),
+                HelperBooking.Booked(HelperTestData.permanentHipHop.id),
             )
 
             val expectedShift = Shift(
-                HelperBooking.Booked(HelperTestData.permanentHipHop),
+                HelperBooking.Booked(HelperTestData.permanentHipHop.id),
                 shift2.shiftId,
                 shift2.start,
                 shift2.end,
@@ -144,7 +144,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
             val booking = weekPlanService.changeHelperBooking(
                 PrincipalsTestData.FiktivusMaximus.allRoles,
                 shift1.shiftId,
-                HelperBooking.Booked(HelperTestData.unknown2),
+                HelperBooking.Booked(HelperTestData.unknown2.id),
             ).shouldBeLeft()
 
             booking shouldBe TODO("Something that says not allowed")

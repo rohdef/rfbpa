@@ -3,15 +3,13 @@ package dk.rohdef.axpclient
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.raise.either
-import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
+import dk.rohdef.axpclient.helper.AxpMetadataRepository
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
-import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
@@ -28,7 +26,6 @@ class AxpSalarySystem(
     private val configuration: AxpConfiguration,
     private val axpShiftReferences: AxpShiftReferences,
     private val helperReferences: AxpHelperReferences,
-    private val helpersRepository: HelpersRepository,
 ) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
     private val client = HttpClient(OkHttp) {
@@ -76,33 +73,63 @@ class AxpSalarySystem(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
-    ): Either<SalarySystemRepository.BookingError, ShiftId> {
+    ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
         ensureLoggedIn()
 
-        val helperTid = helperReferences.helperById(helperId).axpTid
+        val helperTid = helperReferences.helperById(helperId)
+            .mapLeft {
+                log.error { "Could not find helper" }
+                TODO()
+            }
+            .bind()
+            .axpTid ?: TODO("Deal with this scenario")
         val axpBookingId = axpShiftReferences.shiftIdToAxpBooking(shiftId)
             .getOrElse { TODO("Handle the optional better") }
-        return axpClient.bookHelper(axpBookingId, helperTid)
+        axpClient.bookHelper(axpBookingId, helperTid)
             .mapLeft {
                 // TODO improve
                 log.error { it }
                 TODO("Error detected, improve me")
             }
             .map { shiftId }
+            .bind()
     }
 
-    internal suspend fun AxpShift.shift(bookingToHelperId: Map<HelperNumber, HelperId>, helpers: Map<HelperId, Helper>): Shift {
-        val helperBooking = axpHelperBooking.toHelperBooking(bookingToHelperId, helpers)
-        val storedShiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
+    internal suspend fun AxpShift.shift(): Either<Unit, Shift> = either {
+        val bookingToHelperId: (HelperNumber) -> Either<Unit, HelperId> = { number: HelperNumber ->
+            val helperId = helperReferences.helperByNumber(number)
+                .map { it.helperId }
 
-        val shiftId = when (storedShiftId) {
-            is Either.Right -> storedShiftId.value
-            is Either.Left -> ShiftId.generateId().apply {
-                axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
+            when (helperId) {
+                is Either.Left -> helperReferences.createHelperReference(number)
+                is Either.Right -> helperId
             }
         }
+        val vacancyToHelperId: (Any) -> Either<Unit, HelperId> = { TODO() }
 
-        return Shift(
+        // TODO: 27/10/2024 rohdef - this probably needs a bit of love
+        val helperBooking = when (axpHelperBooking) {
+            AxpMetadataRepository.NoBooking -> HelperBooking.NoBooking
+            is AxpMetadataRepository.PermanentHelper -> {
+                val helperId = bookingToHelperId(axpHelperBooking.helperNumber)
+                    .bind()
+                HelperBooking.Booked(helperId)
+            }
+            AxpMetadataRepository.VacancyBooking -> {
+                val helperId = vacancyToHelperId(TODO())
+                    .bind()
+                HelperBooking.Booked(helperId)
+            }
+        }
+        val shiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
+            .getOrElse {
+                ShiftId.generateId().apply {
+                    // TODO: 27/10/2024 rohdef - what to do if this fails
+                    axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
+                }
+            }
+
+        Shift(
             helperBooking,
             shiftId,
             YearWeekDayAtTime.from(start),
@@ -113,27 +140,31 @@ class AxpSalarySystem(
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
-    ): Either<ShiftsError, WeekPlan> {
+    ): Either<ShiftsError, WeekPlan> = either {
         ensureLoggedIn()
-
-        val bookingToHelperId: Map<HelperNumber, HelperId> = helperReferences.all()
-            .associate { it.axpNumber to it.helperId }
-        val helpers: Map<HelperId, Helper> = helpersRepository.all()
-            .associate { it.id to it }
 
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
 
-        return WeekPlan(
+        val axpToDomainShift: suspend (AxpShift) -> Shift = {
+            it.shift()
+                .mapLeft { TODO() }
+                .bind()
+        }
+        val monday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val tuesday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val wednesday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val thursday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val friday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val saturday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val sunday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+
+        WeekPlan(
             yearWeek,
-            weekPlan.monday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.tuesday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.wednesday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.thursday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.friday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.saturday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-            weekPlan.sunday.allShifts.map { it.shift(bookingToHelperId, helpers) },
-        ).right()
+            monday, tuesday, wednesday,
+            thursday, friday,
+            saturday, sunday,
+        )
     }
 
     override fun close() {

@@ -3,17 +3,13 @@ package dk.rohdef.helperplanning
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
-import arrow.core.raise.withError
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
 
-class MemorySalarySystemRepository(
-    val helpersRepository: HelpersRepository = MemoryHelpersRepository(),
-) : SalarySystemRepository {
+class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
         _shifts.clear()
     }
@@ -31,11 +27,7 @@ class MemorySalarySystemRepository(
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, ShiftId> = either {
-        val helperBooking = withError({ SalarySystemRepository.BookingError.HelperNotFound(helperId) }) {
-            helpersRepository.byId(helperId)
-                .map { HelperBooking.Booked(it) }
-                .bind()
-        }
+        val helperBooking = HelperBooking.Booked(helperId)
 
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
             SalarySystemRepository.BookingError.ShiftNotFound(shiftId)

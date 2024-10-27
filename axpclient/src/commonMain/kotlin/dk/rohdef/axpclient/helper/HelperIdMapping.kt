@@ -4,6 +4,6 @@ import dk.rohdef.helperplanning.helpers.HelperId
 
 data class HelperIdMapping(
     val helperId: HelperId,
-    val axpTid: HelperTID,
+    val axpTid: HelperTID?,
     val axpNumber: HelperNumber,
 )

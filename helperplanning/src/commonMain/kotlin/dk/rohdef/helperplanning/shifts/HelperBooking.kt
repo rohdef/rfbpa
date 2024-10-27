@@ -1,6 +1,6 @@
 package dk.rohdef.helperplanning.shifts
 
-import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 
 sealed interface HelperBooking {
     object NoBooking : HelperBooking {
@@ -8,5 +8,5 @@ sealed interface HelperBooking {
     }
 
     @JvmInline
-    value class Booked(val helper: Helper) : HelperBooking
+    value class Booked(val helper: HelperId) : HelperBooking
 }
