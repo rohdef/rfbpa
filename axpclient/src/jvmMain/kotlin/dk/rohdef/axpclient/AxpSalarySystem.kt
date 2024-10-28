@@ -82,7 +82,7 @@ class AxpSalarySystem(
                 TODO()
             }
             .bind()
-            .axpTid ?: TODO("Deal with this scenario")
+            .axpTid ?: TODO("Helper does not have a TID, deal with it")
         val axpBookingId = axpShiftReferences.shiftIdToAxpBooking(shiftId)
             .getOrElse { TODO("Handle the optional better") }
         axpClient.bookHelper(axpBookingId, helperTid)
@@ -99,6 +99,8 @@ class AxpSalarySystem(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId
     ): Either<SalarySystemRepository.BookingError, Unit> {
+        ensureLoggedIn()
+
         TODO("not implemented")
     }
 

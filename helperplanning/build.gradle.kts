@@ -16,6 +16,8 @@ kotlin {
             dependencies {
                 implementation(project(":rfweeks"))
 
+                implementation("log4j:log4j:1.1.3")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
             }
         }

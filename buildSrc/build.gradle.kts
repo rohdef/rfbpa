@@ -23,3 +23,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
     implementation("io.kotest:kotest-framework-multiplatform-plugin-gradle:5.6.2")
 }
+
+dependencyLocking {
+    lockMode.set(LockMode.STRICT)
+}
+
+configurations {
+    compileClasspath { resolutionStrategy.activateDependencyLocking() }
+    runtimeClasspath { resolutionStrategy.activateDependencyLocking() }
+}

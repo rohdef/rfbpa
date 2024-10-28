@@ -1,0 +1,18 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+io.kotest:kotest-framework-multiplatform-plugin-gradle:5.6.2=compileClasspath
+org.jetbrains.kotlin:kotlin-gradle-plugin-annotations:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-gradle-plugin-model:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-gradle-plugins-bom:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-native-utils:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-reflect:1.9.22=compileClasspath
+org.jetbrains.kotlin:kotlin-serialization:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-stdlib:1.9.22=compileClasspath
+org.jetbrains.kotlin:kotlin-tooling-core:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-util-io:2.0.20=compileClasspath
+org.jetbrains.kotlin:kotlin-util-klib:2.0.20=compileClasspath
+org.jetbrains:annotations:13.0=compileClasspath
+empty=

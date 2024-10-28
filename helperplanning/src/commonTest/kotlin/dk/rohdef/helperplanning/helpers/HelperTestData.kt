@@ -1,17 +1,43 @@
 package dk.rohdef.helperplanning.helpers
 
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
+
 object HelperTestData {
-    val permanentJazz = Helper.Permanent("Helper 1", "jazz")
-    val permanentHipHop = Helper.Permanent("Helper 2", "hiphop")
-    val permanentBlues = Helper.Permanent("Helper 2", "blues")
-    val permanentMetal = Helper.Permanent("Helper 2", "metal")
-    val permanentRockabilly = Helper.Permanent("Helper 2", "rockabilly")
+    val helperIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
-    val temp1 = Helper.Temp("Helper 3")
-    val temp2 = Helper.Temp("Helper 4")
+    fun helperId(id: String) = HelperId(
+        UUID.generateUUID(helperIdNamespace, id)
+    )
 
-    val unknown1 = Helper.Unknown("Helper 5")
-    val unknown2 = Helper.Unknown("Helper 6")
+    fun permanent(name: String, shortName: String) = Helper.Permanent(
+        name,
+        shortName,
+        helperId(shortName),
+    )
+
+    fun temp(name: String) = Helper.Temp(
+        name,
+        helperId(name),
+    )
+
+    fun unknown(name: String) = Helper.Unknown(
+        name,
+        helperId(name),
+    )
+
+
+    val permanentJazz = permanent("Helper 1", "jazz")
+    val permanentHipHop = permanent("Helper 2", "hiphop")
+    val permanentBlues = permanent("Helper 2", "blues")
+    val permanentMetal = permanent("Helper 2", "metal")
+    val permanentRockabilly = permanent("Helper 2", "rockabilly")
+
+    val temp1 = temp("Helper 3")
+    val temp2 = temp("Helper 4")
+
+    val unknown1 = unknown("Helper 5")
+    val unknown2 = unknown("Helper 6")
 
     val allHelpers = listOf(
         permanentJazz,

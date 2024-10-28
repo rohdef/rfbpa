@@ -2,6 +2,7 @@ package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelperTestData
+import dk.rohdef.helperplanning.helpers.HelperTestData.helperIdNamespace
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
@@ -73,16 +74,9 @@ object TemplateTestData {
         val sunday_day = shift5_00to19_00_booked
     }
 
-    val helperIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
     val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
-    fun HelperReservation.Helper.asHelper(): HelperId {
-        return HelperId(UUID.generateUUID(helperIdNamespace, this.id))
-    }
-
-    fun HelperReservation.Helper.generateTestId(): HelperId {
-        return HelperId(UUID.generateUUID(helperIdNamespace, this.id))
-    }
+    fun HelperReservation.Helper.asHelper() = HelperTestData.helperId(this.id)
 
     /**
      * This assumes no overlap in shift start/end pairs
@@ -104,11 +98,7 @@ object TemplateTestData {
             }.atTime(this.end)
 
             val helperBooking = when (helper) {
-                is HelperReservation.Helper -> HelperBooking.Booked(
-                    TODO("Fix once made ID based")
-//                    (helper as HelperReservation.Helper).asHelper()
-                )
-
+                is HelperReservation.Helper -> HelperBooking.Booked(helper.asHelper())
                 HelperReservation.NoReservation -> HelperBooking.NoBooking
             }
 

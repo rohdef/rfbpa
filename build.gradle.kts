@@ -9,6 +9,11 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    dependencyLocking {
+        lockMode.set(LockMode.STRICT)
+        lockAllConfigurations()
+    }
 }
 
 subprojects {
