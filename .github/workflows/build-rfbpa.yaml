@@ -7,7 +7,30 @@ env:
   WEB_APP_IMAGE_NAME: rfbpa-web-app
 
 jobs:
+  code-scan:
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repository: ${{ github.repository }}"
+        uses: actions/checkout@v4
+
+      - name: Scan code for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          format: "sarif"
+          output: "code-scan-results.sarif"
+
+      - name: Upload code scan to Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'code-scan-results.sarif'
+
   web-app:
+    needs:
+      - code-scan
     permissions:
       contents: read
       packages: write
@@ -55,6 +78,7 @@ jobs:
           echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_OUTPUT"
 
   rest-api:
+    needs: code-scan
     permissions:
       contents: read
       packages: write
@@ -65,18 +89,6 @@ jobs:
     steps:
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
-
-      - name: Scan code for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          format: "sarif"
-          output: "code-scan-results.sarif"
-
-      - name: Upload code scan to Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'code-scan-results.sarif'
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -126,6 +138,7 @@ jobs:
 
           DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
           echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_OUTPUT"
+
 
   deployment:
     needs:
