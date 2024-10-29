@@ -1,13 +1,13 @@
 package dk.rohdef.rfbpa.web.persistance.shifts
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.right
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
-import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -40,15 +40,18 @@ class DatabaseShifts : ShiftRepository {
     private suspend fun byId(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
-    ) : Either<ShiftsError, Shift> {
+    ) : Either<ShiftsError, Shift> = dbQuery {
         val shifts = ShiftsTable
             .leftJoin(ShiftBookingsTable)
             .selectAll()
             .where { ShiftsTable.id eq shiftId.id.toJavaUUID() }
             .map { rowToShift(it) }
 
-        // TODO: 27/10/2024 rohdef - deal properly with 0 and many cases
-        return shifts.single().right()
+        when (shifts.size) {
+            0 -> ShiftsError.ShiftNotFound(shiftId).left()
+            1 -> shifts.first().right()
+            else -> TODO("27/10/2024 rohdef - deal properly with many cases")
+        }
     }
 
     override suspend fun byYearWeek(
@@ -83,14 +86,27 @@ class DatabaseShifts : ShiftRepository {
             it[end] = shift.end.localDateTime.toJavaLocalDateTime()
         }
 
-        changeBooking(subject, shift.shiftId, shift.helperBooking)
+        changeBooking(shift.shiftId, shift.helperBooking)
+        shift.right()
     }
 
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
         shift: ShiftId,
         booking: HelperBooking
-    ): Either<ShiftsError, Shift> = dbQuery {
+    ): Either<ShiftsError, Shift> {
+        dbQuery {
+            changeBooking(shift, booking)
+        }
+
+        val x = byId(subject, shift)
+        return x
+    }
+
+    private fun changeBooking(
+        shift: ShiftId,
+        booking: HelperBooking
+    ) {
         when (booking) {
             HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.id.toJavaUUID() }
 
@@ -99,7 +115,5 @@ class DatabaseShifts : ShiftRepository {
                 it[helperId] = booking.helper.id.toJavaUUID()
             }
         }
-
-        byId(subject, shift)
     }
 }

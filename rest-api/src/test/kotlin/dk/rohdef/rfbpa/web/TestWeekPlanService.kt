@@ -2,13 +2,14 @@ package dk.rohdef.rfbpa.web
 
 import arrow.core.Either
 import arrow.core.NonEmptyList
+import arrow.core.raise.either
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
-class TestWeekPlanService  : WeekPlanService {
+class TestWeekPlanService : WeekPlanService {
     val shiftRepository = TestShiftRespository()
 
     internal fun reset() {
@@ -50,5 +51,19 @@ class TestWeekPlanService  : WeekPlanService {
     ): Either<WeekPlanServiceError, List<WeekPlan>> {
         return shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
             .mapLeft { throw IllegalStateException("This should not be possible") }
+    }
+
+    override suspend fun changeHelperBooking(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId,
+        helperBooking: HelperBooking
+    ): Either<WeekPlanServiceError, Unit> = either {
+        shiftRepository.changeBooking(
+            principal.subject,
+            shiftId,
+            helperBooking
+        )
+            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
+            .bind()
     }
 }

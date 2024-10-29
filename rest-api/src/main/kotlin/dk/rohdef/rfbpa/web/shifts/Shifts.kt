@@ -35,8 +35,7 @@ fun Route.shifts() {
     get<Shifts.InInterval> {
         either {
             log.info { "Loading shifts for interval: ${it.yearWeekInterval}" }
-//            val principal = call.rfbpaPrincipal().bind()
-
+            val principal = call.rfbpaPrincipal().bind()
 
             val weekPlans = withError({ it.toApiError() }) {
                 weekPlanService.shifts(principal, it.yearWeekInterval).bind()

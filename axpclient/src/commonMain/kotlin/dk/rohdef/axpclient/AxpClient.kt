@@ -93,6 +93,24 @@ internal class AxpClient(
         booking
     }
 
+    suspend fun unbookHelper(
+        booking: AxpBookingId,
+    ): Either<BookShiftError, AxpBookingId> = either {
+        val response = client.submitForm(
+            urls.index,
+            parameters {
+                shiftPlan(ShiftPlanAct.SAVE_BOOKING)
+
+                append("booking", booking.axpId)
+                append("clear_temp", "1")
+            }
+        )
+        val body: String = response.body()
+        log.debug { "saveBooking: [$body]" }
+
+        booking
+    }
+
     private enum class ShiftPlanAct {
         CHECK_APPROVED_CONFLICT,
         CHECK_DOUBLE_CONFLICT,

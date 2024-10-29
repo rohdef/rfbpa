@@ -1,6 +1,10 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import com.auth0.jwk.JwkProvider
+import dk.rohdef.helperplanning.MemoryHelpersRepository
+import dk.rohdef.helperplanning.helpers.HelperService
+import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
+import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.PrincipalsTestData
@@ -8,6 +12,7 @@ import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
 import dk.rohdef.rfbpa.web.TestWeekPlanService
 import dk.rohdef.rfbpa.web.modules.configuration
+import dk.rohdef.rfbpa.web.persistance.helpers.TestHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29To31
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week30
@@ -22,6 +27,8 @@ import io.ktor.http.*
 import kotlinx.datetime.Clock
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 class ShiftsTest : RfbpaSpec({
@@ -29,6 +36,7 @@ class ShiftsTest : RfbpaSpec({
     val urlWeek29To31 = "${url}/${week29To31}"
 
     val weekPlanService = TestWeekPlanService()
+    val helperService = HelperServiceImplementation(MemoryHelpersRepository())
     beforeEach {
         weekPlanService.reset()
 
@@ -38,6 +46,14 @@ class ShiftsTest : RfbpaSpec({
                 module {
                     single<Clock> { Clock.System }
                     single<JwkProvider> { JwkProvider { jwk } }
+
+                    // TODO: 29/10/2024 rohdef - introduce test helper service
+                    // TODO: 29/10/2024 rohdef - consider moving towards end to end
+                    singleOf(::MemoryHelpersRepository) bind HelpersRepository::class
+                    singleOf(::HelperServiceImplementation) bind HelperService::class
+
+                    single<HelperService> { helperService }
+
                     single<WeekPlanService> { weekPlanService }
                 },
             )
@@ -50,13 +66,18 @@ class ShiftsTest : RfbpaSpec({
 
     val fiktivusSubject = PrincipalsTestData.FiktivusMaximus.subject
     context("Reading shifts") {
+        val helpers = mapOf(
+            TestHelpers.fiktivus.id to TestHelpers.fiktivus,
+            TestHelpers.realis.id to TestHelpers.realis,
+        )
+
         restTest("Requesting single week") { client ->
             val response = client.get("$url/$week29--$week29")
 
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<WeekPlanOut> = response.body()
             weekPlans shouldBe listOf(
-                WeekPlanOut.from(WeekPlan.emptyPlan(week29)),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week29), emptyMap()),
             )
         }
 
@@ -66,13 +87,17 @@ class ShiftsTest : RfbpaSpec({
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<WeekPlanOut> = response.body()
             weekPlans shouldBe listOf(
-                WeekPlanOut.from(WeekPlan.emptyPlan(week29)),
-                WeekPlanOut.from(WeekPlan.emptyPlan(week30)),
-                WeekPlanOut.from(WeekPlan.emptyPlan(week31)),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week29), emptyMap()),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week30), emptyMap()),
+                WeekPlanOut.from(WeekPlan.emptyPlan(week31), emptyMap()),
             )
         }
 
         restTest("Querying multiple shifts") { client ->
+            // TODO: 29/10/2024 rohdef - helpers definitely needs some rework
+            helperService.create(TestHelpers.fiktivus)
+            helperService.create(TestHelpers.realis)
+
             // TODO add items to system - maybe lift to all tests
             // query multiple weeks
             weekPlanWeek29.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
@@ -84,9 +109,9 @@ class ShiftsTest : RfbpaSpec({
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<WeekPlanOut> = response.body()
             weekPlans shouldBe listOf(
-                WeekPlanOut.from(weekPlanWeek29),
-                WeekPlanOut.from(weekPlanWeek30),
-                WeekPlanOut.from(weekPlanWeek31),
+                WeekPlanOut.from(weekPlanWeek29, helpers),
+                WeekPlanOut.from(weekPlanWeek30, helpers),
+                WeekPlanOut.from(weekPlanWeek31, helpers),
             )
         }
 

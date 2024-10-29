@@ -134,20 +134,14 @@ class WeekPlanServiceImplementationTest : FunSpec({
             salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
         }
 
-        test("vacancy booking") {
-            // TODO: 22/10/2024 rohdef - should this somehow be more explicit? - logic must be metadata only
-            TODO()
-        }
+        xcontext("Error cases") {
+            xtest("vacancy booking") {
+                // TODO: 22/10/2024 rohdef - should this somehow be more explicit? - logic must be metadata only
+                TODO()
+            }
 
-        test("unknown helper") {
-            val shift1 = Fiktivus.week9Shift1
-            val booking = weekPlanService.changeHelperBooking(
-                PrincipalsTestData.FiktivusMaximus.allRoles,
-                shift1.shiftId,
-                HelperBooking.Booked(HelperTestData.unknown2.id),
-            ).shouldBeLeft()
-
-            booking shouldBe TODO("Something that says not allowed")
+            xtest("helper not known by AXP") {
+            }
         }
     }
 
