@@ -88,6 +88,16 @@ jobs:
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
 
+      - name: "Testing custom action"
+        id: build-container
+        uses: ./.github/actions/build-container
+        with:
+          input-path: "/tmp/nonsense"
+
+      - name: Test result
+        run: |
+          echo ${{ steps.build-container.outputs.container-image }}
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -120,6 +130,7 @@ jobs:
 
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Push image
         id: push_image
         run: |

@@ -1,0 +1,28 @@
+name: Build container
+description: ""
+
+inputs:
+  input-path:
+    description: Path to build coker image from
+    required: true
+
+outputs:
+  container-image:
+    description: The random image name used for generation
+    value: ${{ steps.build-image.outputs.container-image }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build image
+      id: build-image
+      shell: bash
+      run: |
+        IMAGE_NAME=$(uuidgen)
+        echo "$IMAGE_NAME"
+        echo "${{ inputs.input-path }}"
+        echo "container-image=\"hey $IMAGE_NAME\"" >> $GITHUB_OUTPUT
+#        docker build \
+#          --tag "$IMAGE_NAME" \
+#          --label "runnumber=${GITHUB_RUN_ID}" \
+#          "${{ inputs.input-path }}"
