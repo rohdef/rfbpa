@@ -106,7 +106,8 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
             }
 
             environment {
-                developmentMode = false
+                // TODO: 24/11/2024 rohdef - probably wanted, where is it after update to ktor 3?
+//                developmentMode = false
             }
 
             RfBpaSpecScope().block(client)

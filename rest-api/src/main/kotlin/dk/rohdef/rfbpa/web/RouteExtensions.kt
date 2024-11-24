@@ -10,7 +10,7 @@ import io.ktor.server.resources.get as resourceGet
 
 fun Route.typedPost(
     path: String,
-    body: suspend PipelineContext<Unit, ApplicationCall>.() -> Either<ApiError, Any>,
+    body: suspend RoutingContext.() -> Either<ApiError, Any>,
 ) {
     post(path) {
         val res = body()
@@ -23,7 +23,7 @@ fun Route.typedPost(
 }
 
 inline fun <reified T : Any> Route.get(
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Either<ApiError, HttpResponse<*>>
+    noinline body: suspend RoutingContext.(T) -> Either<ApiError, HttpResponse<*>>
 ) {
     resourceGet<T> {
         val res = body(it)
