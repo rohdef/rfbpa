@@ -50,31 +50,15 @@ jobs:
           npm ci
           npm run build
 
-      - name: Build image
-        run: docker build --tag $WEB_APP_IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" ./web-app/
-
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Push image
-        id: push_image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$WEB_APP_IMAGE_NAME
 
-          # This changes all uppercase characters to lowercase.
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          # This strips the git ref prefix from the version.
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # This strips the "v" prefix from the tag name.
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # This uses the Docker `latest` tag convention.
-          [ "$VERSION" == "main" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $WEB_APP_IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
-
-          DOCKER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:$VERSION")
-          echo "docker_digest=$(echo ${DOCKER_DIGEST})" >> "$GITHUB_OUTPUT"
+      - name: Build and push container
+        id: build-container
+        uses: ./.github/actions/build-container
+        with:
+          input-path: ./web-app/
+          image-destination-name: ${{ github.repository_owner }}/$WEB_APP_IMAGE_NAME
 
   rest-api:
     permissions:
@@ -107,7 +91,7 @@ jobs:
         uses: ./.github/actions/build-container
         with:
           input-path: ./rest-api/
-          image-destination: ghcr.io/${{ github.repository_owner }}/$REST_API_IMAGE_NAME
+          image-destination-name: ${{ github.repository_owner }}/$REST_API_IMAGE_NAME
 
 
   deployment:

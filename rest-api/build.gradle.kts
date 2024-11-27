@@ -106,6 +106,14 @@ dependencies {
     testImplementation("io.insert-koin:koin-test:$koinVersion")
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("io.netty:netty-transport-native-epoll:4.1.115.Final")
+        force("io.netty:netty-transport-native-kqueue:4.1.115.Final")
+        force("io.netty:netty-codec-http2:4.1.115.Final")
+    }
+}
+
 
 idea {
     module {
