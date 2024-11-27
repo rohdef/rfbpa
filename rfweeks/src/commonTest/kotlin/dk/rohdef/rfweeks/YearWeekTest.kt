@@ -306,7 +306,7 @@ class YearWeekTest : FunSpec({
                 wrongPrefix,
             )
 
-            val longWrongPrefix = "2022-WT08"
+            val longWrongPrefix = "2022-WT8"
             val yearWeekLongWrongPrefix = YearWeek.parse(longWrongPrefix)
             yearWeekLongWrongPrefix shouldBeLeft YearWeekParseError.WeekMustBePrefixedWithW(
                 "WT",
@@ -323,13 +323,25 @@ class YearWeekTest : FunSpec({
             )
         }
 
-        xtest("Week must be two digits") {
-            val text = "2022W8"
+        test("Week must be two digits") {
+            val text = "2022-W8"
             val yearWeek = YearWeek.parse(text)
             yearWeek shouldBeLeft YearWeekParseError.WeekNumberMustBeTwoDigits(
                 "8",
                 text
             )
+        }
+
+        test("Input string must have a valid length") {
+            val tooShort = "2022W9"
+            val justFine = "2022W09"
+            val justFineLong = "2022-W09"
+            val tooLong = "2022-W090"
+
+            YearWeek.parse(tooShort) shouldBeLeft YearWeekParseError.ContentsLenghtIsWrong(tooShort, tooShort.length)
+            YearWeek.parse(justFine).shouldBeRight()
+            YearWeek.parse(justFineLong).shouldBeRight()
+            YearWeek.parse(tooLong) shouldBeLeft YearWeekParseError.ContentsLenghtIsWrong(tooLong, tooLong.length)
         }
     }
 

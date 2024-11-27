@@ -1,8 +1,9 @@
 package dk.rohdef.rfweeks
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.raise.catch
+import arrow.core.raise.either
+import arrow.core.raise.ensure
 import kotlinx.datetime.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -76,7 +77,7 @@ data class YearWeek(
 
     fun previousWeek(): YearWeek {
         return if (this.week == 1) {
-            YearWeek(year-1, mondaysInWeeksOfYear(year-1).size)
+            YearWeek(year - 1, mondaysInWeeksOfYear(year - 1).size)
         } else {
             YearWeek(year, week - 1)
         }
@@ -89,8 +90,9 @@ data class YearWeek(
     fun atDayOfWeek(dayOfWeek: DayOfWeek) = YearWeekDay(this, dayOfWeek)
 
     companion object {
-        fun parse(text: String): Either<YearWeekParseError, YearWeek> {
-            // TODO: 01/06/2024 rohdef - deal with substring sections IndexOutOfBoundsExceptions
+        fun parse(text: String): Either<YearWeekParseError, YearWeek> = either {
+            ensure(text.length >= 7 && text.length <= 8) { YearWeekParseError.ContentsLenghtIsWrong(text, text.length) }
+
             val yearPart = text.substring(0, 4)
 
             val wAndWeekPart = if (text[4] == '-') {
@@ -99,35 +101,24 @@ data class YearWeek(
                 text.substring(4)
             }
 
-            val year = try {
-                yearPart.toInt()
-            } catch (e: NumberFormatException) {
-                return YearWeekParseError.YearMustBeANumber(
-                    yearPart,
-                    text,
-                ).left()
+            val year = catch({ yearPart.toInt() }) {
+                raise(YearWeekParseError.YearMustBeANumber(yearPart, text))
             }
 
             val prefixRegex = "^([^0-9]*).*".toRegex()
             val weekPrefix = prefixRegex.find(wAndWeekPart)!!.groupValues[1]
-            if (weekPrefix != "W") {
-                return YearWeekParseError.WeekMustBePrefixedWithW(
-                    weekPrefix,
-                    text,
-                ).left()
+            ensure(weekPrefix == "W") {
+                YearWeekParseError.WeekMustBePrefixedWithW(weekPrefix, text)
             }
 
             val weekPart = wAndWeekPart.substring(1)
-            val week = try {
-                weekPart.toInt()
-            } catch (e: NumberFormatException) {
-                return YearWeekParseError.WeekMustBeANumber(
-                    weekPart,
-                    text,
-                ).left()
+            ensure(weekPart.length == 2) { YearWeekParseError.WeekNumberMustBeTwoDigits(weekPart, text) }
+
+            val week = catch({ weekPart.toInt() }) {
+                raise(YearWeekParseError.WeekMustBeANumber(weekPart, text))
             }
 
-            return YearWeek(year, week).right()
+            YearWeek(year, week)
         }
 
         private val mondaysInWeeksOfYear = LazyMap<Int, List<LocalDate>> {
