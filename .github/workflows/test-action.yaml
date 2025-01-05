@@ -1,0 +1,15 @@
+name: Test action
+on:
+  push: {}
+  workflow_dispatch: {}
+
+jobs:
+  test-it:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run my action
+        id: build-container
+        uses: rohdef/action-build-scan-push-container@main
+        with:
+          dockerfile-path: ./rest-api/
+#          image-destination-name: ${{ github.repository_owner }}/$REST_API_IMAGE_NAME

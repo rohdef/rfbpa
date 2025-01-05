@@ -10,7 +10,7 @@ import io.ktor.server.application.*
 fun main(arguments: Array<String>) = io.ktor.server.netty.EngineMain.main(arguments)
 
 fun Application.main() {
-    val log = KotlinLogging.logger{}
+    val log = KotlinLogging.logger {}
 
     log.info { "Starting web interface" }
 
