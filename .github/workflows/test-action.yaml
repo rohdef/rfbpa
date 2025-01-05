@@ -13,3 +13,8 @@ jobs:
         with:
           dockerfile-path: ./rest-api/
 #          image-destination-name: ${{ github.repository_owner }}/$REST_API_IMAGE_NAME
+
+      - name: Finish
+        run: |
+          echo "Be done"
+          echo ${{ steps.build-container.outputs.imageid                                                    }}
