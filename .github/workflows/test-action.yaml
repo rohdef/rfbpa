@@ -12,9 +12,14 @@ jobs:
         uses: rohdef/action-build-scan-push-container@main
         with:
           dockerfile-path: ./rest-api/
-#          image-destination-name: ${{ github.repository_owner }}/$REST_API_IMAGE_NAME
+          labels: |
+            org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
+            org.opencontainers.image.vendor=Rohde Fischer
+            org.opencontainers.image.ref.name=rfbap-1
+            org.opencontainers.image.title=rfbpa - A BPA manager
+            org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
 
       - name: Finish
         run: |
           echo "Be done"
-          echo ${{ steps.build-container.outputs.imageid                                                    }}
+          echo ${{ steps.build-container.outputs.imageid }}
