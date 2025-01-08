@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM alpine:3.21
 LABEL authors="rohdef"
 
 ARG version
