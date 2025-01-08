@@ -21,6 +21,7 @@ jobs:
           build-args: |
             version=awesome-500
             secondary=hmm
+            third=cup
 
       - name: Finish
         run: |
