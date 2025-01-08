@@ -11,15 +11,16 @@ jobs:
         id: build-container
         uses: rohdef/action-build-scan-push-container@main
         with:
-          dockerfile-path: ./rest-api/
+          dockerfile-path: ./test-docker/
           labels: |
             org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
             org.opencontainers.image.vendor=Rohde Fischer
             org.opencontainers.image.ref.name=rfbap-1
             org.opencontainers.image.title=rfbpa - A BPA manager
             org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
-          build-args:
+          build-args: |
             version=awesome-500
+            secondary=hmm
 
       - name: Finish
         run: |
