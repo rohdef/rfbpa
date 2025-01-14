@@ -1,4 +1,4 @@
-import dk.rohdef.rfbpa.convention.configureCommon
+    import dk.rohdef.rfbpa.convention.configureCommon
 import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
@@ -16,7 +16,7 @@ kotlin {
             dependencies {
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
             }
         }
         val commonTest by getting

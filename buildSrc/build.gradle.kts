@@ -18,10 +18,10 @@ repositories {
 }
 
 dependencies {
-    val kotlinVersion = "2.0.20"
+    val kotlinVersion = "2.1.0"
     implementation(kotlin("gradle-plugin", kotlinVersion))
     implementation("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
-    implementation("io.kotest:kotest-framework-multiplatform-plugin-gradle:5.6.2")
+    implementation("io.kotest:kotest-framework-multiplatform-plugin-gradle:6.0.0.M1")
 }
 
 dependencyLocking {

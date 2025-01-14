@@ -18,7 +18,7 @@ kotlin {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
             }
