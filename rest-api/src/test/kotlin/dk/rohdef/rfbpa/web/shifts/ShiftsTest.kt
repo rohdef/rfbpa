@@ -145,7 +145,7 @@ class ShiftsTest : RfbpaSpec({
         // TODO: 29/07/2024 rohdef - add proper error, references #21
     }
 
-    // TODO: 24/11/2024 rohdef - fix after ktor update 
+    // TODO: 24/11/2024 rohdef - fix after ktor update
     xrestTest("Interval separator is missing") { client ->
         val response = client.get("$url/2024-W122024-W15")
 

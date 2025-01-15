@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web.configuration
 
+import java.net.URI
 import java.net.URL
 
 data class Auth(
@@ -10,7 +11,7 @@ data class Auth(
         fun fromMap(auth: Map<String, String>): Auth {
             val jwkEndpoint = auth["jwkEndpoint"]!!
             return Auth(
-                URL(jwkEndpoint),
+                URI(jwkEndpoint).toURL(),
                 auth["jwtIssuer"]!!,
             )
         }

@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("io.ktor.plugin") version "3.0.1"
+    id("io.ktor.plugin") version "3.0.3"
     application
     idea
 }
@@ -30,6 +30,7 @@ repositories {
     gradlePluginPortal()
 }
 
+val koinVersion = "4.1.0-Beta4"
 val kotlinLoggingVersion = "7.0.3"
 val arrowKtVersion = "1.2.4"
 val log4jVersion = "3.0.0-beta2"
@@ -60,9 +61,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
 
-    val koinVersion = "3.6.0-Beta5"
     implementation("io.insert-koin:koin-core:$koinVersion")
-    implementation("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-ktor3:$koinVersion")
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
@@ -94,7 +94,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:10.15.0")
 
     // Test
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.0")
 
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
@@ -104,6 +104,10 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.insert-koin:koin-test:$koinVersion")
+}
+
+kotlin {
+    jvmToolchain(23)
 }
 
 configurations.all {

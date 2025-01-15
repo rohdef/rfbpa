@@ -14,8 +14,7 @@ import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.resources.Resource
-import io.ktor.server.application.*
+import io.ktor.resources.*
 import io.ktor.server.routing.*
 import kotlinx.uuid.UUID
 import org.koin.ktor.ext.inject

@@ -2,7 +2,7 @@
 
 ## Cluster setup AKS (quick and dirty test)
 
-* Setup AKS with minimal setu
+* Setup AKS with minimal setup
 
 Make sure to set ingress load balancer health, probably in service annotations
 
