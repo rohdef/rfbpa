@@ -24,13 +24,6 @@ fun Route.shifts() {
     val weekPlanService: WeekPlanService by inject()
     val helperService: HelperService by inject()
 
-    val principal = RfbpaPrincipal(
-        RfbpaPrincipal.Subject("rohde"),
-        RfbpaPrincipal.Name("rohde"),
-        RfbpaPrincipal.Email("rohdef@rohdef.dk"),
-        nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN),
-    ).getOrElse { throw IllegalArgumentException("Foo") }
-
     get<Shifts.InInterval> {
         either {
             log.info { "Loading shifts for interval: ${it.yearWeekInterval}" }

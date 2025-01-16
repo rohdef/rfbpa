@@ -107,8 +107,4 @@ internal object TestShifts {
         listOf(),
         listOf(shiftW31Sunday1),
     )
-
-    internal object BookedShifts {
-
-    }
 }

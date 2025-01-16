@@ -51,8 +51,6 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
 
-    implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
-
     implementation(project(":axpclient"))
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
@@ -80,6 +78,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-client-content-negotiation")
+    implementation("io.ktor:ktor-client-logging")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
 
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
