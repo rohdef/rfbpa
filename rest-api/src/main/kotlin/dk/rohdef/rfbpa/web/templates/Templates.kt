@@ -5,7 +5,7 @@ import dk.rohdef.helperplanning.templates.Template
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.parseYearWeekInterval
-import dk.rohdef.rfbpa.web.typedPost
+import dk.rohdef.arrowktor.typedPost
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.content.*
 import io.ktor.server.request.*

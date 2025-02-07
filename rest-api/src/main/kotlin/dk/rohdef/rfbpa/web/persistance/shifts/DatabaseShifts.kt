@@ -37,7 +37,7 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
-    private suspend fun byId(
+    suspend fun byId(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
     ) : Either<ShiftsError, Shift> = dbQuery {
@@ -90,17 +90,24 @@ class DatabaseShifts : ShiftRepository {
         shift.right()
     }
 
+    override suspend fun addRegistration(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+        registration: Registration
+    ): Either<Unit, Shift> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
-        shift: ShiftId,
+        shiftId: ShiftId,
         booking: HelperBooking
     ): Either<ShiftsError, Shift> {
         dbQuery {
-            changeBooking(shift, booking)
+            changeBooking(shiftId, booking)
         }
 
-        val x = byId(subject, shift)
-        return x
+        return byId(subject, shiftId)
     }
 
     private fun changeBooking(

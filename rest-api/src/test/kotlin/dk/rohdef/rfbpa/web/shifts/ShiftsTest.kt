@@ -25,6 +25,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.datetime.Clock
+import kotlinx.uuid.UUID
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.singleOf
@@ -65,7 +66,6 @@ class ShiftsTest : RfbpaSpec({
     }
 
     val fiktivusSubject = PrincipalsTestData.FiktivusMaximus.subject
-    // TODO: 24/11/2024 rohdef - fix after ktor update
     context("Reading shifts") {
         val helpers = mapOf(
             TestHelpers.fiktivus.id to TestHelpers.fiktivus,
@@ -119,6 +119,19 @@ class ShiftsTest : RfbpaSpec({
         xrestTest("Helper bookings") {}
     }
 
+    context("Reporting illness") {
+        restTest("for existing shift") { client ->
+            val response = client.put("$url/id")
+
+            response.status shouldBe HttpStatusCode.OK
+
+            val newShiftId: UUID = response.body()
+            // TODO can it (should it?) be fixed
+        }
+
+        // TODO what are potential errors
+    }
+
     xrestTest("Authentication from salary system error should be communicated to the client") { client ->
         val response = client.get(url)
 
@@ -137,20 +150,14 @@ class ShiftsTest : RfbpaSpec({
         val error: String = response.body()
     }
 
-    // TODO: 24/11/2024 rohdef - fix after ktor update
     restTest("Year week parameter is malformed") { client ->
-        val url = "/shifts"
-        println("$url/week4--week5")
         val response = client.get("$url/week4--week5")
         response.status shouldBe HttpStatusCode.BadRequest
 
         // TODO: 29/07/2024 rohdef - add proper error, references #21
     }
 
-// TODO: 24/11/2024 rohdef - fix after ktor update
     restTest("Interval separator is missing") { client ->
-        val url = "/shifts"
-        println("$url/2024-W122024-W15")
         val response = client.get("$url/2024-W122024-W15")
 
         response.status shouldBe HttpStatusCode.BadRequest

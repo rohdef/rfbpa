@@ -64,6 +64,13 @@ class TestSalarySystemRepository(
             .also { shift -> memoryWeekPlanRepository._shifts.letValue(subject) { it + (shiftId to shift) } }
     }
 
+    fun removeShift(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+    ) {
+        memoryWeekPlanRepository._shifts.letValue(subject) { it - shiftId }
+    }
+
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
         shiftList.filter { it.start.yearWeekDay == yearWeekDay }
 

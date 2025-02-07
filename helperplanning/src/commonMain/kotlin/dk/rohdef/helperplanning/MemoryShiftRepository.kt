@@ -3,11 +3,7 @@ package dk.rohdef.helperplanning
 import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import kotlinx.datetime.DayOfWeek
 
@@ -22,9 +18,9 @@ class MemoryShiftRepository : ShiftRepository {
         get() = _shifts.map { it.value }
             .fold(emptyMap()) { accumulator, value -> accumulator + value}
 
-    private fun byId(shift: ShiftId): Either<ShiftsError, Shift> = either {
-        ensureNotNull(shifts[shift]) {
-            ShiftsError.ShiftNotFound(shift)
+    override suspend fun byId(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, Shift> = either {
+        ensureNotNull(shifts[shiftId]) {
+            ShiftsError.ShiftNotFound(shiftId)
         }
     }
 
@@ -53,12 +49,27 @@ class MemoryShiftRepository : ShiftRepository {
         shift
     }
 
+//    override suspend fun addRegistration(
+//        subject: RfbpaPrincipal.Subject,
+//        shiftId: ShiftId,
+//        registration: Registration
+//    ): Either<Unit, Shift> = either {
+//        val shift = byId(subject, shiftId)
+//            .map { it.copy(registrations = it.registrations + registration) }
+//            .mapLeft {  }
+//            .bind()
+//
+//        createOrUpdate(subject, shift)
+//            .mapLeft {  }
+//            .bind()
+//    }
+
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
-        shift: ShiftId,
+        shiftId: ShiftId,
         booking: HelperBooking
     ): Either<ShiftsError, Shift> = either {
-        val shift = byId(shift)
+        val shift = byId(subject, shiftId)
             .map { it.copy(helperBooking = booking) }
             .bind()
 

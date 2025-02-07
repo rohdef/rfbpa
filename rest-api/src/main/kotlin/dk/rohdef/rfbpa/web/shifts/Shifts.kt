@@ -1,15 +1,16 @@
-import arrow.core.getOrElse
-import arrow.core.nonEmptySetOf
 import arrow.core.raise.either
 import arrow.core.raise.withError
-import dk.rohdef.helperplanning.RfbpaPrincipal
+import dk.rohdef.arrowktor.ApiError
+import dk.rohdef.arrowktor.get
+import dk.rohdef.arrowktor.put
+import dk.rohdef.arrowktor.httpOk
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
-import dk.rohdef.rfbpa.web.ApiError
-import dk.rohdef.rfbpa.web.get
-import dk.rohdef.rfbpa.web.httpOk
+import dk.rohdef.rfbpa.web.ErrorDto
+import dk.rohdef.rfbpa.web.NoData
+import dk.rohdef.rfbpa.web.UnknownErrorType
 import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -28,7 +29,6 @@ fun Route.shifts() {
         either {
             log.info { "Loading shifts for interval: ${it.yearWeekInterval}" }
             val principal = call.rfbpaPrincipal().bind()
-
             val weekPlans = withError({ it.toApiError() }) {
                 weekPlanService.shifts(principal, it.yearWeekInterval).bind()
             }
@@ -43,9 +43,30 @@ fun Route.shifts() {
     get<Shift.ById> { shiftById ->
         either {
             log.info { "Getting shift by ID: ${shiftById.id}" }
+
+            val x = ApiError.forbidden(
+                ErrorDto(
+                    UnknownErrorType,
+                    "some description",
+                    NoData("Klaphat"),
+                )
+            )
+
+            raise(x)
+
             "Having fun ${shiftById.id}?".httpOk()
         }
     }
+
+//    put<Shift.ById> {
+//        either {
+//            log.info { "Reporting illness" }
+//
+//            weekPlanService.reportIllness(TODO())
+//
+//            "hey".httpOk()
+//        }
+//    }
 }
 
 @Resource("/shifts")
@@ -57,7 +78,7 @@ class Shifts {
     )
 }
 
-@Resource("/shift")
+@Resource("/shifts")
 class Shift {
     @Resource("{id}")
     class ById(
@@ -66,13 +87,26 @@ class Shift {
     )
 }
 
+// TODO rohdef - use new error context
 fun WeekPlanServiceError.toApiError(): ApiError {
     return when (this) {
         WeekPlanServiceError.AccessDeniedToSalarySystem ->
-            ApiError.forbidden("Access to salary system denied, please check configuration of credentials")
+            ApiError.forbidden(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Access to salary system denied, please check configuration of credentials",
+                    NoData("No access"),
+                ),
+            )
 
         WeekPlanServiceError.CannotCommunicateWithShiftsRepository ->
-            ApiError.internalServerError("Shifts repository unreachable right now, try again later")
+            ApiError.internalServerError(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Shifts repository unreachable right now, try again later",
+                    NoData(),
+                ),
+            )
 
         is WeekPlanServiceError.InsufficientPermissions -> TODO()
     }

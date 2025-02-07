@@ -2,6 +2,8 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("io.ktor.plugin") version "3.0.3"
+    id("com.adarshr.test-logger") version "4.0.0"
+
     application
     idea
 }
@@ -13,15 +15,18 @@ application {
     mainClass.set("dk.rohdef.rfbpa.web.MainKt")
 
     tasks.run.get().workingDir = rootProject.projectDir
-}
-tasks.getByName<Zip>("distZip") {
-    archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
-}
+    }
+    tasks.getByName<Zip>("distZip") {
+        archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
+    }
 tasks.getByName<Tar>("distTar") {
     archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+testlogger {
+    theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA
 }
 
 repositories {
@@ -106,7 +111,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 configurations.all {

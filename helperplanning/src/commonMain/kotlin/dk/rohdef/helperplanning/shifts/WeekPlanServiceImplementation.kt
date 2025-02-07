@@ -15,6 +15,8 @@ import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 
 class WeekPlanServiceImplementation(
     private val salarySystem: SalarySystemRepository,
@@ -140,6 +142,18 @@ class WeekPlanServiceImplementation(
 
         return Unit.right()
     }
+
+//    override suspend fun reportIllness(
+//        principal: RfbpaPrincipal,
+//        shiftId: ShiftId,
+//    ): Either<WeekPlanServiceError, ShiftId> = either {
+//        val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
+//        val newShiftId = ShiftId(
+//            UUID.generateUUID(shiftIdNamespace, shiftId.id.toString())
+//        )
+//
+//        newShiftId
+//    }
 
     private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository
 

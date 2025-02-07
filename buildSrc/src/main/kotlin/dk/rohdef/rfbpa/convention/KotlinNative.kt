@@ -88,7 +88,7 @@ fun Project.nativeTarget() {
     kotlin {
         kotlin.applyDefaultHierarchyTemplate()
 
-        jvmToolchain(23)
+        jvmToolchain(21)
         jvm {
             withJava()
         }

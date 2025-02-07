@@ -3,13 +3,21 @@ package dk.rohdef.rfbpa.web
 import arrow.core.raise.Raise
 import arrow.core.raise.ensureNotNull
 import arrow.core.raise.withError
+import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
-import io.ktor.server.application.*
 
+// TODO rohdef - use new error context
 fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
     val yearWeekIntervalParameter = ensureNotNull(text) {
-        ApiError.badRequest("Year week interval must not be null")
+        // TODO rohdef - almost certainly wrong - but what?
+        ApiError.badRequest(
+            ErrorDto(
+                UnknownErrorType,
+                "Year week interval must not be null",
+                NoData(),
+            )
+        )
     }
 
     return withError({ it.first().toApiError() }) {
@@ -17,12 +25,25 @@ fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
     }
 }
 
-fun YearWeekIntervalParseError.toApiError() : ApiError {
+// TODO rohdef - use new error context
+fun YearWeekIntervalParseError.toApiError(): ApiError {
     return when (this) {
         is YearWeekIntervalParseError.NoSeparatorError ->
-            ApiError.badRequest("Could not find interval separator, please use double hyphen '--'")
+            ApiError.badRequest(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Could not find interval separator, please use double hyphen '--'",
+                    NoData()                                                ,
+                )
+            )
 
         is YearWeekIntervalParseError.YearWeekComponentParseError ->
-            ApiError.badRequest("Parsing of year weeks failed")
+            ApiError.badRequest(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Parsing of year weeks failed",
+                    NoData(),
+                )
+            )
     }
 }

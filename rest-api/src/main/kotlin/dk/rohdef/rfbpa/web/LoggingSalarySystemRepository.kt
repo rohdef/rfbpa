@@ -14,16 +14,16 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class LoggingSalarySystemRepository(
     private val salarySystemRepository: SalarySystemRepository,
-) : SalarySystemRepository {
+) : SalarySystemRepository by salarySystemRepository {
     private val log = KotlinLogging.logger {}
 
     override suspend fun bookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
-        helper: HelperId,
+        helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, Unit> {
-        log.debug { "Booking shift $shiftId to helper ${helper}" }
-        return salarySystemRepository.bookShift(subject, shiftId, helper)
+        log.debug { "Booking shift $shiftId to helper ${helperId}" }
+        return salarySystemRepository.bookShift(subject, shiftId, helperId)
     }
 
     override suspend fun unbookShift(

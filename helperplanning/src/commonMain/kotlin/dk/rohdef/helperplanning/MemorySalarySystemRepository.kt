@@ -22,6 +22,18 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         get() = _shifts.map { it.value }
             .fold(emptyMap()) { accumulator, value -> accumulator + value }
 
+//    override suspend fun addRegistration(
+//        subject: RfbpaPrincipal.Subject,
+//        shiftId: ShiftId,
+//        registration: Registration
+//    ): Either<SalarySystemRepository.AddRegistrationError, Unit> = either {
+//        val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
+//            SalarySystemRepository.AddRegistrationError.ShiftNotFound(shiftId)
+//        }.let { it.copy(registrations = it.registrations + registration) }
+//
+//        _shifts.letValue(subject) { it + (shiftId to shift) }
+//    }
+
     override suspend fun bookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
@@ -64,6 +76,11 @@ class MemorySalarySystemRepository : SalarySystemRepository {
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SATURDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.SUNDAY },
         )
+    }
+
+    override suspend fun taddShift(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift> = either {
+        _shifts.letValue(subject) { it + (shift.shiftId to shift) }
+        shift
     }
 
     override suspend fun createShift(

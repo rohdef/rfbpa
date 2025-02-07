@@ -1,4 +1,4 @@
-    import dk.rohdef.rfbpa.convention.configureCommon
+import dk.rohdef.rfbpa.convention.configureCommon
 import dk.rohdef.rfbpa.convention.kotest
 
 plugins {
