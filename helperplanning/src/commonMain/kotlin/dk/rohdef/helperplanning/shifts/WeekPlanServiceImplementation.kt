@@ -153,28 +153,60 @@ class WeekPlanServiceImplementation(
             WeekPlanServiceError.ShiftMustBeBooked(shiftId)
         }
 
-        val replacementShift = salarySystem.createShift(principal.subject, currentShift.start, currentShift.end)
-            .mapLeft { it.toServiceError() }
-            .bind()
-        shiftRepository.createOrUpdate(principal.subject, replacementShift)
-            .mapLeft { it.toServiceError() }
-            .bind()
+        val illnessRegistrations = currentShift.registrations.filterIsInstance<Registration.Illness>()
+        if (illnessRegistrations.isEmpty() ) {
+            weekSynchronizationRepository.markForSynchronization(principal.subject, currentShift.start.yearWeek)
 
-        val illShift = currentShift.copy(registrations = currentShift.registrations + Registration.Illness(replacementShift.shiftId))
-        salarySystem.reportIllness(principal.subject, shiftId, replacementShift.shiftId)
-            .mapLeft { it.toServiceError() }
-            .bind()
-        shiftRepository.createOrUpdate(principal.subject, illShift)
-            .mapLeft { it.toServiceError() }
-            .bind()
+            val replacementShift = createReplacementShift(principal.subject, currentShift).bind()
+            reportAndRegisterIllness(principal.subject, currentShift, replacementShift.shiftId).bind()
 
+            weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, currentShift.start.yearWeek)
+
+            replacementShift
+        } else {
+            shiftRepository.byId(principal.subject, illnessRegistrations.first().replacementShiftId)
+                .mapLeft { it.toServiceError() }
+                .bind()
+        }
+    }
+
+    suspend private fun createReplacementShift(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift
+    ): Either<WeekPlanServiceError, Shift> = either {
+        val replacementShift = salarySystem.createShift(subject, shift.start, shift.end)
+            .mapLeft { it.toServiceError() }
+            .bind()
+        shiftRepository.createOrUpdate(subject, replacementShift)
+            .mapLeft { it.toServiceError() }
+            .bind()
         replacementShift
     }
 
-    private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+    suspend private fun reportAndRegisterIllness(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift,
+        replacementShiftId: ShiftId,
+    ): Either<WeekPlanServiceError, Unit> = either {
+        val illShift =
+            shift.copy(registrations = shift.registrations + Registration.Illness(replacementShiftId))
+        salarySystem.reportIllness(subject, shift.shiftId, replacementShiftId)
+            .mapLeft { it.toServiceError() }
+            .bind()
+        shiftRepository.createOrUpdate(subject, illShift)
+            .mapLeft { it.toServiceError() }
+            .bind()
+    }
+
+    private fun ShiftsError.toServiceError(): WeekPlanServiceError {
+        return when (this) {
+            ShiftsError.NotAuthorized -> WeekPlanServiceError.CannotCommunicateWithShiftsRepository
+            is ShiftsError.ShiftNotFound -> WeekPlanServiceError.ShiftMissingInShiftSystem(shiftId)
+        }
+    }
 
     private fun SynchronizationError.toServiceError(): WeekPlanServiceError {
-        return when(this) {
+        return when (this) {
             is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
             is SynchronizationError.InsufficientPermissions -> WeekPlanServiceError.InsufficientPermissions(
                 expectedRole, actualRoles,
@@ -184,7 +216,9 @@ class WeekPlanServiceImplementation(
 
     private fun SalarySystemRepository.RegisterIllnessError.toServiceError(): WeekPlanServiceError {
         return when (this) {
-            is SalarySystemRepository.RegisterIllnessError.ShiftNotFound -> WeekPlanServiceError.ShiftMissingInSalarySystem(this.shiftId)
+            is SalarySystemRepository.RegisterIllnessError.ShiftNotFound -> WeekPlanServiceError.ShiftMissingInSalarySystem(
+                this.shiftId
+            )
         }
     }
 }

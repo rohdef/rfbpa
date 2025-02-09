@@ -13,8 +13,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
 
 class WeekPlanServiceImplementationTest : FunSpec({
     val salarySystemRepository = TestSalarySystemRepository()
@@ -125,8 +123,8 @@ class WeekPlanServiceImplementationTest : FunSpec({
 
     context("Helper illness") {
         context("reporting") {
+            salarySystemRepository.idGenerator = TestSalarySystemRepository.IdGenerator.Random
             test("should add illness registration") {
-                salarySystemRepository.idGenerator = TestSalarySystemRepository.IdGenerator.Random
                 val shift: Shift = Fiktivus.week10Shift1
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
@@ -181,22 +179,18 @@ class WeekPlanServiceImplementationTest : FunSpec({
                     PrincipalsTestData.FiktivusMaximus.allRoles,
                     shift.shiftId,
                 )
-                val newShiftId1 = illnessReportResult1.shouldBeRight()
+                val newShift1 = illnessReportResult1.shouldBeRight()
                 val illnessReportResult2 = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
                     shift.shiftId,
                 )
-                val newShiftId2 = illnessReportResult2.shouldBeRight()
+                val newShift2 = illnessReportResult2.shouldBeRight()
 
-                val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
-                val newShiftId = ShiftId(
-                    UUID.generateUUID(shiftIdNamespace, shift.shiftId.id.toString())
-                )
                 val expectedShift = shift.copy(
-                    registrations = listOf(Registration.Illness(newShiftId))
+                    registrations = listOf(Registration.Illness(newShift1.shiftId))
                 )
                 val expectedNewShift = shift.copy(
-                    shiftId = newShiftId,
+                    shiftId = newShift1.shiftId,
                     helperBooking = HelperBooking.NoBooking,
                 )
                 shiftRepository.shifts.values
@@ -207,7 +201,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                     .filter { it.start == shift.start }
                     .filter { it.end == shift.end }
                     .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
-                newShiftId1 shouldBeEqual newShiftId2
+                newShift1 shouldBeEqual newShift2
             }
 
             test("should fail if shift isn't found in salary system") {
@@ -227,7 +221,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(shift.shiftId)
             }
 
-            test("should fail if shift isn't found in repository and mark as possibly out of sync") {
+            test("should fail if shift isn't found in repository") {
                 val shift = Fiktivus.week10ShiftNotInSystem
 
                 val illnessReportResult = weekPlanService.reportIllness(
@@ -238,12 +232,21 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 val error = illnessReportResult.shouldBeLeft()
 
                 error shouldBe WeekPlanServiceError.ShiftMissingInShiftSystem(shift.shiftId)
-                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
-                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
             }
 
-            test("should mark week aas out of sync there if an error occurs") {
-                TODO()
+            test("should mark week as out of sync there if an error occurs") {
+                val shift = Fiktivus.week10Shift1
+                salarySystemRepository.removeShift(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    shift.shiftId,
+                )
+
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                illnessReportResult.shouldBeLeft()
 
                 weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
                     .shouldBe(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
