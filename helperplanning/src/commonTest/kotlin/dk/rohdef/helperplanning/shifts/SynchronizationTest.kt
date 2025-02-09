@@ -4,7 +4,6 @@ import arrow.core.left
 import arrow.core.nonEmptyListOf
 import arrow.core.right
 import dk.rohdef.helperplanning.*
-import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -21,7 +20,7 @@ class SynchronizationTest : FunSpec({
     fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
         return Shift(
             HelperBooking.NoBooking,
-            generateTestShiftId(start, end),
+            TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,
             end,
         )

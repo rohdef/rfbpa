@@ -15,8 +15,6 @@ import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
 
 class WeekPlanServiceImplementation(
     private val salarySystem: SalarySystemRepository,
@@ -143,17 +141,31 @@ class WeekPlanServiceImplementation(
         return Unit.right()
     }
 
-//    override suspend fun reportIllness(
-//        principal: RfbpaPrincipal,
-//        shiftId: ShiftId,
-//    ): Either<WeekPlanServiceError, ShiftId> = either {
-//        val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
-//        val newShiftId = ShiftId(
-//            UUID.generateUUID(shiftIdNamespace, shiftId.id.toString())
-//        )
-//
-//        newShiftId
-//    }
+    override suspend fun reportIllness(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId,
+    ): Either<WeekPlanServiceError, Shift> = either {
+        val currentShift = shiftRepository.byId(principal.subject, shiftId)
+            .mapLeft { it.toServiceError() }
+            .bind()
+
+        val replacementShift = salarySystem.createShift(principal.subject, currentShift.start, currentShift.end)
+            .mapLeft { it.toServiceError() }
+            .bind()
+        shiftRepository.createOrUpdate(principal.subject, replacementShift)
+            .mapLeft { it.toServiceError() }
+            .bind()
+
+        val illShift = currentShift.copy(registrations = currentShift.registrations + Registration.Illness(replacementShift.shiftId))
+        salarySystem.reportIllness(principal.subject, shiftId, replacementShift.shiftId)
+            .mapLeft { it.toServiceError() }
+            .bind()
+        shiftRepository.createOrUpdate(principal.subject, illShift)
+            .mapLeft { it.toServiceError() }
+            .bind()
+
+        replacementShift
+    }
 
     private fun ShiftsError.toServiceError() = WeekPlanServiceError.CannotCommunicateWithShiftsRepository
 
@@ -163,6 +175,12 @@ class WeekPlanServiceImplementation(
             is SynchronizationError.InsufficientPermissions -> WeekPlanServiceError.InsufficientPermissions(
                 expectedRole, actualRoles,
             )
+        }
+    }
+
+    private fun SalarySystemRepository.RegisterIllnessError.toServiceError(): WeekPlanServiceError {
+        return when (this) {
+            is SalarySystemRepository.RegisterIllnessError.ShiftNotFound -> WeekPlanServiceError.ShiftMissingInSalarySystem(this.shiftId)
         }
     }
 }

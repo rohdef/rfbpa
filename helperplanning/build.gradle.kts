@@ -4,6 +4,8 @@ import dk.rohdef.rfbpa.convention.kotest
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 description = "Models how a helper plan is represented"
@@ -24,4 +26,8 @@ kotlin {
         val jvmMain by getting
         val jvmTest by getting
     }
+}
+
+testlogger {
+    theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA
 }

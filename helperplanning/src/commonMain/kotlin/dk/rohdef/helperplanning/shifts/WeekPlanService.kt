@@ -17,5 +17,5 @@ interface WeekPlanService {
 
     suspend fun changeHelperBooking(principal: RfbpaPrincipal, shiftId: ShiftId, helperBooking: HelperBooking): Either<WeekPlanServiceError, Unit>
 
-//    suspend fun reportIllness(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, ShiftId>
+    suspend fun reportIllness(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Shift>
 }

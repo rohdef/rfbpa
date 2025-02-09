@@ -9,17 +9,17 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
 interface SalarySystemRepository {
-//    suspend fun addRegistration(
-//        subject: RfbpaPrincipal.Subject,
-//        shiftId: ShiftId,
-//        registration: Registration,
-//    ) : Either<AddRegistrationError, Unit>
-
     suspend fun bookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<BookingError, Unit>
+
+    suspend fun reportIllness(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+        replacementShiftId: ShiftId,
+    ) : Either<RegisterIllnessError, Unit>
 
     suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<BookingError, Unit>
 
@@ -41,17 +41,12 @@ interface SalarySystemRepository {
         end: YearWeekDayAtTime
     ): Either<ShiftsError, Shift>
 
-    suspend fun taddShift(
-        subject: RfbpaPrincipal.Subject,
-        shift: Shift,
-    ): Either<ShiftsError, Shift>
-
     sealed interface BookingError {
         data class ShiftNotFound(val shiftId: ShiftId) : BookingError
         data class HelperNotFound(val helperId: HelperId) : BookingError
     }
 
-//    sealed interface AddRegistrationError {
-//        data class ShiftNotFound(val shiftId: ShiftId) : AddRegistrationError
-//    }
+    sealed interface RegisterIllnessError {
+        data class ShiftNotFound(val shiftId: ShiftId) : RegisterIllnessError
+    }
 }

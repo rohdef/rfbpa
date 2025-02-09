@@ -10,4 +10,8 @@ sealed interface WeekPlanServiceError {
         val expectedRole: RfbpaPrincipal.RfbpaRoles,
         val actualRoles: Set<RfbpaPrincipal.RfbpaRoles>,
     ) : WeekPlanServiceError
+
+    data class ShiftMissingInSalarySystem(
+        val shiftId: ShiftId,
+    ) : WeekPlanServiceError
 }

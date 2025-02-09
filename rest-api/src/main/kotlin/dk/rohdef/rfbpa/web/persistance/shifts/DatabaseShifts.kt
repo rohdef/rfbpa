@@ -19,9 +19,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
-        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUUID()
-            ?.let { HelperId(it) }
-        val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
+        val helperId = row[ShiftBookingsTable.helperId].toKotlinUUID()
+            .let { HelperId(it) }
+        val booking = helperId.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
         return Shift(
             booking,
@@ -37,7 +37,7 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
-    suspend fun byId(
+    override suspend fun byId(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
     ) : Either<ShiftsError, Shift> = dbQuery {
@@ -88,14 +88,6 @@ class DatabaseShifts : ShiftRepository {
 
         changeBooking(shift.shiftId, shift.helperBooking)
         shift.right()
-    }
-
-    override suspend fun addRegistration(
-        subject: RfbpaPrincipal.Subject,
-        shiftId: ShiftId,
-        registration: Registration
-    ): Either<Unit, Shift> {
-        TODO("Not yet implemented")
     }
 
     override suspend fun changeBooking(

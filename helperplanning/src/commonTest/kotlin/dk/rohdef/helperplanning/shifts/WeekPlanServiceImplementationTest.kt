@@ -11,6 +11,7 @@ import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
@@ -125,98 +126,116 @@ class WeekPlanServiceImplementationTest : FunSpec({
     context("Helper illness") {
         context("reporting") {
             test("should add illness registration") {
-//                val shift = Fiktivus.week10Shift1
-//                val illnessReportResult = weekPlanService.reportIllness(
-//                    PrincipalsTestData.FiktivusMaximus.allRoles,
-//                    shift.shiftId,
-//                )
-//
-//                illnessReportResult.shouldBeRight()
-//
-//                val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
-//                val newShiftId = ShiftId(
-//                    UUID.generateUUID(shiftIdNamespace, shift.shiftId.id.toString())
-//                )
-//                val expectedShift = shift.copy(
-//                    registrations = listOf(Registration.Illness(newShiftId))
-//                )
-//                shiftRepository.shifts[shift.shiftId] shouldBe expectedShift
-//                salarySystemRepository.shifts[shift.shiftId] shouldBe expectedShift
+                salarySystemRepository.idGenerator = TestSalarySystemRepository.IdGenerator.Random
+                val shift: Shift = Fiktivus.week10Shift1
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                val replacementShift = illnessReportResult.shouldBeRight()
+                val replacementShiftId = replacementShift.shiftId
+
+                val expectedShift = shift.copy(
+                    registrations = listOf(Registration.Illness(replacementShiftId))
+                )
+                shiftRepository.shifts[shift.shiftId] shouldBe expectedShift
+                salarySystemRepository.shifts[shift.shiftId] shouldBe expectedShift
             }
 
             test("should create new shift") {
-//                val shift = Fiktivus.week10Shift1
-//                val illnessReportResult = weekPlanService.reportIllness(
-//                    PrincipalsTestData.FiktivusMaximus.allRoles,
-//                    shift.shiftId,
-//                )
-//
-//                val newShiftId = illnessReportResult.shouldBeRight()
-//
-//                val expectedShift = shift.copy(
-//                    shiftId = newShiftId,
-//                    helperBooking = HelperBooking.NoBooking,
-//                )
-//                shiftRepository.shifts[newShiftId] shouldBe expectedShift
-//                salarySystemRepository.shifts[newShiftId] shouldBe expectedShift
+                val shift = Fiktivus.week10Shift1
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                val replacementShift = illnessReportResult.shouldBeRight()
+                val replacementShiftId = replacementShift.shiftId
+
+                val expectedShift = shift.copy(
+                    shiftId = replacementShiftId,
+                    helperBooking = HelperBooking.NoBooking,
+                )
+                shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
+                salarySystemRepository.shifts[replacementShiftId] shouldBe expectedShift
+            }
+
+            test("should only be possible on a booked shift") {
+                val shift: Shift = TODO()
+                salarySystemRepository.removeShift(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    shift.shiftId,
+                )
+
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                val error = illnessReportResult.shouldBeLeft()
+
+                error shouldBe TODO()
             }
 
             test("should do 'nothing' and give same ID if registration is already present") {
-//                val shift = Fiktivus.week10Shift1
-//
-//                val illnessReportResult1 = weekPlanService.reportIllness(
-//                    PrincipalsTestData.FiktivusMaximus.allRoles,
-//                    shift.shiftId,
-//                )
-//                val newShiftId1 = illnessReportResult1.shouldBeRight()
-//                val illnessReportResult2 = weekPlanService.reportIllness(
-//                    PrincipalsTestData.FiktivusMaximus.allRoles,
-//                    shift.shiftId,
-//                )
-//                val newShiftId2 = illnessReportResult2.shouldBeRight()
-//
-//                val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
-//                val newShiftId = ShiftId(
-//                    UUID.generateUUID(shiftIdNamespace, shift.shiftId.id.toString())
-//                )
-//                val expectedShift = shift.copy(
-//                    registrations = listOf(Registration.Illness(newShiftId))
-//                )
-//                val expectedNewShift = shift.copy(
-//                    shiftId = newShiftId,
-//                    helperBooking = HelperBooking.NoBooking,
-//                )
-//                shiftRepository.shifts.values
-//                    .filter { it.start == shift.start }
-//                    .filter { it.end == shift.end }
-//                    .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
-//                salarySystemRepository.shifts.values
-//                    .filter { it.start == shift.start }
-//                    .filter { it.end == shift.end }
-//                    .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
-//                newShiftId1 shouldBeEqual newShiftId2
+                val shift = Fiktivus.week10Shift1
+
+                val illnessReportResult1 = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+                val newShiftId1 = illnessReportResult1.shouldBeRight()
+                val illnessReportResult2 = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+                val newShiftId2 = illnessReportResult2.shouldBeRight()
+
+                val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
+                val newShiftId = ShiftId(
+                    UUID.generateUUID(shiftIdNamespace, shift.shiftId.id.toString())
+                )
+                val expectedShift = shift.copy(
+                    registrations = listOf(Registration.Illness(newShiftId))
+                )
+                val expectedNewShift = shift.copy(
+                    shiftId = newShiftId,
+                    helperBooking = HelperBooking.NoBooking,
+                )
+                shiftRepository.shifts.values
+                    .filter { it.start == shift.start }
+                    .filter { it.end == shift.end }
+                    .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
+                salarySystemRepository.shifts.values
+                    .filter { it.start == shift.start }
+                    .filter { it.end == shift.end }
+                    .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
+                newShiftId1 shouldBeEqual newShiftId2
             }
 
             test("should fail if shift isn't found in salary system") {
-//                val shift = Fiktivus.week10Shift1
-//                salarySystemRepository.removeShift(
-//                    PrincipalsTestData.FiktivusMaximus.subject,
-//                    shift.shiftId,
-//                )
-//
-//                val illnessReportResult = weekPlanService.reportIllness(
-//                    PrincipalsTestData.FiktivusMaximus.allRoles,
-//                    shift.shiftId,
-//                )
-//
-//                val error = illnessReportResult.shouldBeLeft()
-//
-//                error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(shift.shiftId)
+                val shift = Fiktivus.week10Shift1
+                salarySystemRepository.removeShift(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    shift.shiftId,
+                )
+
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                val error = illnessReportResult.shouldBeLeft()
+
+                error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(shift.shiftId)
             }
 
             xtest("should not fail if shift isn't found in repository") {
                 TODO("Probably won't do right now due to sync complexities?")
             }
+
+            xtest("should deal with synchronization") {}
         }
     }
 

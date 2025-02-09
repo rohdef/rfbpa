@@ -1,7 +1,7 @@
 package dk.rohdef.helperplanning.shifts
 
+import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperTestData
-import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
@@ -89,7 +89,7 @@ internal fun YearWeek.shift(dayOfWeek: DayOfWeek): ShiftBuilderWithHelper {
     fun createTestShift(helperBooking: HelperBooking, start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
         return Shift(
             helperBooking,
-            generateTestShiftId(start, end),
+            TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,
             end,
         )
