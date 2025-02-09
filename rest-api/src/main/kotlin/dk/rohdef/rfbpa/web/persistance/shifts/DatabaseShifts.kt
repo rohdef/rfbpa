@@ -19,9 +19,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
-        val helperId = row[ShiftBookingsTable.helperId].toKotlinUUID()
-            .let { HelperId(it) }
-        val booking = helperId.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
+        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUUID()
+            ?.let { HelperId(it) }
+        val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
         return Shift(
             booking,

@@ -14,4 +14,12 @@ sealed interface WeekPlanServiceError {
     data class ShiftMissingInSalarySystem(
         val shiftId: ShiftId,
     ) : WeekPlanServiceError
+
+    data class ShiftMissingInShiftSystem(
+        val shiftId: ShiftId,
+    ) : WeekPlanServiceError
+
+    data class ShiftMustBeBooked(
+        val shiftId: ShiftId
+    ) : WeekPlanServiceError
 }

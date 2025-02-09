@@ -162,11 +162,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
             }
 
             test("should only be possible on a booked shift") {
-                val shift: Shift = TODO()
-                salarySystemRepository.removeShift(
-                    PrincipalsTestData.FiktivusMaximus.subject,
-                    shift.shiftId,
-                )
+                val shift = Fiktivus.week9Shift1
 
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
@@ -175,7 +171,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
 
                 val error = illnessReportResult.shouldBeLeft()
 
-                error shouldBe TODO()
+                error shouldBe WeekPlanServiceError.ShiftMustBeBooked(shift.shiftId)
             }
 
             test("should do 'nothing' and give same ID if registration is already present") {
@@ -231,11 +227,44 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(shift.shiftId)
             }
 
-            xtest("should not fail if shift isn't found in repository") {
-                TODO("Probably won't do right now due to sync complexities?")
+            test("should fail if shift isn't found in repository and mark as possibly out of sync") {
+                val shift = Fiktivus.week10ShiftNotInSystem
+
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                val error = illnessReportResult.shouldBeLeft()
+
+                error shouldBe WeekPlanServiceError.ShiftMissingInShiftSystem(shift.shiftId)
+                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
             }
 
-            xtest("should deal with synchronization") {}
+            test("should mark week aas out of sync there if an error occurs") {
+                TODO()
+
+                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
+            }
+
+            test("should mark week as possibly out of sync if successful") {
+                val shift = Fiktivus.week10Shift1
+                val illnessReportResult = weekPlanService.reportIllness(
+                    PrincipalsTestData.FiktivusMaximus.allRoles,
+                    shift.shiftId,
+                )
+
+                illnessReportResult.shouldBeRight()
+
+                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
+            }
+
+            xtest("should delete replacement shift if illness registration fails") {}
+
+            xtest("should give explicit error if it cannot delete replacement shift when illness registration fails") {}
         }
     }
 

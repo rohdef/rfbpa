@@ -149,6 +149,10 @@ class WeekPlanServiceImplementation(
             .mapLeft { it.toServiceError() }
             .bind()
 
+        ensure(currentShift.helperBooking is HelperBooking.Booked) {
+            WeekPlanServiceError.ShiftMustBeBooked(shiftId)
+        }
+
         val replacementShift = salarySystem.createShift(principal.subject, currentShift.start, currentShift.end)
             .mapLeft { it.toServiceError() }
             .bind()
