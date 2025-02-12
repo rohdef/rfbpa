@@ -18,9 +18,7 @@ sealed interface ErrorData
 
 @Serializable
 @SerialName("NoData")
-data class NoData(
-    val q: String = "bla",
-) : ErrorData
+object NoData : ErrorData
 
 @Serializable
 object UnknownErrorType : ErrorDto.ErrorType

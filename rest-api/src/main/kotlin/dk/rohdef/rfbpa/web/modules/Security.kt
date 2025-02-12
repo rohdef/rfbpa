@@ -65,11 +65,11 @@ fun Application.security() {
 // TODO rohdef - use new error context
 fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either {
     ensureNotNull(principal<RfbpaPrincipal>()) {
-        ApiError.unauthorized(
+        ApiError.forbidden(
             ErrorDto(
                 UnknownErrorType,
-                "No way!",
-                NoData("Access denied - you are not logged in"),
+                "Access denied - you are not logged in",
+                NoData,
             )
         )
     }.domainPrincipal

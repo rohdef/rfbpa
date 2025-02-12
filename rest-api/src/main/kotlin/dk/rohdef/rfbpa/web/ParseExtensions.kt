@@ -15,7 +15,7 @@ fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
             ErrorDto(
                 UnknownErrorType,
                 "Year week interval must not be null",
-                NoData(),
+                NoData,
             )
         )
     }
@@ -33,7 +33,7 @@ fun YearWeekIntervalParseError.toApiError(): ApiError {
                 ErrorDto(
                     UnknownErrorType,
                     "Could not find interval separator, please use double hyphen '--'",
-                    NoData()                                                ,
+                    NoData,
                 )
             )
 
@@ -42,7 +42,7 @@ fun YearWeekIntervalParseError.toApiError(): ApiError {
                 ErrorDto(
                     UnknownErrorType,
                     "Parsing of year weeks failed",
-                    NoData(),
+                    NoData,
                 )
             )
     }

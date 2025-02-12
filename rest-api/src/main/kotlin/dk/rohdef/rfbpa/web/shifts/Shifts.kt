@@ -6,6 +6,7 @@ import dk.rohdef.arrowktor.put
 import dk.rohdef.arrowktor.httpOk
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperService
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ErrorDto
@@ -40,49 +41,38 @@ fun Route.shifts() {
         }
     }
 
-    get<Shift.ById> { shiftById ->
+    get<Shifts.ById> { shiftById ->
         either {
             log.info { "Getting shift by ID: ${shiftById.id}" }
 
-            val x = ApiError.forbidden(
-                ErrorDto(
-                    UnknownErrorType,
-                    "some description",
-                    NoData("Klaphat"),
-                )
-            )
-
-            raise(x)
+            raise(WeekPlanServiceError.ShiftMissingInShiftSystem(ShiftId(shiftById.id)).toApiError())
 
             "Having fun ${shiftById.id}?".httpOk()
         }
     }
 
-//    put<Shift.ById> {
-//        either {
-//            log.info { "Reporting illness" }
-//
-//            weekPlanService.reportIllness(TODO())
-//
-//            "hey".httpOk()
-//        }
-//    }
+    put<Shifts> {
+        either {
+            log.info { "Reporting illness" }
+
+//            weekPlanService.reportIllness(TODO(), ShiftId(it.id))
+
+            "Samuel".httpOk()
+        }
+    }
 }
 
 @Resource("/shifts")
 class Shifts {
-    @Resource("{yearWeekInterval}")
+    @Resource("interval/{yearWeekInterval}")
     class InInterval(
         val parent: Shifts = Shifts(),
         val yearWeekInterval: YearWeekInterval,
     )
-}
 
-@Resource("/shifts")
-class Shift {
     @Resource("{id}")
     class ById(
-        val parent: Shift = Shift(),
+        val parent: Shifts = Shifts(),
         val id: UUID,
     )
 }
@@ -94,8 +84,17 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownErrorType,
-                    "Access to salary system denied, please check configuration of credentials",
-                    NoData("No access"),
+                    "Access to salary system denied, please check configuration of credentials.",
+                    NoData,
+                ),
+            )
+
+        is WeekPlanServiceError.InsufficientPermissions ->
+            ApiError.forbidden(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Access denied, please ensure that are logged in and that you have the correct permissions.",
+                    NoData,
                 ),
             )
 
@@ -103,11 +102,36 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.internalServerError(
                 ErrorDto(
                     UnknownErrorType,
-                    "Shifts repository unreachable right now, try again later",
-                    NoData(),
+                    "Shifts repository unreachable right now, try again later.",
+                    NoData,
                 ),
             )
 
-        is WeekPlanServiceError.InsufficientPermissions -> TODO()
+        is WeekPlanServiceError.ShiftMissingInSalarySystem ->
+            ApiError.notFound(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Shift with ID: ${this.shiftId} cound not be found in the external salary system.",
+                    NoData,
+                )
+            )
+
+        is WeekPlanServiceError.ShiftMissingInShiftSystem ->
+            ApiError.notFound(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Shift with ID: ${this.shiftId} cound not be found in the RFBPA.",
+                    NoData,
+                )
+            )
+
+        is WeekPlanServiceError.ShiftMustBeBooked ->
+            ApiError.badRequest(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
+                    NoData,
+                )
+            )
     }
 }

@@ -11,13 +11,13 @@ data class ApiError(
         fun badRequest(error: ErrorDto) =
             ApiError(HttpStatusCode.BadRequest, error)
 
+        fun notFound(error: ErrorDto) =
+            ApiError(HttpStatusCode.NotFound, error)
+
         fun internalServerError(error: ErrorDto) =
             ApiError(HttpStatusCode.InternalServerError, error)
 
         fun forbidden(error: ErrorDto) =
             ApiError(HttpStatusCode.Forbidden, error)
-
-        fun unauthorized(error: ErrorDto) =
-            ApiError(HttpStatusCode.Unauthorized, error)
     }
 }

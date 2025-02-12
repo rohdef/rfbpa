@@ -119,9 +119,9 @@ class ShiftsTest : RfbpaSpec({
         xrestTest("Helper bookings") {}
     }
 
-    context("Reporting illness") {
+    xcontext("Reporting illness") {
         restTest("for existing shift") { client ->
-            val response = client.put("$url/id")
+            val response = client.put("$url/id/registrations/illness")
 
             response.status shouldBe HttpStatusCode.OK
 

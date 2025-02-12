@@ -43,7 +43,12 @@ class AxpSalarySystem(
         configuration,
     )
     private val weekPlanParser = WeekPlanParser()
-    override suspend fun taddShift(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift> {
+
+    override suspend fun reportIllness(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+        replacementShiftId: ShiftId
+    ): Either<SalarySystemRepository.RegisterIllnessError, Unit> {
         TODO("Not yet implemented")
     }
 

@@ -53,12 +53,12 @@ class TestWeekPlanService : WeekPlanService {
             .mapLeft { throw IllegalStateException("This should not be possible") }
     }
 
-//    override suspend fun reportIllness(
-//        principal: RfbpaPrincipal,
-//        shiftId: ShiftId
-//    ): Either<WeekPlanServiceError, ShiftId> {
-//        TODO("Not yet implemented")
-//    }
+    override suspend fun reportIllness(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId
+    ): Either<WeekPlanServiceError, Shift> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun changeHelperBooking(
         principal: RfbpaPrincipal,

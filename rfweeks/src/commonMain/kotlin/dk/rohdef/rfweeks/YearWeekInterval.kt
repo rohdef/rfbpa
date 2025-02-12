@@ -97,8 +97,8 @@ object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
         return deserializeEither(decoder).getOrElse {
             it.map {
                 when (it) {
-                    is YearWeekIntervalParseError.NoSeparatorError -> TODO()
-                    is YearWeekIntervalParseError.YearWeekComponentParseError -> TODO()
+                    is YearWeekIntervalParseError.NoSeparatorError -> throw IllegalArgumentException("No separator in input: $it")
+                    is YearWeekIntervalParseError.YearWeekComponentParseError -> throw IllegalArgumentException("YearWeek component parsing error: $it")
                 }
             }
             throw MissingFieldException("", "")
