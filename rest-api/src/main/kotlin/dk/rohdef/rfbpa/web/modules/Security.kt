@@ -62,8 +62,8 @@ fun Application.security() {
     }
 }
 
-// TODO rohdef - use new error context
 fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either {
+    // TODO deprecate
     ensureNotNull(principal<RfbpaPrincipal>()) {
         ApiError.forbidden(
             ErrorDto(

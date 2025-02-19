@@ -1,9 +1,15 @@
 package dk.rohdef.arrowktor
 
 import arrow.core.Either
+import arrow.core.raise.Raise
+import arrow.core.raise.either
+import arrow.core.raise.ensureNotNull
+import dk.rohdef.rfbpa.web.ErrorDto
+import dk.rohdef.rfbpa.web.NoData
+import dk.rohdef.rfbpa.web.UnknownErrorType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
-import io.ktor.server.resources.put
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.resources.get as resourceGet
@@ -23,37 +29,67 @@ fun Route.typedPost (
     }
 }
 
-inline fun <reified T : Any> Route.get(
-    noinline body: suspend RoutingContext.(T) -> Either<ApiError, HttpResponse<*>>
-) {
-    resourceGet<T> {
-        val log = KotlinLogging.logger {}
-        val res = body(it)
+interface RaisedRoute : Route, Raise<ApiError> {
+    val routingContext: RoutingContext
 
-        when (res) {
-            is Either.Left -> {
-                log.error { "Error: ${res.value}" }
-                call.respond(res.value.status, res.value.error)
-            }
-            is Either.Right -> call.respond(res.value.status, res.value.message)
+    fun principal(): Either<ApiError, dk.rohdef.rfbpa.web.modules.RfbpaPrincipal> = either {
+        ensureNotNull(routingContext.call.principal<dk.rohdef.rfbpa.web.modules.RfbpaPrincipal>()) {
+            ApiError.forbidden(
+                ErrorDto(
+                    UnknownErrorType,
+                    "Access denied - you are not logged in",
+                    NoData,
+                )
+            )
         }
     }
 }
 
-inline fun <reified T : Any> Route.put(
-    noinline body: suspend RoutingContext.(T) -> Either<ApiError, HttpResponse<*>>
-) {
-    resourcePut<T> {
-        val log = KotlinLogging.logger {}
-        val res = body(it)
 
-        when (res) {
-            is Either.Left -> {
-                log.error { "Error: ${res.value}" }
-                call.respond(res.value.status, res.value.error)
-            }
-            is Either.Right -> call.respond(res.value.status, res.value.message)
+        class RaisedRouteImpl(
+    override val routingContext: RoutingContext,
+    val route: Route,
+    val raise: Raise<ApiError>,
+) : RaisedRoute, Route by route, Raise<ApiError> by raise {
+    companion object {
+        suspend fun <Resource : Any> apply(
+            routeContext: RoutingContext,
+            route: Route,
+            body: suspend RaisedRoute.(Resource) -> HttpResponse<*>,
+            resource: Resource,
+        ) = either {
+            RaisedRouteImpl(
+                routeContext,
+                route,
+                this,
+            ).body(resource)
         }
+    }
+}
+
+inline fun <reified Resource : Any> Route.get(
+    noinline body: suspend RaisedRoute.(Resource) -> HttpResponse<*>,
+) = resourceGet<Resource> { resource -> handleRequest(this@get, resource, body) }
+
+inline fun <reified Resource : Any> Route.put(
+    noinline body: suspend RaisedRoute.(Resource) -> HttpResponse<*>,
+) = resourcePut<Resource> { resource -> handleRequest(this@put, resource, body) }
+
+inline suspend fun <reified Resource : Any> RoutingContext.handleRequest(
+    route: Route,
+    resource: Resource,
+    noinline body: suspend RaisedRoute.(Resource) -> HttpResponse<*>,
+) {
+    val log = KotlinLogging.logger {}
+
+    val result = RaisedRouteImpl.apply(this, route, body, resource)
+
+    when (result) {
+        is Either.Left -> {
+            log.error { "Error: ${result.value}" }
+            call.respond(result.value.status, result.value.error)
+        }
+        is Either.Right -> call.respond(result.value.status, result.value.message)
     }
 }
 

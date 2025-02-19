@@ -1,9 +1,8 @@
-import arrow.core.raise.either
 import arrow.core.raise.withError
 import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.arrowktor.get
-import dk.rohdef.arrowktor.put
 import dk.rohdef.arrowktor.httpOk
+import dk.rohdef.arrowktor.put
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.ShiftId
@@ -12,7 +11,6 @@ import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ErrorDto
 import dk.rohdef.rfbpa.web.NoData
 import dk.rohdef.rfbpa.web.UnknownErrorType
-import dk.rohdef.rfbpa.web.modules.rfbpaPrincipal
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,47 +25,43 @@ fun Route.shifts() {
     val helperService: HelperService by inject()
 
     get<Shifts.InInterval> {
-        either {
-            log.info { "Loading shifts for interval: ${it.yearWeekInterval}" }
-            val principal = call.rfbpaPrincipal().bind()
-            val weekPlans = withError({ it.toApiError() }) {
-                weekPlanService.shifts(principal, it.yearWeekInterval).bind()
-            }
-            val helpers = helperService.all()
-                .associate { it.id to it }
-                .withDefault { Helper.Unknown("Helper not found in system", it) }
-
-            weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
+        log.info { "Loading shifts for interval: ${it.yearWeekInterval}" }
+        val principal = principal()
+            .bind()
+            .domainPrincipal
+        val weekPlans = withError({ it.toApiError() }) {
+            weekPlanService.shifts(principal, it.yearWeekInterval!!).bind()
         }
+        val helpers = helperService.all()
+            .associate { it.id to it }
+            .withDefault { Helper.Unknown("Helper not found in system", it) }
+
+        weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
     }
 
     get<Shifts.ById> { shiftById ->
-        either {
-            log.info { "Getting shift by ID: ${shiftById.id}" }
+        log.info { "Getting shift by ID: ${shiftById.id}" }
 
-            raise(WeekPlanServiceError.ShiftMissingInShiftSystem(ShiftId(shiftById.id)).toApiError())
+        raise(WeekPlanServiceError.ShiftMissingInShiftSystem(ShiftId(shiftById.id)).toApiError())
 
-            "Having fun ${shiftById.id}?".httpOk()
-        }
+        "Having fun ${shiftById.id}?".httpOk()
     }
 
     put<Shifts> {
-        either {
-            log.info { "Reporting illness" }
+        log.info { "Reporting illness" }
 
 //            weekPlanService.reportIllness(TODO(), ShiftId(it.id))
 
-            "Samuel".httpOk()
-        }
+        "Samuel".httpOk()
     }
 }
 
 @Resource("/shifts")
 class Shifts {
-    @Resource("interval/{yearWeekInterval}")
+    @Resource("search")
     class InInterval(
         val parent: Shifts = Shifts(),
-        val yearWeekInterval: YearWeekInterval,
+        val yearWeekInterval: YearWeekInterval?,
     )
 
     @Resource("{id}")
@@ -77,7 +71,6 @@ class Shifts {
     )
 }
 
-// TODO rohdef - use new error context
 fun WeekPlanServiceError.toApiError(): ApiError {
     return when (this) {
         WeekPlanServiceError.AccessDeniedToSalarySystem ->
