@@ -7,10 +7,7 @@ import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
-import dk.rohdef.rfbpa.web.PrincipalsTestData
-import dk.rohdef.rfbpa.web.RfbpaSpec
-import dk.rohdef.rfbpa.web.TestConfiguration
-import dk.rohdef.rfbpa.web.TestWeekPlanService
+import dk.rohdef.rfbpa.web.*
 import dk.rohdef.rfbpa.web.modules.configuration
 import dk.rohdef.rfbpa.web.persistance.helpers.TestHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
@@ -21,6 +18,7 @@ import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldNotBeEmpty
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -158,10 +156,15 @@ class ShiftsTest : RfbpaSpec({
     }
 
     restTest("Interval separator is missing") { client ->
-        val response = client.get("$url/2024-W122024-W15")
+        val response = client.get("$url/in-interval/2024-W122024-W15")
 
         response.status shouldBe HttpStatusCode.BadRequest
 
         // TODO: 29/07/2024 rohdef - add proper error, references #21
+        val error: ErrorDto = response.body()
+
+        error.type shouldBe TODO()
+        error.message.shouldNotBeEmpty()
+        error.supplementary shouldBe TODO()
     }
 })

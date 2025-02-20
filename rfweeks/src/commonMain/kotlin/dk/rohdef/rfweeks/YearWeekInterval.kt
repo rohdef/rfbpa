@@ -7,9 +7,7 @@ import arrow.core.nonEmptyListOf
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.zipOrAccumulate
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -82,6 +80,10 @@ data class YearWeekInterval(
     }
 }
 
+data class YearWeekIntervalParseException(
+    val errors: NonEmptyList<YearWeekIntervalParseError>,
+) : IllegalArgumentException("Could not parse year interval:\n\t-${errors.joinToString("\n\t-")}")
+
 object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("YearWeekInterval", PrimitiveKind.STRING)
 
@@ -92,7 +94,6 @@ object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
         TODO("not implemented")
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): YearWeekInterval {
         return deserializeEither(decoder).getOrElse {
             it.map {
@@ -101,7 +102,7 @@ object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
                     is YearWeekIntervalParseError.YearWeekComponentParseError -> throw IllegalArgumentException("YearWeek component parsing error: $it")
                 }
             }
-            throw MissingFieldException("", "")
+            throw UnsupportedOperationException("This is not possible, the list is non-empty and the when is exhaustive")
         }
     }
 

@@ -58,10 +58,10 @@ fun Route.shifts() {
 
 @Resource("/shifts")
 class Shifts {
-    @Resource("search")
+    @Resource("in-interval/{yearWeekInterval}")
     class InInterval(
         val parent: Shifts = Shifts(),
-        val yearWeekInterval: YearWeekInterval?,
+        val yearWeekInterval: YearWeekInterval,
     )
 
     @Resource("{id}")
