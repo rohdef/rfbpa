@@ -82,7 +82,7 @@ data class YearWeekInterval(
 
 data class YearWeekIntervalParseException(
     val errors: NonEmptyList<YearWeekIntervalParseError>,
-) : IllegalArgumentException("Could not parse year interval:\n\t-${errors.joinToString("\n\t-")}")
+) : IllegalArgumentException("Could not parse year week interval:\n\t- ${errors.joinToString("\n\t- ")}")
 
 object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("YearWeekInterval", PrimitiveKind.STRING)
@@ -91,20 +91,11 @@ object YearWeekIntervalSerializer : KSerializer<YearWeekInterval> {
         encoder: Encoder,
         value: YearWeekInterval,
     ) {
-        TODO("not implemented")
+        throw UnsupportedOperationException("Serializing year week interval is currently not supported")
     }
 
-    override fun deserialize(decoder: Decoder): YearWeekInterval {
-        return deserializeEither(decoder).getOrElse {
-            it.map {
-                when (it) {
-                    is YearWeekIntervalParseError.NoSeparatorError -> throw IllegalArgumentException("No separator in input: $it")
-                    is YearWeekIntervalParseError.YearWeekComponentParseError -> throw IllegalArgumentException("YearWeek component parsing error: $it")
-                }
-            }
-            throw UnsupportedOperationException("This is not possible, the list is non-empty and the when is exhaustive")
-        }
-    }
+    override fun deserialize(decoder: Decoder) =
+        deserializeEither(decoder).getOrElse { throw YearWeekIntervalParseException(it) }
 
     fun deserializeEither(decoder: Decoder): Either<NonEmptyList<YearWeekIntervalParseError>, YearWeekInterval> =
         YearWeekInterval.parse(decoder.decodeString())

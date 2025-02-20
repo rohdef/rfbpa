@@ -178,13 +178,6 @@ class YearWeekIntervalTest : FunSpec({
                     ),
                 )
             }
-
-            test("domain exception with multiple parse errors VI") {
-                Json.decodeFromString(
-                    YearWeekInterval.serializer(),
-                    "\"20x0-W03--2x 00-W04\"",
-                )
-            }
         }
     }
 })
