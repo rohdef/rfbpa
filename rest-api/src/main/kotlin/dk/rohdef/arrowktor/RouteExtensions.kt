@@ -6,7 +6,7 @@ import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import dk.rohdef.rfbpa.web.ErrorDto
 import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownErrorType
+import dk.rohdef.rfbpa.web.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -36,7 +36,7 @@ interface RaisedRoute : Route, Raise<ApiError> {
         ensureNotNull(routingContext.call.principal<dk.rohdef.rfbpa.web.modules.RfbpaPrincipal>()) {
             ApiError.forbidden(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Access denied - you are not logged in",
                     NoData,
                 )

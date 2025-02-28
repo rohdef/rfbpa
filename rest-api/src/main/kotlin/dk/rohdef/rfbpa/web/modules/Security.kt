@@ -12,7 +12,7 @@ import dk.rohdef.helperplanning.RfbpaPrincipal.RfbpaRoles
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.web.ErrorDto
 import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownErrorType
+import dk.rohdef.rfbpa.web.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -67,7 +67,7 @@ fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either
     ensureNotNull(principal<RfbpaPrincipal>()) {
         ApiError.forbidden(
             ErrorDto(
-                UnknownErrorType,
+                UnknownError,
                 "Access denied - you are not logged in",
                 NoData,
             )

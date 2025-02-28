@@ -10,7 +10,7 @@ import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.ErrorDto
 import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownErrorType
+import dk.rohdef.rfbpa.web.UnknownError
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -76,7 +76,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         WeekPlanServiceError.AccessDeniedToSalarySystem ->
             ApiError.forbidden(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Access to salary system denied, please check configuration of credentials.",
                     NoData,
                 ),
@@ -85,7 +85,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         is WeekPlanServiceError.InsufficientPermissions ->
             ApiError.forbidden(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Access denied, please ensure that are logged in and that you have the correct permissions.",
                     NoData,
                 ),
@@ -94,7 +94,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         WeekPlanServiceError.CannotCommunicateWithShiftsRepository ->
             ApiError.internalServerError(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Shifts repository unreachable right now, try again later.",
                     NoData,
                 ),
@@ -103,7 +103,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         is WeekPlanServiceError.ShiftMissingInSalarySystem ->
             ApiError.notFound(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Shift with ID: ${this.shiftId} cound not be found in the external salary system.",
                     NoData,
                 )
@@ -112,7 +112,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         is WeekPlanServiceError.ShiftMissingInShiftSystem ->
             ApiError.notFound(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Shift with ID: ${this.shiftId} cound not be found in the RFBPA.",
                     NoData,
                 )
@@ -121,7 +121,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
         is WeekPlanServiceError.ShiftMustBeBooked ->
             ApiError.badRequest(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
                     NoData,
                 )

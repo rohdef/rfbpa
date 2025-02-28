@@ -13,7 +13,7 @@ fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
         // TODO rohdef - almost certainly wrong - but what?
         ApiError.badRequest(
             ErrorDto(
-                UnknownErrorType,
+                UnknownError,
                 "Year week interval must not be null",
                 NoData,
             )
@@ -31,7 +31,7 @@ fun YearWeekIntervalParseError.toApiError(): ApiError {
         is YearWeekIntervalParseError.NoSeparatorError ->
             ApiError.badRequest(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Could not find interval separator, please use double hyphen '--'",
                     NoData,
                 )
@@ -40,7 +40,7 @@ fun YearWeekIntervalParseError.toApiError(): ApiError {
         is YearWeekIntervalParseError.YearWeekComponentParseError ->
             ApiError.badRequest(
                 ErrorDto(
-                    UnknownErrorType,
+                    UnknownError,
                     "Parsing of year weeks failed",
                     NoData,
                 )
