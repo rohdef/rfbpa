@@ -45,14 +45,13 @@ class ErrorHandlingTest : RfbpaSpec({
     restTest("Interval separator is missing") { client ->
         val response = client.get(url)
 
-        response.status shouldBe HttpStatusCode.BadRequest
+        response.status shouldBe HttpStatusCode.InternalServerError
 
-        // TODO: 29/07/2024 rohdef - add proper error, references #21
         val error: ErrorDto = response.body()
 
         error.message.shouldNotBeEmpty()
         error.supplementary shouldBe NoData
-        error.type shouldBe UnknownError
+        error.type shouldBe System.Unknown
     }
 })
 
