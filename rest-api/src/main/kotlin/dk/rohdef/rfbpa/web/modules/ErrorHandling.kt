@@ -8,16 +8,16 @@ import dk.rohdef.rfbpa.web.errors.System
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import dk.rohdef.rfweeks.YearWeekIntervalParseException
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 
 fun Application.errorHandling() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            val error = cause.toError()
+            val error = cause.toError(call)
             call.respond(
                 error.status,
                 error.message,
@@ -26,15 +26,14 @@ fun Application.errorHandling() {
     }
 }
 
-private fun Throwable.toError(): HttpResponse<ErrorDto> {
+private fun Throwable.toError(call: ApplicationCall): HttpResponse<ErrorDto> {
     val log = KotlinLogging.logger {}
 
     return when (this) {
-        is BadRequestException -> this.cause!!.toError()
+        is BadRequestException -> this.cause!!.toError(call)
 
         is YearWeekIntervalParseException ->
-            HttpResponse(
-                HttpStatusCode.BadRequest,
+            HttpResponse.badRequest(
                 ErrorDto(
                     Parsing.InvalidYearWeekInterval,
                     ErrorData.MultipleErrors(errors.first().toError()),
@@ -42,15 +41,62 @@ private fun Throwable.toError(): HttpResponse<ErrorDto> {
                 ),
             )
 
+        is IllegalArgumentException -> {
+            val path = call.request.path()
+
+            this.toError(path)
+        }
+
         else -> {
             log.error(cause) { "Unknown error occurred" }
 
-            HttpResponse(
-                HttpStatusCode.InternalServerError,
+            HttpResponse.internalServerError(
                 ErrorDto(
                     System.Unknown,
                     ErrorData.NoData,
                     "Non-descript problem, bailing!",
+                ),
+            )
+        }
+    }
+}
+
+fun IllegalArgumentException.toError(input: String): HttpResponse<ErrorDto> {
+    val log = KotlinLogging.logger {}
+
+    val message = this.message
+    return when {
+        message == null -> {
+            log.error(this) { "Something went wrong while parsing the input with an unidentified error" }
+
+            HttpResponse.badRequest(
+                ErrorDto(
+                    Parsing.Unknown,
+                    ErrorData.NoData,
+                    "Something went wrong while parsing the input with an unidentified error",
+                ),
+            )
+        }
+
+        message.contains("uuid") -> HttpResponse.badRequest(
+            ErrorDto(
+                Parsing.InvalidUUID,
+                ErrorData.FormatError(
+                    input,
+                    "UUID as hex string with dashes"
+                ),
+                "Could not parse Year week interval",
+            ),
+        )
+
+        else -> {
+            log.error(this) { "Something went wrong while parsing the input with an unidentified error" }
+
+            HttpResponse.badRequest(
+                ErrorDto(
+                    Parsing.Unknown,
+                    ErrorData.NoData,
+                    "Something went wrong while parsing the input with an unidentified error",
                 ),
             )
         }

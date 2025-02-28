@@ -165,13 +165,11 @@ class ShiftsTest : RfbpaSpec({
             val error: ErrorDto = response.body()
 
             error.message.shouldNotBeEmpty()
-            error.supplementary shouldBe ErrorData.MultipleErrors(
-                ErrorData.FormatError(
-                    id,
-                    "UUID",
-                ),
+            error.supplementary shouldBe ErrorData.FormatError(
+                "/api/public/shifts/ID-10-T",
+                "UUID as hex string with dashes",
             )
-            error.type shouldBe Parsing.InvalidYearWeekInterval
+            error.type shouldBe Parsing.InvalidUUID
         }
 
         restTest("Year week parameter is malformed") { client ->

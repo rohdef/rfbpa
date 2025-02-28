@@ -93,12 +93,26 @@ inline suspend fun <reified Resource : Any> RoutingContext.handleRequest(
     }
 }
 
-fun <U : Any> U.httpOk() = HttpResponse(
-    HttpStatusCode.OK,
-    this,
-)
+fun <U : Any> U.httpOk() = HttpResponse.ok(this)
 
 data class HttpResponse<T : Any>(
     val status: HttpStatusCode,
     val message: T,
-)
+) {
+    companion object {
+        fun <T : Any> ok(message: T) =
+            HttpResponse(HttpStatusCode.OK, message)
+
+        fun <T : Any> badRequest(error: T) =
+            HttpResponse(HttpStatusCode.BadRequest, error)
+
+        fun <T : Any> notFound(error: T) =
+            HttpResponse(HttpStatusCode.NotFound, error)
+
+        fun <T : Any> internalServerError(error: T) =
+            HttpResponse(HttpStatusCode.InternalServerError, error)
+
+        fun <T : Any> forbidden(error: T) =
+            HttpResponse(HttpStatusCode.Forbidden, error)
+    }
+}
