@@ -76,17 +76,8 @@ class Shifts {
     @Resource("{id}")
     class ById(
         val parent: Shifts = Shifts(),
-        @Serializable(with = UuidSerializer::class)
         val id: Uuid,
     )
-}
-
-class UuidSerializer : KSerializer<Uuid> {
-    override val descriptor = PrimitiveSerialDescriptor("Uuid", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder) = Uuid.parse(decoder.decodeString())
-
-    override fun serialize(encoder: Encoder, value: Uuid) = encoder.encodeString(value.toString())
 }
 
 fun WeekPlanServiceError.toApiError(): ApiError {

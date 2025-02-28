@@ -14,8 +14,6 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import kotlin.uuid.ExperimentalUuidApi
@@ -24,7 +22,7 @@ import kotlin.uuid.toKotlinUuid
 
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
-        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUUID()
+        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUuid()
             ?.let { HelperId(it) }
         val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
@@ -116,7 +114,7 @@ class DatabaseShifts : ShiftRepository {
 
             is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
                 it[shiftId] = shift.id.toJavaUuid()
-                it[helperId] = booking.helper.id.toJavaUUID()
+                it[helperId] = booking.helper.id.toJavaUuid()
             }
         }
     }

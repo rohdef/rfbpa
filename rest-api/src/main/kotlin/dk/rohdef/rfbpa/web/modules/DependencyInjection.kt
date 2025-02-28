@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.modules
 
 import com.auth0.jwk.JwkProviderBuilder
@@ -34,6 +36,7 @@ import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import java.nio.file.Paths
 import kotlin.io.path.readText
+import kotlin.uuid.ExperimentalUuidApi
 
 fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
     single<RfBpaConfig> { rfBpaConfig }

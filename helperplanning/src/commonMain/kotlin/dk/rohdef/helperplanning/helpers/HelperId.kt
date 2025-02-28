@@ -1,15 +1,16 @@
 package dk.rohdef.helperplanning.helpers
 
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @JvmInline
 value class HelperId(
-    val id: UUID,
+    val id: Uuid,
 ) {
     companion object {
         fun generateId(): HelperId {
-            return HelperId(UUID.generateUUID())
+            return HelperId(Uuid.random())
         }
     }
 }

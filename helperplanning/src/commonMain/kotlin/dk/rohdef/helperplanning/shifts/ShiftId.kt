@@ -1,15 +1,17 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.helperplanning.shifts
 
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @JvmInline
 value class ShiftId(
-    val id: UUID,
+    val id: Uuid,
 ) {
     companion object {
         fun generateId(): ShiftId {
-            return ShiftId(UUID.generateUUID())
+            return ShiftId(Uuid.random())
         }
     }
 }

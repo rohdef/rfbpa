@@ -14,7 +14,11 @@ import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.upsert
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.toJavaUuid
+import kotlin.uuid.toKotlinUuid
 
+@OptIn(ExperimentalUuidApi::class)
 class DatabaseHelpers : HelpersRepository {
     private val log = KotlinLogging.logger {}
 
@@ -22,7 +26,7 @@ class DatabaseHelpers : HelpersRepository {
         return Helper.Permanent(
             row[HelpersTable.name],
             row[HelpersTable.shortName]!!,
-            HelperId(row[HelpersTable.id].toKotlinUUID()),
+            HelperId(row[HelpersTable.id].toKotlinUuid()),
         )
     }
 
@@ -35,7 +39,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper> = dbQuery {
         HelpersTable
             .selectAll()
-            .where { HelpersTable.id eq helperId.id.toJavaUUID() }
+            .where { HelpersTable.id eq helperId.id.toJavaUuid() }
             .map { rowToHelper(it) }
             .firstOrNone()
             .toEither { HelpersError.CannotFindHelperById(helperId) }
@@ -55,7 +59,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> = dbQuery {
         catchOrThrow<Exception, Helper> {
             HelpersTable.upsert {
-                it[id] = helper.id.id.toJavaUUID()
+                it[id] = helper.id.id.toJavaUuid()
 
                 when (helper) {
                     is Helper.Permanent -> {
