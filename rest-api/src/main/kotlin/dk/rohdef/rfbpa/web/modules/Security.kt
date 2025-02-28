@@ -10,8 +10,8 @@ import com.auth0.jwt.interfaces.Payload
 import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.helperplanning.RfbpaPrincipal.RfbpaRoles
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
 import dk.rohdef.rfbpa.web.errors.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
@@ -68,7 +68,7 @@ fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either
         ApiError.forbidden(
             ErrorDto(
                 UnknownError,
-                NoData,
+                ErrorData.NoData,
                 "Access denied - you are not logged in",
             )
         )

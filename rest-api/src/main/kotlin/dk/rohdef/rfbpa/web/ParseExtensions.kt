@@ -4,20 +4,19 @@ import arrow.core.raise.Raise
 import arrow.core.raise.ensureNotNull
 import arrow.core.raise.withError
 import dk.rohdef.arrowktor.ApiError
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
 import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 
-// TODO rohdef - use new error context
+// TODO probably not the best, but won't fix - templates should use resource instead
 fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
     val yearWeekIntervalParameter = ensureNotNull(text) {
-        // TODO rohdef - almost certainly wrong - but what?
         ApiError.badRequest(
             ErrorDto(
                 UnknownError,
-                NoData,
+                ErrorData.NoData,
                 "Year week interval must not be null",
             )
         )
@@ -28,14 +27,13 @@ fun Raise<ApiError>.parseYearWeekInterval(text: String?): YearWeekInterval {
     }
 }
 
-// TODO rohdef - use new error context
 fun YearWeekIntervalParseError.toApiError(): ApiError {
     return when (this) {
         is YearWeekIntervalParseError.NoSeparatorError ->
             ApiError.badRequest(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Could not find interval separator, please use double hyphen '--'",
                 )
             )
@@ -44,7 +42,7 @@ fun YearWeekIntervalParseError.toApiError(): ApiError {
             ApiError.badRequest(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Parsing of year weeks failed",
                 )
             )

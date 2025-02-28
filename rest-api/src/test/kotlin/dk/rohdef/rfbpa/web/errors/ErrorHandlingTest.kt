@@ -50,7 +50,7 @@ class ErrorHandlingTest : RfbpaSpec({
         val error: ErrorDto = response.body()
 
         error.message.shouldNotBeEmpty()
-        error.supplementary shouldBe NoData
+        error.supplementary shouldBe ErrorData.NoData
         error.type shouldBe System.Unknown
     }
 })

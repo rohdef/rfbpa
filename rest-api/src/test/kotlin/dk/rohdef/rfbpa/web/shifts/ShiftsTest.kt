@@ -7,10 +7,13 @@ import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
-import dk.rohdef.rfbpa.web.*
+import dk.rohdef.rfbpa.web.PrincipalsTestData
+import dk.rohdef.rfbpa.web.RfbpaSpec
+import dk.rohdef.rfbpa.web.TestConfiguration
+import dk.rohdef.rfbpa.web.TestWeekPlanService
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
-import dk.rohdef.rfbpa.web.errors.UnknownError
+import dk.rohdef.rfbpa.web.errors.Parsing
 import dk.rohdef.rfbpa.web.modules.configuration
 import dk.rohdef.rfbpa.web.persistance.helpers.TestHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
@@ -35,7 +38,8 @@ import org.koin.dsl.module
 
 class ShiftsTest : RfbpaSpec({
     val url = "/api/public/shifts"
-    val urlWeek29To31 = "${url}/${week29To31}"
+    val urlInInterval = "$url/in-interval"
+    val urlWeek29To31 = "${urlInInterval}/${week29To31}"
 
     val weekPlanService = TestWeekPlanService()
     val helperService = HelperServiceImplementation(MemoryHelpersRepository())
@@ -74,7 +78,7 @@ class ShiftsTest : RfbpaSpec({
         )
 
         restTest("Requesting single week") { client ->
-            val response = client.get("$url/$week29--$week29")
+            val response = client.get("$urlInInterval/$week29--$week29")
 
             response.status shouldBe HttpStatusCode.OK
             val weekPlans: List<WeekPlanOut> = response.body()
@@ -151,23 +155,59 @@ class ShiftsTest : RfbpaSpec({
         val error: String = response.body()
     }
 
-    restTest("Year week parameter is malformed") { client ->
-        val response = client.get("$url/week4--week5")
-        response.status shouldBe HttpStatusCode.BadRequest
+    context("parsing errors") {
+        restTest("ID is not an UUID") { client ->
+            val id = "ID-10-T"
+            val response = client.get("$url/$id")
 
-        // TODO: 29/07/2024 rohdef - add proper error, references #21
-    }
+            response.status shouldBe HttpStatusCode.BadRequest
 
-    restTest("Interval separator is missing") { client ->
-        val response = client.get("$url/in-interval/2024-W122024-W15")
+            val error: ErrorDto = response.body()
 
-        response.status shouldBe HttpStatusCode.BadRequest
+            error.message.shouldNotBeEmpty()
+            error.supplementary shouldBe ErrorData.MultipleErrors(
+                ErrorData.FormatError(
+                    id,
+                    "UUID",
+                ),
+            )
+            error.type shouldBe Parsing.InvalidYearWeekInterval
+        }
 
-        // TODO: 29/07/2024 rohdef - add proper error, references #21
-        val error: ErrorDto = response.body()
+        restTest("Year week parameter is malformed") { client ->
+            val interval = "week4--week5"
+            val response = client.get("$urlInInterval/$interval")
 
-        error.message.shouldNotBeEmpty()
-        error.supplementary shouldBe NoData
-        error.type shouldBe UnknownError
+            response.status shouldBe HttpStatusCode.BadRequest
+
+            val error: ErrorDto = response.body()
+
+            error.message.shouldNotBeEmpty()
+            error.supplementary shouldBe ErrorData.MultipleErrors(
+                ErrorData.FormatError(
+                    interval,
+                    "ISO 8601 [interval](https://en.wikipedia.org/wiki/ISO_8601#Time_intervals) using [week dates](https://en.wikipedia.org/wiki/ISO_8601#Week_dates).",
+                ),
+            )
+            error.type shouldBe Parsing.InvalidYearWeekInterval
+        }
+
+        restTest("Interval separator is missing") { client ->
+            val interval = "2024-W122024-W15"
+            val response = client.get("$urlInInterval/$interval")
+
+            response.status shouldBe HttpStatusCode.BadRequest
+
+            val error: ErrorDto = response.body()
+
+            error.message.shouldNotBeEmpty()
+            error.supplementary shouldBe ErrorData.MultipleErrors(
+                ErrorData.FormatError(
+                    interval,
+                    "ISO 8601 [interval](https://en.wikipedia.org/wiki/ISO_8601#Time_intervals) using [week dates](https://en.wikipedia.org/wiki/ISO_8601#Week_dates).",
+                ),
+            )
+            error.type shouldBe Parsing.InvalidYearWeekInterval
+        }
     }
 })

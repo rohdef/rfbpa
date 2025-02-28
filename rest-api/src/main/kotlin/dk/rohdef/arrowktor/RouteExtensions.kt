@@ -4,8 +4,8 @@ import arrow.core.Either
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
 import dk.rohdef.rfbpa.web.errors.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
@@ -37,7 +37,7 @@ interface RaisedRoute : Route, Raise<ApiError> {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Access denied - you are not logged in",
                 )
             )

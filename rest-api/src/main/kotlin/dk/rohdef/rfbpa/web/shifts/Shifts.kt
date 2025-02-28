@@ -8,8 +8,8 @@ import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
 import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -77,7 +77,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Access to salary system denied, please check configuration of credentials.",
                 ),
             )
@@ -86,7 +86,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Access denied, please ensure that are logged in and that you have the correct permissions.",
                 ),
             )
@@ -95,7 +95,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.internalServerError(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Shifts repository unreachable right now, try again later.",
                 ),
             )
@@ -104,7 +104,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.notFound(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Shift with ID: ${this.shiftId} cound not be found in the external salary system.",
                 )
             )
@@ -113,7 +113,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.notFound(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Shift with ID: ${this.shiftId} cound not be found in the RFBPA.",
                 )
             )
@@ -122,7 +122,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.badRequest(
                 ErrorDto(
                     UnknownError,
-                    NoData,
+                    ErrorData.NoData,
                     "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
                 )
             )

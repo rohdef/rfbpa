@@ -1,9 +1,10 @@
 package dk.rohdef.rfbpa.web.modules
 
 import dk.rohdef.arrowktor.HttpResponse
+import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
-import dk.rohdef.rfbpa.web.errors.NoData
 import dk.rohdef.rfbpa.web.errors.System
+import dk.rohdef.rfweeks.YearWeekIntervalParseError
 import dk.rohdef.rfweeks.YearWeekIntervalParseException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
@@ -30,14 +31,16 @@ private fun Throwable.toError(): HttpResponse<ErrorDto> {
     return when (this) {
         is BadRequestException -> this.cause!!.toError()
 
-        is YearWeekIntervalParseException -> HttpResponse(
-            HttpStatusCode(418, "I'm a tea pot"),
-            ErrorDto(
-                System.Unknown,
-                NoData,
-                "AAAAAAA!",
-            ),
-        )
+        is YearWeekIntervalParseException -> {
+            HttpResponse(
+                HttpStatusCode(418, "I'm a tea pot"),
+                ErrorDto(
+                    System.Unknown,
+                    ErrorData.NoData,
+                    "AAAAAAA!",
+                ),
+            )
+        }
 
         else -> {
             log.error(cause) { "Unknown error occurred" }
@@ -46,7 +49,7 @@ private fun Throwable.toError(): HttpResponse<ErrorDto> {
                 HttpStatusCode.InternalServerError,
                 ErrorDto(
                     System.Unknown,
-                    NoData,
+                    ErrorData.NoData,
                     "Non-descript problem, bailing!",
                 ),
             )
