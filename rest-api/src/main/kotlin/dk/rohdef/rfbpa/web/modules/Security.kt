@@ -68,8 +68,8 @@ fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either
         ApiError.forbidden(
             ErrorDto(
                 UnknownError,
-                "Access denied - you are not logged in",
                 NoData,
+                "Access denied - you are not logged in",
             )
         )
     }.domainPrincipal

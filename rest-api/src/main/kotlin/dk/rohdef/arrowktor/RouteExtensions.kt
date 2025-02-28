@@ -37,8 +37,8 @@ interface RaisedRoute : Route, Raise<ApiError> {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    "Access denied - you are not logged in",
                     NoData,
+                    "Access denied - you are not logged in",
                 )
             )
         }

@@ -77,8 +77,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    "Access to salary system denied, please check configuration of credentials.",
                     NoData,
+                    "Access to salary system denied, please check configuration of credentials.",
                 ),
             )
 
@@ -86,8 +86,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.forbidden(
                 ErrorDto(
                     UnknownError,
-                    "Access denied, please ensure that are logged in and that you have the correct permissions.",
                     NoData,
+                    "Access denied, please ensure that are logged in and that you have the correct permissions.",
                 ),
             )
 
@@ -95,8 +95,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.internalServerError(
                 ErrorDto(
                     UnknownError,
-                    "Shifts repository unreachable right now, try again later.",
                     NoData,
+                    "Shifts repository unreachable right now, try again later.",
                 ),
             )
 
@@ -104,8 +104,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.notFound(
                 ErrorDto(
                     UnknownError,
-                    "Shift with ID: ${this.shiftId} cound not be found in the external salary system.",
                     NoData,
+                    "Shift with ID: ${this.shiftId} cound not be found in the external salary system.",
                 )
             )
 
@@ -113,8 +113,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.notFound(
                 ErrorDto(
                     UnknownError,
-                    "Shift with ID: ${this.shiftId} cound not be found in the RFBPA.",
                     NoData,
+                    "Shift with ID: ${this.shiftId} cound not be found in the RFBPA.",
                 )
             )
 
@@ -122,8 +122,8 @@ fun WeekPlanServiceError.toApiError(): ApiError {
             ApiError.badRequest(
                 ErrorDto(
                     UnknownError,
-                    "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
                     NoData,
+                    "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
                 )
             )
     }
