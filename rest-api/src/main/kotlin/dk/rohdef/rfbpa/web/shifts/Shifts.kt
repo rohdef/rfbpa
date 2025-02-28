@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 import arrow.core.raise.withError
 import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.arrowktor.get
@@ -16,8 +18,15 @@ import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.resources.*
 import io.ktor.server.routing.*
-import kotlinx.uuid.UUID
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.koin.ktor.ext.inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 private val log = KotlinLogging.logger {}
 fun Route.shifts() {
@@ -67,8 +76,17 @@ class Shifts {
     @Resource("{id}")
     class ById(
         val parent: Shifts = Shifts(),
-        val id: UUID,
+        @Serializable(with = UuidSerializer::class)
+        val id: Uuid,
     )
+}
+
+class UuidSerializer : KSerializer<Uuid> {
+    override val descriptor = PrimitiveSerialDescriptor("Uuid", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder) = Uuid.parse(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: Uuid) = encoder.encodeString(value.toString())
 }
 
 fun WeekPlanServiceError.toApiError(): ApiError {
