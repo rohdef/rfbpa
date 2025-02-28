@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web
 import com.auth0.jwk.Jwk
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import dk.rohdef.rfbpa.web.modules.errorHandling
 import dk.rohdef.rfbpa.web.modules.routes
 import dk.rohdef.rfbpa.web.modules.security
 import dk.rohdef.rfbpa.web.modules.serialization
@@ -99,6 +100,7 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
     ) {
         testApplication {
             application {
+                errorHandling()
                 security()
                 serialization()
                 routes()

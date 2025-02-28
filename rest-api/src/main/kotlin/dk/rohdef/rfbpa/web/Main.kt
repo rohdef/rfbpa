@@ -1,9 +1,6 @@
 package dk.rohdef.rfbpa.web
 
-import dk.rohdef.rfbpa.web.modules.dependencyInjection
-import dk.rohdef.rfbpa.web.modules.routes
-import dk.rohdef.rfbpa.web.modules.security
-import dk.rohdef.rfbpa.web.modules.serialization
+import dk.rohdef.rfbpa.web.modules.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 
@@ -18,6 +15,7 @@ fun Application.main() {
 
 //    install(CallLogging)
     dependencyInjection()
+    errorHandling()
     security()
     serialization()
     routes()

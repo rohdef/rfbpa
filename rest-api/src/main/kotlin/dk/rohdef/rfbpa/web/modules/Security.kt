@@ -10,9 +10,9 @@ import com.auth0.jwt.interfaces.Payload
 import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.helperplanning.RfbpaPrincipal.RfbpaRoles
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import dk.rohdef.rfbpa.web.ErrorDto
-import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownError
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.NoData
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*

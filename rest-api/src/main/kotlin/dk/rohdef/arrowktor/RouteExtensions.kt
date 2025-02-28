@@ -4,9 +4,9 @@ import arrow.core.Either
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
-import dk.rohdef.rfbpa.web.ErrorDto
-import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownError
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.NoData
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.auth.*

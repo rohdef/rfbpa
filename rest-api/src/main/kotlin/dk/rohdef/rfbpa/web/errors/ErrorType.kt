@@ -1,13 +1,19 @@
-package dk.rohdef.rfbpa.web
+package dk.rohdef.rfbpa.web.errors
 
 import arrow.core.singleOrNone
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
-@Serializable
+@Serializable(with = ErrorTypeSerializer::class)
 sealed interface ErrorType {
     fun serialize(): String {
         return serialize(this::class)
@@ -46,6 +52,14 @@ sealed interface ErrorType {
             return (currentType.objectInstance as ErrorType)
         }
     }
+}
+
+class ErrorTypeSerializer : KSerializer<ErrorType> {
+    override val descriptor = PrimitiveSerialDescriptor("ErrorTypeSerializer", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder) = ErrorType.deserialize(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: ErrorType) = encoder.encodeString(value.serialize())
 }
 
 sealed interface Blah : ErrorType

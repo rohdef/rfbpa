@@ -8,9 +8,9 @@ import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
-import dk.rohdef.rfbpa.web.ErrorDto
-import dk.rohdef.rfbpa.web.NoData
-import dk.rohdef.rfbpa.web.UnknownError
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.NoData
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging

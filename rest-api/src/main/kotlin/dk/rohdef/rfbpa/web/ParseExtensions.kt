@@ -4,6 +4,9 @@ import arrow.core.raise.Raise
 import arrow.core.raise.ensureNotNull
 import arrow.core.raise.withError
 import dk.rohdef.arrowktor.ApiError
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.NoData
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfweeks.YearWeekInterval
 import dk.rohdef.rfweeks.YearWeekIntervalParseError
 

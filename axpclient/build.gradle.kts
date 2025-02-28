@@ -11,7 +11,7 @@ description = "Integration with Handicapformidlingen"
 configureCommon()
 kotlin {
     sourceSets {
-        val ktorVersion = "3.0.3"
+        val ktorVersion = "3.1.1"
 
         val commonMain by getting {
             dependencies {

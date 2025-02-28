@@ -1,6 +1,6 @@
 package dk.rohdef.arrowktor
 
-import dk.rohdef.rfbpa.web.ErrorDto
+import dk.rohdef.rfbpa.web.errors.ErrorDto
 import io.ktor.http.*
 
 data class ApiError(

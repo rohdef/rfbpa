@@ -1,4 +1,4 @@
-package dk.rohdef.rfbpa.web
+package dk.rohdef.rfbpa.web.errors
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

@@ -8,6 +8,9 @@ import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.*
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.NoData
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfbpa.web.modules.configuration
 import dk.rohdef.rfbpa.web.persistance.helpers.TestHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29

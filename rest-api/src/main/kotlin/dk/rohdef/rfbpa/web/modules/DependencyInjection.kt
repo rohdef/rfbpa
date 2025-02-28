@@ -6,17 +6,15 @@ import dk.rohdef.axpclient.AxpSalarySystem
 import dk.rohdef.axpclient.AxpShiftReferences
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
-import dk.rohdef.helperplanning.helpers.Helper
-import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.helpers.HelperService
-import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
-import dk.rohdef.helperplanning.helpers.HelpersRepository
+import dk.rohdef.helperplanning.helpers.*
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.helperplanning.templates.TemplateApplier
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
+import dk.rohdef.rfbpa.web.health.HealthService
+import dk.rohdef.rfbpa.web.health.HealthServiceImplementation
 import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
 import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import dk.rohdef.rfbpa.web.persistance.axp.MemoryAxpHelperReferences
@@ -91,6 +89,8 @@ fun Application.dependencyInjection() {
 
     install(Koin) {
         modules(
+            module { singleOf(::HealthServiceImplementation) bind HealthService::class },
+
             module { single<Clock> { Clock.System } },
             module { single {
                 JwkProviderBuilder(rfBpaConfig.auth.jwkEndpoint).build()

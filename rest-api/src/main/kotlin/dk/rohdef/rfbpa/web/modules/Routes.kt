@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web.modules
 
 import dk.rohdef.rfbpa.web.calendar.calendar
+import dk.rohdef.rfbpa.web.health.health
 import dk.rohdef.rfbpa.web.templates.templates
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -22,8 +23,6 @@ fun Application.routes() {
         }
         shifts()
 
-        get("/health") {
-            call.respondText("I am healthy!")
-        }
+        health()
     }
 }
