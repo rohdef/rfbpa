@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
@@ -6,8 +8,8 @@ import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 typealias SalaryShiftsErrorRunner = (yearWeek: YearWeek) -> Either<ShiftsError, Unit>
 typealias CreateSalaryShiftErrorRunner = (start: YearWeekDayAtTime, end: YearWeekDayAtTime) -> Either<ShiftsError, Unit>
@@ -20,17 +22,17 @@ class TestSalarySystemRepository(
         fun generate(vararg seeds: Any): ShiftId
 
         object Random : IdGenerator {
-            override fun generate(vararg seeds: Any) = ShiftId(UUID.generateUUID())
+            override fun generate(vararg seeds: Any) = ShiftId(Uuid.random())
         }
 
         object Default : IdGenerator {
-            val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
+            val shiftIdNamespace = Uuid.parse("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
             override fun generate(vararg seeds: Any): ShiftId {
                 val idText = seeds.joinToString(":")
 
                 return ShiftId(
-                    UUID.generateUUID(shiftIdNamespace, idText)
+                    Uuid.generateUuid(shiftIdNamespace, idText)
                 )
             }
         }

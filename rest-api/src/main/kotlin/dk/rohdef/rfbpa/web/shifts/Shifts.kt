@@ -18,12 +18,6 @@ import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.resources.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.koin.ktor.ext.inject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -47,7 +41,7 @@ fun Route.shifts() {
 
         weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
     }
-
+    
     get<Shifts.ById> { shiftById ->
         log.info { "Getting shift by ID: ${shiftById.id}" }
 

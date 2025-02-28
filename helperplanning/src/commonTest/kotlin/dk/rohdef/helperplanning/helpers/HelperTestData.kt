@@ -1,13 +1,16 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.helperplanning.helpers
 
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
+import dk.rohdef.helperplanning.generateUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object HelperTestData {
-    val helperIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
+    val helperIdNamespace = Uuid.parse("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
     fun helperId(id: String) = HelperId(
-        UUID.generateUUID(helperIdNamespace, id)
+        Uuid.generateUuid(helperIdNamespace, id)
     )
 
     fun permanent(name: String, shortName: String) = Helper.Permanent(
