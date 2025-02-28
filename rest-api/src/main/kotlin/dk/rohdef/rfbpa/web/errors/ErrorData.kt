@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web.errors
 
+import arrow.core.NonEmptyList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,7 +13,12 @@ sealed interface ErrorData {
     @Serializable
     @SerialName("ErrorList")
     data class MultipleErrors(val errors: List<ErrorData>) : ErrorData {
-        constructor(vararg errors: ErrorData) : this(errors.toList())
+        constructor(errors: NonEmptyList<ErrorData>) : this(errors.toList())
+        constructor(error: ErrorData, vararg errors: ErrorData) : this(listOf(error) + errors.toList())
+
+        init {
+            if (errors.isEmpty()) { throw IllegalArgumentException("No errors were provided") }
+        }
     }
 
     @Serializable

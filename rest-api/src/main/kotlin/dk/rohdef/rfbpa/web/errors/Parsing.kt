@@ -1,6 +1,6 @@
 package dk.rohdef.rfbpa.web.errors
 
-interface Parsing {
+sealed interface Parsing : ErrorType {
     object InvalidYearWeekInterval : Parsing
     object InvalidUUID : Parsing
 }

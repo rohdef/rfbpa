@@ -31,6 +31,11 @@ sealed interface ErrorType {
 
         return if (parentSubtypedErrorType != ErrorType::class.createType()) {
             val subClass = parentSubtypedErrorType.classifier as KClass<out ErrorType>
+
+            if (!subClass.isSealed) {
+                throw IllegalArgumentException("Interface/class must be sealed, but [${subClass.qualifiedName}] wasn't")
+            }
+
             "${serialize(subClass)}.${clazz.simpleName}"
         } else {
             clazz.simpleName!!
