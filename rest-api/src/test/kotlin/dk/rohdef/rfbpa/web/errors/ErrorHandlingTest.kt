@@ -42,7 +42,7 @@ class ErrorHandlingTest : RfbpaSpec({
         stopKoin()
     }
 
-    restTest("Interval separator is missing") { client ->
+    restTest("General catch all error") { client ->
         val response = client.get(url)
 
         response.status shouldBe HttpStatusCode.InternalServerError

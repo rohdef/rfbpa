@@ -13,12 +13,8 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 
 fun Application.errorHandling() {
-    val log = KotlinLogging.logger {}
-
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            log.error(cause) { "Caught parsing" }
-
             val error = cause.toError()
             call.respond(
                 error.status,
@@ -29,6 +25,8 @@ fun Application.errorHandling() {
 }
 
 private fun Throwable.toError(): HttpResponse<ErrorDto> {
+    val log = KotlinLogging.logger {}
+
     return when (this) {
         is BadRequestException -> this.cause!!.toError()
 
@@ -41,13 +39,17 @@ private fun Throwable.toError(): HttpResponse<ErrorDto> {
             ),
         )
 
-        else -> HttpResponse(
-            HttpStatusCode.ExpectationFailed,
-            ErrorDto(
-                System.Unknown,
-                NoData,
-                "Non-descript problem, bailing!",
-            ),
-        )
+        else -> {
+            log.error(cause) { "Unknown error occurred" }
+
+            HttpResponse(
+                HttpStatusCode.InternalServerError,
+                ErrorDto(
+                    System.Unknown,
+                    NoData,
+                    "Non-descript problem, bailing!",
+                ),
+            )
+        }
     }
 }
