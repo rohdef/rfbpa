@@ -14,7 +14,7 @@ jobs:
         id: build-container
         uses: rohdef/action-build-scan-push-container@main
         with:
-          dockerfile-path: ./test-docker/
+          dockerfile-path: ./rest-api/
           labels: |
             org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
             org.opencontainers.image.vendor=Rohde Fischer
