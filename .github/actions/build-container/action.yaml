@@ -61,7 +61,7 @@ runs:
         echo "$IMAGE_ID:$VERSION"
 
         docker tag \
-          "${{ steps.build-container.outputs.imageid }}" \\
+          "${{ steps.build-container.outputs.imageid }}" \
           "$IMAGE_ID:$VERSION"
         docker push "$IMAGE_ID:$VERSION"
 
