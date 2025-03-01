@@ -35,7 +35,7 @@ runs:
       id: build-container
       uses: rohdef/action-build-scan-push-container@main
       with:
-        dockerfile-path: ./rest-api/
+        dockerfile-path: "${{ inputs.input-path  }}"
         labels: |
           org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
           org.opencontainers.image.vendor=Rohde Fischer
