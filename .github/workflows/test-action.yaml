@@ -10,6 +10,17 @@ jobs:
       - name: "Check out repository: ${{ github.repository }}"
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 23
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Build rest-api
+        run: |
+          ./gradlew build
+
       - name: Run my action
         id: build-container
         uses: rohdef/action-build-scan-push-container@main
