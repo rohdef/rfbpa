@@ -36,13 +36,13 @@ jobs:
             version=awesome-500
             secondary=hmm
 
-          destinationHosts: |
+          destination-hosts: |
             - foo.bar
             - zoo.keeper
-          destinationImageNames: |
+          destination-image-names: |
             - allon
             - demi
-          destinationTags: |
+          destination-tags: |
             act-test
             test-act
 
