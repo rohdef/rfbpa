@@ -36,6 +36,16 @@ jobs:
             version=awesome-500
             secondary=hmm
 
+          destinationHosts: |
+            - foo.bar
+            - zoo.keeper
+          destinationImageNames: |
+            - allon
+            - demi
+          destinationTags: |
+            act-test
+            test-act
+
       - name: Finish
         run: |
           echo "Be done"
