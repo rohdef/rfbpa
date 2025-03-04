@@ -36,6 +36,7 @@ jobs:
             version=awesome-500
             secondary=hmm
 
+          auto-tagging: "nope"
           destination-hosts: |
             - foo.bar
             - zoo.keeper
@@ -43,8 +44,8 @@ jobs:
             - allon
             - demi
           destination-tags: |
-            act-test
-            test-act
+            - act-test
+            - test-act
 
       - name: Finish
         run: |
