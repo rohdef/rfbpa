@@ -33,12 +33,6 @@ jobs:
             org.opencontainers.image.title=rfbpa - A BPA manager
             org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
 
-          destination-hosts: |
-            - foo.bar
-            - zoo.keeper
-          destination-image-names: |
-            - allon
-            - demi
           destination-tags: |
             - act-test
             - test-act
