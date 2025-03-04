@@ -65,7 +65,7 @@ jobs:
             org.opencontainers.image.title=rfbpa - A BPA manager
             org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
           destination-image-names: |
-            - rfbpa-web-app
+            - rohdef/rfbpa-web-app
 
   rest-api:
     permissions:
@@ -105,7 +105,7 @@ jobs:
             org.opencontainers.image.title=rfbpa - A BPA manager
             org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
           destination-image-names: |
-            - rfbpa-rest-api
+            - rohdef/rfbpa-rest-api
 
   deployment:
     needs:
