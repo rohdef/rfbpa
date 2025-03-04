@@ -4,7 +4,24 @@ jobs:
   cleanup-docker:
     if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
-      - name: Clean up
+      - name: Version tag
+        id: version-tag
+        shell: bash
         run: |
-          echo "Clean up for branch ${{ github.event.ref }}"
+          # This strips the git ref prefix from the version.
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # This strips the "v" prefix from the tag name.
+          [ [ "${{ github.ref }}" == "refs/tags/"* ] ] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # This uses the Docker `latest` tag convention.
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          echo "version-tag=$(echo ${$VERSION})" >> "$GITHUB_OUTPUT"
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          dry-run: true
+          packages: rfbpa-rest-api,rfbpa-web-app
+          delete-tags: ${{ steps.version-tag.outputs.version-tag }}
+          delete-untagged: true
