@@ -32,11 +32,7 @@ jobs:
             org.opencontainers.image.ref.name=rfbap-1
             org.opencontainers.image.title=rfbpa - A BPA manager
             org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
-          build-args: |
-            version=awesome-500
-            secondary=hmm
 
-          auto-tagging: "nope"
           destination-hosts: |
             - foo.bar
             - zoo.keeper
