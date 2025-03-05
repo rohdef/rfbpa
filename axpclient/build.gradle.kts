@@ -11,14 +11,14 @@ description = "Integration with Handicapformidlingen"
 configureCommon()
 kotlin {
     sourceSets {
-        val ktorVersion = "2.3.12"
+        val ktorVersion = "3.1.1"
 
         val commonMain by getting {
             dependencies {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
             }

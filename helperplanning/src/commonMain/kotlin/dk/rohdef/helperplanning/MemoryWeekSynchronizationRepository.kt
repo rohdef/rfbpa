@@ -25,14 +25,14 @@ class MemoryWeekSynchronizationRepository : WeekSynchronizationRepository {
         yearWeek: YearWeek
     ): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
         synchronizedWeeks.letValue(subject) {
-            ((it - yearWeek) + (yearWeek to WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE))
+            (it + (yearWeek to WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE))
                 .withDefault { defaultSynchronization }
         }
     }
 
     override fun markSynchronized(subject: RfbpaPrincipal.Subject, yearWeek: YearWeek): Either<WeekSynchronizationRepository.CannotChangeSyncronizationState, Unit> = either {
         synchronizedWeeks.letValue(subject) {
-            ((it - yearWeek) + (yearWeek to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED))
+            (it + (yearWeek to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED))
                 .withDefault { defaultSynchronization }
         }
     }

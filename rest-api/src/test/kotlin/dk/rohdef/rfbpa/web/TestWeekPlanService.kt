@@ -27,14 +27,14 @@ class TestWeekPlanService : WeekPlanService {
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval,
     ): Either<NonEmptyList<SynchronizationError>, Unit> {
-        TODO("not implemented")
+        throw NotImplementedError("Method currently not needed for tests")
     }
 
     override suspend fun synchronize(
         principal: RfbpaPrincipal,
         yearWeek: YearWeek,
     ): Either<SynchronizationError, Unit> {
-        TODO("not implemented")
+        throw NotImplementedError("Method currently not needed for tests")
     }
 
     override suspend fun createShift(
@@ -42,7 +42,7 @@ class TestWeekPlanService : WeekPlanService {
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ): Either<WeekPlanServiceError, Shift> {
-        TODO("not implemented")
+        throw NotImplementedError("Method currently not needed for tests")
     }
 
     override suspend fun shifts(
@@ -51,6 +51,13 @@ class TestWeekPlanService : WeekPlanService {
     ): Either<WeekPlanServiceError, List<WeekPlan>> {
         return shiftRepository.byYearWeekInterval(principal.subject, yearWeekInterval)
             .mapLeft { throw IllegalStateException("This should not be possible") }
+    }
+
+    override suspend fun reportIllness(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId
+    ): Either<WeekPlanServiceError, Shift> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun changeHelperBooking(

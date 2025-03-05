@@ -3,6 +3,10 @@ package dk.rohdef.rfbpa.web
 import com.auth0.jwk.Jwk
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import dk.rohdef.rfbpa.web.modules.errorHandling
+import dk.rohdef.rfbpa.web.modules.routes
+import dk.rohdef.rfbpa.web.modules.security
+import dk.rohdef.rfbpa.web.modules.serialization
 import io.kotest.core.spec.DslDrivenSpec
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.kotest.core.spec.style.scopes.FunSpecRootScope
@@ -95,6 +99,13 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
         block: suspend RfBpaSpecScope.(client: HttpClient) -> Unit
     ) {
         testApplication {
+            application {
+                errorHandling()
+                security()
+                serialization()
+                routes()
+            }
+
             val client = createClient {
                 install(ContentNegotiation) {
                     json()

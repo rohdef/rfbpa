@@ -1,18 +1,13 @@
 package dk.rohdef.helperplanning.templates
 
-import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperTestData
-import dk.rohdef.helperplanning.helpers.HelperTestData.helperIdNamespace
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
-import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
 
 object TemplateTestData {
     private object Helpers {
@@ -74,20 +69,10 @@ object TemplateTestData {
         val sunday_day = shift5_00to19_00_booked
     }
 
-    val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
     fun HelperReservation.Helper.asHelper() = HelperTestData.helperId(this.id)
 
-    /**
-     * This assumes no overlap in shift start/end pairs
-     */
-    fun generateTestShiftId(start: YearWeekDayAtTime, end: YearWeekDayAtTime): ShiftId {
-        val idText = "$start--$end"
-
-        return ShiftId(
-            UUID.generateUUID(shiftIdNamespace, idText)
-        )
-    }
+    val idGenerator = TestSalarySystemRepository.IdGenerator.Default
 
     class TestRepositoryShifts(yearWeek: YearWeek) {
         fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): Shift {
@@ -105,7 +90,7 @@ object TemplateTestData {
             val start = yearWeekDay.atTime(this.start)
             return Shift(
                 helperBooking,
-                generateTestShiftId(start, end),
+                idGenerator.generate(start, end),
                 start,
                 end,
             )

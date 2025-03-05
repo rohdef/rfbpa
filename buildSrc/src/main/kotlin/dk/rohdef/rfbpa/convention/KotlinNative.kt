@@ -1,14 +1,12 @@
 package dk.rohdef.rfbpa.convention
 
-import org.gradle.api.*
+import org.gradle.api.Project
 import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
-@OptIn(ExperimentalKotlinGradlePluginApi::class)
 fun Project.configureCommon() {
     nativeTarget()
 
-    val kotlinLoggingVersion = "6.0.9"
+    val kotlinLoggingVersion = "7.0.3"
     val arrowKtVersion = "1.2.4"
 
     kotlin {
@@ -20,13 +18,13 @@ fun Project.configureCommon() {
             val commonMain by getting {
                 dependencies {
                     // Base functionality
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
                     implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
                     implementation("com.marcinmoskala:DiscreteMathToolkit:1.0.3")
 
                     // Base types
                     implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
-                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC.2")
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
                     implementation("app.softwork:kotlinx-uuid-core:0.0.26")
                 }
             }
@@ -87,10 +85,10 @@ fun Project.kotest() {
 fun Project.nativeTarget() {
     apply(plugin = "kotlin-multiplatform")
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     kotlin {
         kotlin.applyDefaultHierarchyTemplate()
 
+        jvmToolchain(21)
         jvm {
             withJava()
         }

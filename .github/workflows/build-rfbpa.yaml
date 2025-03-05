@@ -53,12 +53,19 @@ jobs:
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and push container
+      - name: Build docker container
         id: build-container
-        uses: ./.github/actions/build-container
+        uses: rohdef/action-build-scan-push-container@main
         with:
-          input-path: ./web-app/
-          image-destination-name: ${{ github.repository_owner }}/$WEB_APP_IMAGE_NAME
+          dockerfile-path: ./web-app/
+          labels: |
+            org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
+            org.opencontainers.image.vendor=Rohde Fischer
+            org.opencontainers.image.ref.name=rfbpa-web-app-1
+            org.opencontainers.image.title=rfbpa - A BPA manager
+            org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
+          destination-image-names: |
+            - rohdef/rfbpa-web-app
 
   rest-api:
     permissions:
@@ -75,7 +82,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 23
           distribution: "temurin"
           cache: gradle
 
@@ -86,13 +93,19 @@ jobs:
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and push container
+      - name: Build docker container
         id: build-container
-        uses: ./.github/actions/build-container
+        uses: rohdef/action-build-scan-push-container@main
         with:
-          input-path: ./rest-api/
-          image-destination-name: ${{ github.repository_owner }}/$REST_API_IMAGE_NAME
-
+          dockerfile-path: ./rest-api/
+          labels: |
+            org.opencontainers.image.authors=Rohde Fischer (rohdef@rohdef.dk)
+            org.opencontainers.image.vendor=Rohde Fischer
+            org.opencontainers.image.ref.name=rfbpa-rest-api-1
+            org.opencontainers.image.title=rfbpa - A BPA manager
+            org.opencontainers.image.description=A BPA administration tool for usage with AXP used by Handicapformidlingen
+          destination-image-names: |
+            - rohdef/rfbpa-rest-api
 
   deployment:
     needs:

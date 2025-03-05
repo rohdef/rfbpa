@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class, ExperimentalUuidApi::class, ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.persistance.shifts
 
 import arrow.core.Either
@@ -12,21 +14,22 @@ import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.toJavaUuid
+import kotlin.uuid.toKotlinUuid
 
 class DatabaseShifts : ShiftRepository {
     private fun rowToShift(row: ResultRow): Shift {
-        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUUID()
+        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUuid()
             ?.let { HelperId(it) }
         val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
         return Shift(
             booking,
             ShiftId(
-                row[ShiftsTable.id].toKotlinUUID(),
+                row[ShiftsTable.id].toKotlinUuid(),
             ),
             YearWeekDayAtTime.from(
                 row[ShiftsTable.start].toKotlinLocalDateTime(),
@@ -37,14 +40,14 @@ class DatabaseShifts : ShiftRepository {
         )
     }
 
-    private suspend fun byId(
+    override suspend fun byId(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
     ) : Either<ShiftsError, Shift> = dbQuery {
         val shifts = ShiftsTable
             .leftJoin(ShiftBookingsTable)
             .selectAll()
-            .where { ShiftsTable.id eq shiftId.id.toJavaUUID() }
+            .where { ShiftsTable.id eq shiftId.id.toJavaUuid() }
             .map { rowToShift(it) }
 
         when (shifts.size) {
@@ -79,7 +82,7 @@ class DatabaseShifts : ShiftRepository {
         shift: Shift,
     ): Either<ShiftsError, Shift> = dbQuery {
         ShiftsTable.upsert(ShiftsTable.id) {
-            it[id] = shift.shiftId.id.toJavaUUID()
+            it[id] = shift.shiftId.id.toJavaUuid()
             it[startYear] = shift.start.year
             it[startWeek] = shift.start.week
             it[start] = shift.start.localDateTime.toJavaLocalDateTime()
@@ -92,15 +95,14 @@ class DatabaseShifts : ShiftRepository {
 
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
-        shift: ShiftId,
+        shiftId: ShiftId,
         booking: HelperBooking
     ): Either<ShiftsError, Shift> {
         dbQuery {
-            changeBooking(shift, booking)
+            changeBooking(shiftId, booking)
         }
 
-        val x = byId(subject, shift)
-        return x
+        return byId(subject, shiftId)
     }
 
     private fun changeBooking(
@@ -108,11 +110,11 @@ class DatabaseShifts : ShiftRepository {
         booking: HelperBooking
     ) {
         when (booking) {
-            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.id.toJavaUUID() }
+            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.id.toJavaUuid() }
 
             is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
-                it[shiftId] = shift.id.toJavaUUID()
-                it[helperId] = booking.helper.id.toJavaUUID()
+                it[shiftId] = shift.id.toJavaUuid()
+                it[helperId] = booking.helper.id.toJavaUuid()
             }
         }
     }

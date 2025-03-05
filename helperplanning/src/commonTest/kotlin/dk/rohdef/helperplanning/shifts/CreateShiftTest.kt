@@ -2,7 +2,6 @@ package dk.rohdef.helperplanning.shifts
 
 import arrow.core.left
 import dk.rohdef.helperplanning.*
-import dk.rohdef.helperplanning.templates.TemplateTestData.generateTestShiftId
 import dk.rohdef.rfweeks.YearWeek
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
@@ -27,9 +26,10 @@ class CreateShiftTest : FunSpec({
 
     val shift1Start = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(13, 30)
     val shift1End = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(14, 30)
+    val testIds = TestSalarySystemRepository.IdGenerator.Default
     val testShift1 = Shift(
         HelperBooking.NoBooking,
-        generateTestShiftId(shift1Start, shift1End),
+        testIds.generate(shift1Start, shift1End),
         shift1Start,
         shift1End,
     )
@@ -38,7 +38,7 @@ class CreateShiftTest : FunSpec({
     val shift2End = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(19, 15)
     val testShift2 = Shift(
         HelperBooking.NoBooking,
-        generateTestShiftId(shift2Start, shift2End),
+        testIds.generate(shift2Start, shift2End),
         shift2Start,
         shift2End,
     )

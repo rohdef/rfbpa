@@ -7,6 +7,7 @@ data class Shift(
     val shiftId: ShiftId,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
+    val registrations: List<Registration> = emptyList(),
 ) {
     constructor(
         helperId: HelperBooking,

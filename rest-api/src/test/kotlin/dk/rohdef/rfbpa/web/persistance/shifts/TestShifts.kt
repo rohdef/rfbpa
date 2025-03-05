@@ -1,5 +1,6 @@
 package dk.rohdef.rfbpa.web.persistance.shifts
 
+import dk.rohdef.helperplanning.generateUuid
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
@@ -7,8 +8,8 @@ import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal fun interface ShiftBuilderOnDay {
     fun start(hours: Int, minutes: Int): ShiftBuilderAtStart
@@ -18,8 +19,9 @@ internal fun interface ShiftBuilderAtStart {
     fun end(hours: Int, minutes: Int): Shift
 }
 
+@OptIn(ExperimentalUuidApi::class)
 internal object TestShifts {
-    internal val shiftIdNamespace = UUID("ffe95790-1bc3-4283-8988-7c16809ac47d")
+    internal val shiftIdNamespace = Uuid.parse("ffe95790-1bc3-4283-8988-7c16809ac47d")
 
     /**
      * This assumes no overlap in shift start/end pairs
@@ -28,7 +30,7 @@ internal object TestShifts {
         val idText = "$start--$end"
 
         return ShiftId(
-            UUID.generateUUID(shiftIdNamespace, idText)
+            Uuid.generateUuid(shiftIdNamespace, idText)
         )
     }
 
@@ -107,8 +109,4 @@ internal object TestShifts {
         listOf(),
         listOf(shiftW31Sunday1),
     )
-
-    internal object BookedShifts {
-
-    }
 }

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.persistance.axp
 
 import arrow.core.Either
@@ -8,6 +10,7 @@ import dk.rohdef.axpclient.helper.HelperIdMapping
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.helpers.HelperId
+import kotlin.uuid.ExperimentalUuidApi
 
 // TODO: 25/06/2024 rohdef - delete once proper database actions available
 // TODO: 27/10/2024 rohdef - considerations needed for optionality, current way is messy

@@ -1,14 +1,18 @@
 package dk.rohdef.rfbpa.web.modules
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
+import arrow.core.toNonEmptySetOrNone
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwt.interfaces.Payload
-import dk.rohdef.rfbpa.configuration.RfBpaConfig
-import dk.rohdef.helperplanning.RfbpaPrincipal as DomainPrincipal
+import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.helperplanning.RfbpaPrincipal.RfbpaRoles
-import dk.rohdef.rfbpa.web.ApiError
+import dk.rohdef.rfbpa.configuration.RfBpaConfig
+import dk.rohdef.rfbpa.web.errors.ErrorData
+import dk.rohdef.rfbpa.web.errors.ErrorDto
+import dk.rohdef.rfbpa.web.errors.UnknownError
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,6 +21,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import org.koin.ktor.ext.inject
+import dk.rohdef.helperplanning.RfbpaPrincipal as DomainPrincipal
 
 fun Application.security() {
     val log = KotlinLogging.logger {}
@@ -58,15 +63,22 @@ fun Application.security() {
 }
 
 fun ApplicationCall.rfbpaPrincipal(): Either<ApiError, DomainPrincipal> = either {
+    // TODO deprecate
     ensureNotNull(principal<RfbpaPrincipal>()) {
-        ApiError.unauthorized("No way!")
+        ApiError.forbidden(
+            ErrorDto(
+                UnknownError,
+                ErrorData.NoData,
+                "Access denied - you are not logged in",
+            )
+        )
     }.domainPrincipal
 }
 
 @JvmInline
 value class RfbpaPrincipal(
     val domainPrincipal: DomainPrincipal
-) : Principal
+)
 
 fun fromJwtPayload(payload: Payload): Either<Nothing, RfbpaPrincipal> {
     val realmAccess = payload.getClaim("realm_access").asMap()
@@ -75,6 +87,7 @@ fun fromJwtPayload(payload: Payload): Either<Nothing, RfbpaPrincipal> {
         when (s.trim()) {
             "shift admin" -> acc + RfbpaRoles.SHIFT_ADMIN
             "template admin" -> acc + RfbpaRoles.TEMPLATE_ADMIN
+            "helper admin" -> acc + RfbpaRoles.HELPER_ADMIN
             else -> acc
         }
     }.toNonEmptySetOrNone()

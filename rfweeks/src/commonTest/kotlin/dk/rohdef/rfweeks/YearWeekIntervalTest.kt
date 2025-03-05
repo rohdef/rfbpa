@@ -3,8 +3,12 @@ package dk.rohdef.rfweeks
 import arrow.core.nonEmptyListOf
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.json.Json
 
 class YearWeekIntervalTest : FunSpec({
     context("Year week interval parser - ISO8601") {
@@ -121,6 +125,58 @@ class YearWeekIntervalTest : FunSpec({
                 xtest("too many separators found") {}
 
                 xtest("mixed usage of separators (too many separators variation)") {}
+            }
+        }
+    }
+
+    context("serialization") {
+        context("encoding") {
+            test("not implemented") {
+                shouldThrow<UnsupportedOperationException> {
+                    Json.encodeToString(
+                        YearWeekInterval.serializer(),
+                        YearWeek(2024, 4)..YearWeek(2024, 5),
+                    )
+                }
+            }
+        }
+
+        context("decoding") {
+            test("domain exception with parse error") {
+                val pattern = "2000-W032000-W04"
+                val exception = shouldThrow<YearWeekIntervalParseException> {
+                    Json.decodeFromString(
+                        YearWeekInterval.serializer(),
+                        "\"$pattern\"",
+                    )
+                }
+
+                exception.errors shouldContainExactlyInAnyOrder listOf(
+                    YearWeekIntervalParseError.NoSeparatorError(pattern),
+                )
+            }
+
+            test("domain exception with multiple parse errors") {
+                val pattern = "20x0-W03--2000-W4"
+                val exception = shouldThrow<YearWeekIntervalParseException> {
+                    Json.decodeFromString(
+                        YearWeekInterval.serializer(),
+                        "\"$pattern\"",
+                    )
+                }
+
+                exception.errors shouldContainExactlyInAnyOrder listOf(
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        pattern,
+                        YearWeekIntervalParseError.IntervalPart.START,
+                        YearWeekParseError.YearMustBeANumber("20x0", "20x0-W03"),
+                    ),
+                    YearWeekIntervalParseError.YearWeekComponentParseError(
+                        pattern,
+                        YearWeekIntervalParseError.IntervalPart.END,
+                        YearWeekParseError.WeekNumberMustBeTwoDigits("4", "2000-W4"),
+                    ),
+                )
             }
         }
     }

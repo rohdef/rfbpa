@@ -36,6 +36,21 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         _shifts.letValue(subject) { it + (shiftId to shift) }
     }
 
+    override suspend fun reportIllness(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+        replacementShiftId: ShiftId
+    ): Either<SalarySystemRepository.RegisterIllnessError, Unit> = either {
+        val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
+            SalarySystemRepository.RegisterIllnessError.ShiftNotFound(shiftId)
+        }
+        val illness = Registration.Illness(replacementShiftId)
+
+        val illShift = shift.copy(registrations = shift.registrations + illness)
+
+        _shifts.letValue(subject) { it + (shiftId to illShift) }
+    }
+
     override suspend fun unbookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId

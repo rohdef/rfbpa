@@ -4,6 +4,6 @@ sealed interface ShiftsError {
     object NotAuthorized : ShiftsError
 
     data class ShiftNotFound(
-        val shift: ShiftId,
+        val shiftId: ShiftId,
     ) : ShiftsError
 }

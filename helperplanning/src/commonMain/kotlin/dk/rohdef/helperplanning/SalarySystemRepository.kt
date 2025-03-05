@@ -3,10 +3,7 @@ package dk.rohdef.helperplanning
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -17,6 +14,12 @@ interface SalarySystemRepository {
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<BookingError, Unit>
+
+    suspend fun reportIllness(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId,
+        replacementShiftId: ShiftId,
+    ) : Either<RegisterIllnessError, Unit>
 
     suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<BookingError, Unit>
 
@@ -41,5 +44,9 @@ interface SalarySystemRepository {
     sealed interface BookingError {
         data class ShiftNotFound(val shiftId: ShiftId) : BookingError
         data class HelperNotFound(val helperId: HelperId) : BookingError
+    }
+
+    sealed interface RegisterIllnessError {
+        data class ShiftNotFound(val shiftId: ShiftId) : RegisterIllnessError
     }
 }
