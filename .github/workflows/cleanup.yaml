@@ -21,7 +21,7 @@ jobs:
           echo "version-tag=$(echo $VERSION)" >> "$GITHUB_OUTPUT"
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          dry-run: true
+          dry-run: false
           packages: rfbpa-rest-api,rfbpa-web-app
           delete-tags: ${{ steps.version-tag.outputs.version-tag }}
           delete-ghost-images: true
