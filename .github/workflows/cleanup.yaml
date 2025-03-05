@@ -24,4 +24,8 @@ jobs:
           dry-run: true
           packages: rfbpa-rest-api,rfbpa-web-app
           delete-tags: ${{ steps.version-tag.outputs.version-tag }}
+          delete-ghost-images: true
+          delete-partial-images: true
           delete-untagged: true
+          keep-n-tagged: 0
+          keep-n-untagged: 0
