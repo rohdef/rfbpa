@@ -12,6 +12,7 @@ import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
@@ -21,6 +22,8 @@ import kotlin.uuid.toJavaUuid
 import kotlin.uuid.toKotlinUuid
 
 class DatabaseShifts : ShiftRepository {
+    private val log = KotlinLogging.logger { }
+
     private fun rowToShift(row: ResultRow): Shift {
         val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUuid()
             ?.let { HelperId(it) }

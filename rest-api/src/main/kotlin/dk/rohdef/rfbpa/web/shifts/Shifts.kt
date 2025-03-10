@@ -32,16 +32,17 @@ fun Route.shifts() {
         val principal = principal()
             .bind()
             .domainPrincipal
-        val weekPlans = withError({ it.toApiError() }) {
-            weekPlanService.shifts(principal, it.yearWeekInterval!!).bind()
-        }
         val helpers = helperService.all()
             .associate { it.id to it }
             .withDefault { Helper.Unknown("Helper not found in system", it) }
 
+        val weekPlans = withError({ it.toApiError() }) {
+            weekPlanService.shifts(principal, it.yearWeekInterval).bind()
+        }
+
         weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
     }
-    
+
     get<Shifts.ById> { shiftById ->
         log.info { "Getting shift by ID: ${shiftById.id}" }
 

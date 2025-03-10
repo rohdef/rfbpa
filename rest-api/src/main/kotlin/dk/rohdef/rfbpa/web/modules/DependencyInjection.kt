@@ -64,7 +64,6 @@ fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
                 }
             }
         }
-
     }
 //    singleOf(::DatabaseHelpers) bind HelpersRepository::class
     single<AxpHelperReferences> {

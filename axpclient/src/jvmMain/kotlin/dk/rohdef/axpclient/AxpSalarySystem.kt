@@ -178,12 +178,12 @@ class AxpSalarySystem(
                 .bind()
         }
         val monday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val tuesday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val wednesday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val thursday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val friday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val saturday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val sunday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val tuesday = weekPlan.tuesday.allShifts.map { axpToDomainShift(it) }
+        val wednesday = weekPlan.wednesday.allShifts.map { axpToDomainShift(it) }
+        val thursday = weekPlan.thursday.allShifts.map { axpToDomainShift(it) }
+        val friday = weekPlan.friday.allShifts.map { axpToDomainShift(it) }
+        val saturday = weekPlan.saturday.allShifts.map { axpToDomainShift(it) }
+        val sunday = weekPlan.sunday.allShifts.map { axpToDomainShift(it) }
 
         WeekPlan(
             yearWeek,

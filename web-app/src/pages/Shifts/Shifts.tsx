@@ -90,7 +90,7 @@ export default function Shifts() {
 
         const yearWeekInterval = `${startWeek}--${endWeek}`
         if (authentication instanceof TokenAuthentication) {
-            client.get(`shifts/${yearWeekInterval}`, {
+            client.get(`shifts/in-interval/${yearWeekInterval}`, {
                 headers: {
                     Authorization: `Bearer ${authentication.token}`
                 },

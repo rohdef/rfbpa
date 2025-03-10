@@ -19,7 +19,5 @@ interface ShiftRepository {
 
     suspend fun createOrUpdate(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift>
 
-//    suspend fun addRegistration(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, registration: Registration): Either<Unit, Shift>
-
     suspend fun changeBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, booking: HelperBooking): Either<ShiftsError, Shift>
 }
