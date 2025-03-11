@@ -35,21 +35,21 @@ repositories {
     gradlePluginPortal()
 }
 
-val koinVersion = "4.1.0-Beta4"
+val koinVersion = "4.1.0-Beta5"
 val kotlinLoggingVersion = "7.0.3"
-val arrowKtVersion = "1.2.4"
+val arrowKtVersion = "2.0.1"
 val log4jVersion = "3.0.0-beta2"
-val kotestVersion = "5.9.0"
+val kotestVersion = "6.0.0.M2"
 val arrowKtVersionKotest = "1.4.0"
 dependencies {
     // Base functionality
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
 
     // Base types
     implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
-    implementation("app.softwork:kotlinx-uuid-core:0.0.25")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
+    implementation("app.softwork:kotlinx-uuid-core:0.0.26")
 
     implementation("org.slf4j:slf4j-api:2.1.0-alpha1")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
@@ -102,7 +102,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.10")
 
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-    testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-engine:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:$arrowKtVersionKotest")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")

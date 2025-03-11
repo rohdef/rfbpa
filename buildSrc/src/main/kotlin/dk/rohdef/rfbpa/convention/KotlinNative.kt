@@ -7,7 +7,7 @@ fun Project.configureCommon() {
     nativeTarget()
 
     val kotlinLoggingVersion = "7.0.3"
-    val arrowKtVersion = "1.2.4"
+    val arrowKtVersion = "2.0.1"
 
     kotlin {
         compilerOptions {
@@ -24,7 +24,7 @@ fun Project.configureCommon() {
 
                     // Base types
                     implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
-                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
                     implementation("app.softwork:kotlinx-uuid-core:0.0.26")
                 }
             }
@@ -53,8 +53,8 @@ fun Project.configureCommon() {
 fun Project.kotest() {
     apply(plugin = "io.kotest.multiplatform")
 
-    val kotestVersion = "5.9.0"
-    val arrowKtVersionKotest = "1.4.0"
+    val kotestVersion = "6.0.0.M2"
+    val arrowKtVersionKotest = "2.0.0"
 
     kotlin {
         jvm {
@@ -67,7 +67,6 @@ fun Project.kotest() {
             val commonTest by getting {
                 dependencies {
                     implementation("io.kotest:kotest-assertions-core:$kotestVersion")
-                    implementation("io.kotest:kotest-framework-datatest:$kotestVersion")
                     implementation("io.kotest:kotest-framework-engine:$kotestVersion")
                     implementation("io.kotest.extensions:kotest-assertions-arrow:$arrowKtVersionKotest")
                 }
