@@ -1,0 +1,49 @@
+[versions]
+kotlinxCoroutines = "1.10.1"
+kotlinxDateTime = "0.6.2"
+kotlinxSerialization = "1.8.0"
+
+arrowKt = "2.0.1"
+
+log4j = "3.0.0-beta2"
+slf4j = "2.1.0-alpha1"
+kotlinLogging = "7.0.5"
+
+ktor = "3.1.1"
+
+koin = "4.1.0-Beta5"
+
+[libraries]
+# Kotlinx
+kotlinxCoroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinxDateTime = { group = "org.jetbrains.kotlinx", name = "kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
+
+# Logging
+log4jApi = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
+log4jCore = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
+log4jSlf4jImpl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4j" }
+slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlinLogging" }
+
+# Serialization
+kotlinxSerializationCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
+kotlinxSerializationJson = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+# ArrowKt
+arrowKtCore = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowKt" }
+
+# Koin
+koinCore = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koinKtor = { group = "io.insert-koin", name = "koin-ktor3", version.ref = "koin" }
+koinLogger = { group = "io.insert-koin", name = "koin-logger-slf4j", version.ref = "koin" }
+koinTest = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+
+[bundles]
+loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogging"]
+
+kotlinxSerializationJson = [ "kotlinxSerializationCore", "kotlinxSerializationJson" ]
+
+koin = [ "koinCore", "koinKtor", "koinLogger" ]
+
+[plugins]
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }

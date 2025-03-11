@@ -1,15 +1,15 @@
 package dk.rohdef.rfbpa.convention
 
+import com.adarshr.gradle.testlogger.TestLoggerExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.*
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import libs
 
 fun Project.configureCommon() {
     nativeTarget()
 
-    val kotlinLoggingVersion = "7.0.3"
-    val arrowKtVersion = "2.0.1"
-
-    kotlin {
+    configure<KotlinMultiplatformExtension> {
         compilerOptions {
             freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
         }
@@ -18,13 +18,13 @@ fun Project.configureCommon() {
             val commonMain by getting {
                 dependencies {
                     // Base functionality
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-                    implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
+                    implementation(libs.kotlinxCoroutines)
+                    implementation(libs.kotlinLogging)
                     implementation("com.marcinmoskala:DiscreteMathToolkit:1.0.3")
 
                     // Base types
-                    implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
-                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
+                    implementation(libs.arrowKtCore)
+                    implementation(libs.kotlinxDateTime)
                     implementation("app.softwork:kotlinx-uuid-core:0.0.26")
                 }
             }
@@ -37,13 +37,7 @@ fun Project.configureCommon() {
 
             val jvmMain by getting {
                 dependencies {
-                    val log4jVersion = "3.0.0-beta2"
-                    implementation("org.slf4j:slf4j-api:2.1.0-alpha1")
-                    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
-                    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
-                    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-
-                    implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
+                    implementation(libs.bundles.loggingJvm)
                 }
             }
         }
@@ -52,11 +46,12 @@ fun Project.configureCommon() {
 
 fun Project.kotest() {
     apply(plugin = "io.kotest.multiplatform")
+    apply(plugin = "com.adarshr.test-logger")
 
     val kotestVersion = "6.0.0.M2"
     val arrowKtVersionKotest = "2.0.0"
 
-    kotlin {
+    configure<KotlinMultiplatformExtension> {
         jvm {
             testRuns["test"].executionTask.configure {
                 useJUnitPlatform()
@@ -79,13 +74,17 @@ fun Project.kotest() {
             }
         }
     }
+
+    configure<TestLoggerExtension> {
+        theme = com.adarshr.gradle.testlogger.theme.ThemeType.MOCHA
+    }
 }
 
 fun Project.nativeTarget() {
     apply(plugin = "kotlin-multiplatform")
 
-    kotlin {
-        kotlin.applyDefaultHierarchyTemplate()
+    configure<KotlinMultiplatformExtension> {
+        applyDefaultHierarchyTemplate()
 
         jvmToolchain(21)
         jvm {

@@ -99,7 +99,7 @@ class DatabaseShifts : ShiftRepository {
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
-        booking: HelperBooking
+        booking: HelperBooking,
     ): Either<ShiftsError, Shift> {
         dbQuery {
             changeBooking(shiftId, booking)

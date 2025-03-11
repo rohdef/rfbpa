@@ -1,8 +1,11 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+com.adarshr.test-logger:com.adarshr.test-logger.gradle.plugin:4.0.0=compileClasspath,runtimeClasspath
+com.adarshr:gradle-test-logger-plugin:4.0.0=compileClasspath,runtimeClasspath
 com.google.code.gson:gson:2.8.9=runtimeClasspath
 io.kotest:kotest-framework-multiplatform-plugin-gradle:6.0.0.M2=compileClasspath,runtimeClasspath
+org.fusesource.jansi:jansi:2.4.0=runtimeClasspath
 org.jetbrains.kotlin:kotlin-build-statistics:2.1.10=runtimeClasspath
 org.jetbrains.kotlin:kotlin-build-tools-api:2.1.10=compileClasspath,runtimeClasspath
 org.jetbrains.kotlin:kotlin-compiler-runner:2.1.10=runtimeClasspath

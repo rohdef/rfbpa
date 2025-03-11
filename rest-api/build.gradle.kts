@@ -1,8 +1,8 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("io.ktor.plugin") version "3.1.1"
-    id("com.adarshr.test-logger") version "4.0.0"
+    id("com.adarshr.test-logger")
+    alias(libs.plugins.ktor)
 
     application
     idea
@@ -15,10 +15,10 @@ application {
     mainClass.set("dk.rohdef.rfbpa.web.MainKt")
 
     tasks.run.get().workingDir = rootProject.projectDir
-    }
-    tasks.getByName<Zip>("distZip") {
-        archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
-    }
+}
+tasks.getByName<Zip>("distZip") {
+    archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
+}
 tasks.getByName<Tar>("distTar") {
     archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
@@ -35,38 +35,25 @@ repositories {
     gradlePluginPortal()
 }
 
-val koinVersion = "4.1.0-Beta5"
-val kotlinLoggingVersion = "7.0.3"
-val arrowKtVersion = "2.0.1"
-val log4jVersion = "3.0.0-beta2"
 val kotestVersion = "6.0.0.M2"
 val arrowKtVersionKotest = "1.4.0"
 dependencies {
-    // Base functionality
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    implementation("io.github.oshai:kotlin-logging:$kotlinLoggingVersion")
-
-    // Base types
-    implementation("io.arrow-kt:arrow-core:$arrowKtVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
-    implementation("app.softwork:kotlinx-uuid-core:0.0.26")
-
-    implementation("org.slf4j:slf4j-api:2.1.0-alpha1")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
-    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
-    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-
     implementation(project(":axpclient"))
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    // Base functionality
+    implementation(libs.kotlinxCoroutines)
+
+    // Base types
+    implementation(libs.arrowKtCore)
+    implementation(libs.kotlinxDateTime)
+    implementation("app.softwork:kotlinx-uuid-core:0.0.26")
 
 
-    implementation("io.insert-koin:koin-core:$koinVersion")
-    implementation("io.insert-koin:koin-ktor3:$koinVersion")
-    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+    implementation(libs.bundles.loggingJvm)
+    implementation(libs.bundles.kotlinxSerializationJson)
+    implementation(libs.bundles.koin)
 
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
     implementation("io.ktor:ktor-client-apache")
@@ -107,7 +94,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 
     testImplementation("io.ktor:ktor-server-test-host")
-    testImplementation("io.insert-koin:koin-test:$koinVersion")
+    testImplementation(libs.koinTest)
 }
 
 kotlin {

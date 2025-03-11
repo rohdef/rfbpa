@@ -22,6 +22,7 @@ dependencies {
     implementation(kotlin("gradle-plugin", kotlinVersion))
     implementation("org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion")
     implementation("io.kotest:kotest-framework-multiplatform-plugin-gradle:6.0.0.M2")
+    implementation("com.adarshr.test-logger:com.adarshr.test-logger.gradle.plugin:4.0.0")
 }
 
 dependencyLocking {
