@@ -122,7 +122,7 @@ class AxpSalarySystem(
     }
 
     internal suspend fun AxpShift.shift(): Either<Unit, Shift> = either {
-        val bookingToHelperId: (HelperNumber) -> Either<Unit, HelperId> = { number: HelperNumber ->
+        val bookingToHelperId: suspend (HelperNumber) -> Either<Unit, HelperId> = { number: HelperNumber ->
             val helperId = helperReferences.helperByNumber(number)
                 .map { it.helperId }
 

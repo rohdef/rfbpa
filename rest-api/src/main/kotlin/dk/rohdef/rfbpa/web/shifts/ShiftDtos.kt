@@ -7,7 +7,6 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlan
-import dk.rohdef.helperplanning.toKotlinUuid
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.serialization.SerialName
@@ -54,7 +53,7 @@ sealed interface HelperBookingOut {
     ) : HelperBookingOut {
         companion object {
             fun from(helper: Helper) = Booking(
-                helper.id.id,
+                helper.id.value,
                 helper.name,
             )
         }

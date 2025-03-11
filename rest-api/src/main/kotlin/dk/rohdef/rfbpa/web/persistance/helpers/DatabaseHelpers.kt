@@ -9,8 +9,6 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersError
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.upsert
@@ -39,7 +37,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper> = dbQuery {
         HelpersTable
             .selectAll()
-            .where { HelpersTable.id eq helperId.id.toJavaUuid() }
+            .where { HelpersTable.id eq helperId.value.toJavaUuid() }
             .map { rowToHelper(it) }
             .firstOrNone()
             .toEither { HelpersError.CannotFindHelperById(helperId) }
@@ -59,7 +57,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> = dbQuery {
         catchOrThrow<Exception, Helper> {
             HelpersTable.upsert {
-                it[id] = helper.id.id.toJavaUuid()
+                it[id] = helper.id.value.toJavaUuid()
 
                 when (helper) {
                     is Helper.Permanent -> {

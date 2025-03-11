@@ -1,6 +1,7 @@
 package dk.rohdef.rfbpa.web
 
 import dk.rohdef.rfbpa.web.calendar.CalendarTable
+import dk.rohdef.rfbpa.web.persistance.axp.AxpHelperReferenceTable
 import dk.rohdef.rfbpa.web.persistance.axp.ShiftReferenceTable
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
@@ -41,6 +42,7 @@ object DatabaseConnection {
             SchemaUtils.create(ShiftsTable)
             SchemaUtils.create(ShiftBookingsTable)
             SchemaUtils.create(ShiftReferenceTable)
+            SchemaUtils.create(AxpHelperReferenceTable)
             log.debug { "Tables created" }
         }
 

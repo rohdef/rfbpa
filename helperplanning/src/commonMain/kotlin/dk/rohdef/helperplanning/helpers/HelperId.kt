@@ -6,7 +6,7 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 @JvmInline
 value class HelperId(
-    val id: Uuid,
+    val value: Uuid,
 ) {
     companion object {
         fun generateId(): HelperId {

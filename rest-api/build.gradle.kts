@@ -89,8 +89,8 @@ dependencies {
 
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
-    val exposed_version = "0.52.0"
-    val h2_version = "2.2.224"
+    val exposed_version = "0.60.0"
+    val h2_version = "2.3.232"
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
@@ -99,7 +99,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:10.15.0")
 
     // Test
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.10")
 
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-framework-datatest:$kotestVersion")

@@ -117,7 +117,7 @@ class DatabaseShifts : ShiftRepository {
 
             is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
                 it[shiftId] = shift.id.toJavaUuid()
-                it[helperId] = booking.helper.id.toJavaUuid()
+                it[helperId] = booking.helper.value.toJavaUuid()
             }
         }
     }

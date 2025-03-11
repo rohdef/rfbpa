@@ -17,7 +17,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 private val log = KotlinLogging.logger { }
@@ -84,7 +83,7 @@ internal class AxpClient(
                 shiftPlan(ShiftPlanAct.SAVE_BOOKING)
 
                 append("booking", booking.axpId)
-                append("book_temp", helper.id)
+                append("book_temp", helper.value)
             }
         )
         val body: String = response.body()
@@ -163,7 +162,7 @@ internal class AxpClient(
     }
 
     private fun ParametersBuilder.forHelper(helper: HelperTID) {
-        append("axp_tid", helper.id)
+        append("axp_tid", helper.value)
     }
 
     private suspend fun checkCustomerContract(
