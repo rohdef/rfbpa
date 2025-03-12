@@ -13,10 +13,12 @@ ktor = "3.1.1"
 
 koin = "4.1.0-Beta5"
 
+kotest = "6.0.0.M2"
+
 [libraries]
 # Kotlinx
 kotlinxCoroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-kotlinxDateTime = { group = "org.jetbrains.kotlinx", name = "kotlinx:kotlinx-datetime", version.ref = "kotlinxDateTime" }
+kotlinxDateTime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDateTime" }
 
 # Logging
 log4jApi = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
@@ -37,6 +39,10 @@ koinCore = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" 
 koinKtor = { group = "io.insert-koin", name = "koin-ktor3", version.ref = "koin" }
 koinLogger = { group = "io.insert-koin", name = "koin-logger-slf4j", version.ref = "koin" }
 koinTest = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+
+kotestAssertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest"}
+kotestFrameworkEngine = { group = "io.kotest", name = "kotest-framework-engine", version.ref = "kotest"}
+kotestJunit5Runner   = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest"}
 
 [bundles]
 loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogging"]
