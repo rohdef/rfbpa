@@ -6,6 +6,7 @@ com.adarshr:gradle-test-logger-plugin:4.0.0=compileClasspath,runtimeClasspath
 com.google.code.gson:gson:2.8.9=runtimeClasspath
 io.kotest:kotest-framework-multiplatform-plugin-gradle:6.0.0.M2=compileClasspath,runtimeClasspath
 org.fusesource.jansi:jansi:2.4.0=runtimeClasspath
+org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin:2.1.10=compileClasspath,runtimeClasspath
 org.jetbrains.kotlin:kotlin-build-statistics:2.1.10=runtimeClasspath
 org.jetbrains.kotlin:kotlin-build-tools-api:2.1.10=compileClasspath,runtimeClasspath
 org.jetbrains.kotlin:kotlin-compiler-runner:2.1.10=runtimeClasspath

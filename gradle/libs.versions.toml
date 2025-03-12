@@ -1,7 +1,10 @@
 [versions]
+kotlinVersion = "2.1.10"
+
 kotlinxCoroutines = "1.10.1"
 kotlinxDateTime = "0.6.2"
 kotlinxSerialization = "1.8.0"
+yamlkt = "0.13.0"
 
 arrowKt = "2.0.1"
 
@@ -10,12 +13,18 @@ slf4j = "2.1.0-alpha1"
 kotlinLogging = "7.0.5"
 
 ktor = "3.1.1"
+exposed = "0.60.0"
+h2 = "2.3.232"
 
 koin = "4.1.0-Beta5"
 
 kotest = "6.0.0.M2"
+kotestAssertionsArrow = "2.0.0"
+testLogger = "4.0.0"
 
 [libraries]
+gradleKotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version = "kotlinVersion" }
+
 # Kotlinx
 kotlinxCoroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinxDateTime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDateTime" }
@@ -28,8 +37,10 @@ slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlinLogging" }
 
 # Serialization
+gradleKotlinxSerialization = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlinVersion" }
 kotlinxSerializationCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinxSerializationJson = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinxSerializationYaml = { group = "net.mamoe.yamlkt", name = "yamlkt", version.ref = "yamlkt" }
 
 # ArrowKt
 arrowKtCore = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowKt" }
@@ -40,9 +51,20 @@ koinKtor = { group = "io.insert-koin", name = "koin-ktor3", version.ref = "koin"
 koinLogger = { group = "io.insert-koin", name = "koin-logger-slf4j", version.ref = "koin" }
 koinTest = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 
+# Persistence
+exposedCore = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposedDao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposedJdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+exposedJavaTime = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
+h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
+
+# Test
 kotestAssertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest"}
+kotestAssertionsArrow = { group = "io.kotest.extensions", name = "kotest-assertions-arrow", version.ref = "kotestAssertionsArrow"}
 kotestFrameworkEngine = { group = "io.kotest", name = "kotest-framework-engine", version.ref = "kotest"}
 kotestJunit5Runner   = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest"}
+gradleKotest = { group = "io.kotest", name = "kotest-framework-multiplatform-plugin-gradle", version.ref = "kotest" }
+gradleTestLogging = { group = "com.adarshr.test-logger", name = "com.adarshr.test-logger.gradle.plugin", version.ref = "testLogger" }
 
 [bundles]
 loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogging"]
@@ -50,6 +72,11 @@ loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogg
 kotlinxSerializationJson = [ "kotlinxSerializationCore", "kotlinxSerializationJson" ]
 
 koin = [ "koinCore", "koinKtor", "koinLogger" ]
+
+kotest = [ "kotestAssertions", "kotestAssertionsArrow", "kotestFrameworkEngine" ]
+kotestJunit = [ "kotestJunit5Runner" ]
+
+persistence = [ "exposedCore", "exposedDao", "exposedJdbc", "exposedJavaTime", "h2" ]
 
 [plugins]
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }

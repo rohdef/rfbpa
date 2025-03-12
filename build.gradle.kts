@@ -14,6 +14,10 @@ allprojects {
         lockMode.set(LockMode.STRICT)
         lockAllConfigurations()
     }
+
+    task("allDependencies") {
+        dependsOn("dependencies")
+    }
 }
 
 subprojects {
