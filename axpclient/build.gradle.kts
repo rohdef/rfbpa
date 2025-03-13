@@ -11,16 +11,14 @@ description = "Integration with Handicapformidlingen"
 configureCommon()
 kotlin {
     sourceSets {
-        val ktorVersion = "3.1.1"
-
         val commonMain by getting {
             dependencies {
                 implementation(project(":helperplanning"))
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+                implementation(libs.bundles.kotlinxSerializationJson)
 
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation(libs.ktorClientCore)
             }
         }
         val commonTest by getting {
@@ -32,11 +30,10 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":rfsimplejs"))
-                implementation("org.jsoup:jsoup:1.17.2")
+                implementation(libs.jsoup)
 
-                implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-                implementation("io.ktor:ktor-client-okhttp-jvm:$ktorVersion")
-                implementation("io.ktor:ktor-client-logging:$ktorVersion")
+                implementation(libs.ktorClientOkHttp)
+                implementation(libs.ktorClientLogging)
             }
         }
         val jvmTest by getting

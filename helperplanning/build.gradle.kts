@@ -16,7 +16,7 @@ kotlin {
             dependencies {
                 implementation(project(":rfweeks"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+                implementation(libs.bundles.kotlinxSerializationJson)
             }
         }
         val commonTest by getting

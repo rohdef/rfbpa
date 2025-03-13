@@ -71,6 +71,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
       security-events: write
     runs-on: ubuntu-latest
     outputs:
@@ -82,13 +83,19 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: 23
-          distribution: "temurin"
-          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+          add-job-summary: on-failure
+          add-job-summary-as-pr-comment: on-failure
 
       - name: Build rest-api
         run: |
-          ./gradlew build
+          ./gradlew build --scan
 
       - name: Log in to docker registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

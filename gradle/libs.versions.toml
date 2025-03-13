@@ -18,6 +18,8 @@ h2 = "2.3.232"
 
 koin = "4.1.0-Beta5"
 
+jsoup = "1.17.2"
+
 kotest = "6.0.0.M2"
 kotestAssertionsArrow = "2.0.0"
 testLogger = "4.0.0"
@@ -51,12 +53,20 @@ koinKtor = { group = "io.insert-koin", name = "koin-ktor3", version.ref = "koin"
 koinLogger = { group = "io.insert-koin", name = "koin-logger-slf4j", version.ref = "koin" }
 koinTest = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 
+
+jsoup = { group = "org..jsoup", name = "jsoup", version.ref = "jsoup" }
+
 # Persistence
 exposedCore = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 exposedDao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 exposedJdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
 exposedJavaTime = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
 h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
+
+# KTor client
+ktorClientCore = { group = "it.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktorClientOkHttp = { group = "it.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktorClientLogging = { group = "it.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 
 # Test
 kotestAssertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest"}
@@ -65,6 +75,7 @@ kotestFrameworkEngine = { group = "io.kotest", name = "kotest-framework-engine",
 kotestJunit5Runner   = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest"}
 gradleKotest = { group = "io.kotest", name = "kotest-framework-multiplatform-plugin-gradle", version.ref = "kotest" }
 gradleTestLogging = { group = "com.adarshr.test-logger", name = "com.adarshr.test-logger.gradle.plugin", version.ref = "testLogger" }
+
 
 [bundles]
 loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogging"]
