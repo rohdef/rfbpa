@@ -2,7 +2,7 @@ package dk.rohdef.axpclient.parsing
 
 import arrow.core.*
 import dk.rohdef.axpclient.AxpBookingId
-import dk.rohdef.axpclient.helper.AxpMetadataRepository
+import dk.rohdef.axpclient.helper.AxpHelperBooking
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.rfsimplejs.JavaScriptParser
@@ -37,13 +37,13 @@ internal class ShiftParser {
 
         val helperBooking = tooltipShiftData.getValue(AxpField.HELPER_ID).map {
             when (it) {
-                "60621" -> AxpMetadataRepository.VacancyBooking
-                else -> AxpMetadataRepository.PermanentHelper(
+                "60621" -> AxpHelperBooking.VacancyBooking
+                else -> AxpHelperBooking.PermanentHelper(
                     HelperNumber(it),
                 )
             }
         }
-            .getOrElse { AxpMetadataRepository.NoBooking }
+            .getOrElse { AxpHelperBooking.NoBooking }
         val axpBookingId = windowOpenUrl
             .parameters
             .get("booking")

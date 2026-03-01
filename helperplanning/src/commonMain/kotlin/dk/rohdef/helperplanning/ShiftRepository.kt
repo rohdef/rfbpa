@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -19,5 +20,9 @@ interface ShiftRepository {
 
     suspend fun createOrUpdate(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift>
 
-    suspend fun changeBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, booking: HelperBooking): Either<ShiftsError, Shift>
+    suspend fun changeBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, booking: HelperBooking.Booked): Either<ShiftsError, Shift>
+
+    suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId) : Either<ShiftsError, Unit>
+
+    suspend fun findBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId) : Either<ShiftsError, HelperId>
 }

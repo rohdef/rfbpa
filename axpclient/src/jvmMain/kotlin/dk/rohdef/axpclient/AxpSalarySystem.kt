@@ -3,20 +3,24 @@ package dk.rohdef.axpclient
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.raise.either
+import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
-import dk.rohdef.axpclient.helper.AxpMetadataRepository
-import dk.rohdef.axpclient.helper.HelperNumber
+import dk.rohdef.axpclient.helper.AxpHelperBooking
 import dk.rohdef.axpclient.parsing.WeekPlanParser
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
+import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.statement.*
 import kotlinx.datetime.toInstant
@@ -28,15 +32,9 @@ class AxpSalarySystem(
     private val helperReferences: AxpHelperReferences,
 ) : SalarySystemRepository, Closeable {
     private val log = KotlinLogging.logger { }
-    private val client = HttpClient(OkHttp) {
+    private val client = HttpClient(CIO) {
         install(HttpCookies)
 //        install(Logging)
-
-        engine {
-            config {
-                followRedirects(false)
-            }
-        }
     }
     private val axpClient = AxpClient(
         client,
@@ -56,7 +54,7 @@ class AxpSalarySystem(
         subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<ShiftsError, Shift> = either {
+    ): Either<ShiftsError, SalaryShift> = either {
         ensureLoggedIn()
 
         val startInstant = start.localDateTime.toInstant(configuration.timeZone)
@@ -66,8 +64,8 @@ class AxpSalarySystem(
             .mapLeft { TODO("Domain error should be added here") }
             .bind()
 
-        val shift = Shift(
-            HelperBooking.NoBooking,
+        val shift = SalaryShift(
+            SalaryBooking.NoBooking,
             start,
             end,
         )
@@ -86,8 +84,8 @@ class AxpSalarySystem(
 
         val helperTid = helperReferences.helperById(helperId)
             .mapLeft {
-                log.error { "Could not find helper" }
-                TODO()
+                log.error { "Could not find helper ${helperId}" }
+                SalarySystemRepository.BookingError.HelperNotFound(helperId)
             }
             .bind()
             .axpTid ?: TODO("Helper does not have a TID, deal with it")
@@ -121,41 +119,22 @@ class AxpSalarySystem(
             .bind()
     }
 
-    internal suspend fun AxpShift.shift(): Either<Unit, Shift> = either {
-        val bookingToHelperId: suspend (HelperNumber) -> Either<Unit, HelperId> = { number: HelperNumber ->
-            val helperId = helperReferences.helperByNumber(number)
-                .map { it.helperId }
-
-            when (helperId) {
-                is Either.Left -> helperReferences.createHelperReference(number)
-                is Either.Right -> helperId
-            }
-        }
-        val vacancyToHelperId: (Any) -> Either<Unit, HelperId> = { TODO() }
-
-        // TODO: 27/10/2024 rohdef - this probably needs a bit of love
-        val helperBooking = when (axpHelperBooking) {
-            AxpMetadataRepository.NoBooking -> HelperBooking.NoBooking
-            is AxpMetadataRepository.PermanentHelper -> {
-                val helperId = bookingToHelperId(axpHelperBooking.helperNumber)
-                    .bind()
-                HelperBooking.Booked(helperId)
-            }
-            AxpMetadataRepository.VacancyBooking -> {
-                val helperId = vacancyToHelperId(TODO())
-                    .bind()
-                HelperBooking.Booked(helperId)
-            }
-        }
+    internal suspend fun AxpShift.shift(): Either<ShiftMappingError, SalaryShift> = either {
         val shiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
             .getOrElse {
                 ShiftId.generateId().apply {
                     // TODO: 27/10/2024 rohdef - what to do if this fails
                     axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
+                        .mapLeft { ShiftMappingError.UnknownError }
+                        .bind()
                 }
             }
 
-        Shift(
+        val helperBooking = axpHelperBooking.toHelperBooking()
+            .mapLeft { ShiftMappingError.UnknownError }
+            .bind()
+
+        SalaryShift(
             helperBooking,
             shiftId,
             YearWeekDayAtTime.from(start),
@@ -163,16 +142,41 @@ class AxpSalarySystem(
         )
     }
 
+    private suspend fun AxpHelperBooking.toHelperBooking(): Either<Unit, SalaryBooking> {
+        return when (this) {
+            AxpHelperBooking.NoBooking -> SalaryBooking.NoBooking.right()
+            is AxpHelperBooking.PermanentHelper -> toHelperBooking()
+            is AxpHelperBooking.VacancyBooking -> SalaryBooking.NoBooking.right()
+        }
+    }
+
+    private suspend fun AxpHelperBooking.PermanentHelper.toHelperBooking(): Either<Unit, SalaryBooking> {
+        val helperReference = helperReferences.helperByNumber(helperNumber)
+            .map { SalaryBooking.Helper(it.helperId) }
+
+        return when (helperReference) {
+            is Either.Left ->
+                helperReferences.createHelperReference(helperNumber,HelperId.generateId())
+                    .map { SalaryBooking.UnknownHelper(it) }
+            is Either.Right -> helperReference
+        }
+    }
+
+    sealed interface ShiftMappingError {
+        // TODO placeholder until further error handling in possible #59
+        object UnknownError : ShiftMappingError
+    }
+
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
-    ): Either<ShiftsError, WeekPlan> = either {
+    ): Either<ShiftsError, SalaryWeekPlan> = either {
         ensureLoggedIn()
 
         val axpShiftPlan = axpClient.shifts(yearWeek)
         val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
 
-        val axpToDomainShift: suspend (AxpShift) -> Shift = {
+        val axpToDomainShift: suspend (AxpShift) -> SalaryShift = {
             it.shift()
                 .mapLeft { TODO() }
                 .bind()
@@ -185,7 +189,7 @@ class AxpSalarySystem(
         val saturday = weekPlan.saturday.allShifts.map { axpToDomainShift(it) }
         val sunday = weekPlan.sunday.allShifts.map { axpToDomainShift(it) }
 
-        WeekPlan(
+        SalaryWeekPlan(
             yearWeek,
             monday, tuesday, wednesday,
             thursday, friday,

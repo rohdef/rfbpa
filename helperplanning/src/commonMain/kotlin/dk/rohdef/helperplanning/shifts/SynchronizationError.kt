@@ -9,7 +9,7 @@ sealed interface SynchronizationError {
     ) : SynchronizationError
 
     data class InsufficientPermissions(
+        val principal: RfbpaPrincipal,
         val expectedRole: RfbpaPrincipal.RfbpaRoles,
-        val actualRoles: Set<RfbpaPrincipal.RfbpaRoles>,
     ) : SynchronizationError
 }

@@ -4,6 +4,8 @@ import arrow.core.Either
 import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
+import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -27,6 +29,11 @@ class TestShiftRespository(
         _shiftsErrorRunners.add(errorRunner)
     }
 
+    private val _upcommingShiftBooking = mutableMapOf<ShiftId, HelperId>()
+    fun addUpcommingShiftBooking(shiftId: ShiftId, helperId: HelperId) {
+        _upcommingShiftBooking[shiftId] = helperId
+    }
+
     fun reset() {
         _createShiftErrorRunners.clear()
         _shiftsErrorRunners.clear()
@@ -40,7 +47,10 @@ class TestShiftRespository(
 
     override suspend fun createOrUpdate(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
-        memoryShiftRepository.createOrUpdate(subject, shift).bind()
+        val shiftToSave = _upcommingShiftBooking[shift.shiftId]
+            ?.let { shift.copy(helperBooking = HelperBooking.Booked(it)) }
+            ?: shift
+        memoryShiftRepository.createOrUpdate(subject, shiftToSave).bind()
     }
 
     // Work around wrong decendent bug in delegates

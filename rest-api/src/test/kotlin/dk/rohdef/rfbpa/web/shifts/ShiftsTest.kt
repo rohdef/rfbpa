@@ -41,10 +41,10 @@ class ShiftsTest : RfbpaSpec({
     val urlInInterval = "$url/in-interval"
     val urlWeek29To31 = "${urlInInterval}/${week29To31}"
 
-    val weekPlanService = TestWeekPlanService()
+    lateinit var weekPlanService: TestWeekPlanService
     val helperService = HelperServiceImplementation(MemoryHelpersRepository())
     beforeEach {
-        weekPlanService.reset()
+        weekPlanService = TestWeekPlanService()
 
         startKoin {
             modules(
@@ -55,7 +55,8 @@ class ShiftsTest : RfbpaSpec({
 
                     // TODO: 29/10/2024 rohdef - introduce test helper service
                     // TODO: 29/10/2024 rohdef - consider moving towards end to end
-                    singleOf(::MemoryHelpersRepository) bind HelpersRepository::class
+//                    singleOf(::MemoryHelpersRepository) bind HelpersRepository::class
+                    single<HelpersRepository> { weekPlanService.helpersRepository }
                     singleOf(::HelperServiceImplementation) bind HelperService::class
 
                     single<HelperService> { helperService }
@@ -106,9 +107,9 @@ class ShiftsTest : RfbpaSpec({
 
             // TODO add items to system - maybe lift to all tests
             // query multiple weeks
-            weekPlanWeek29.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
-            weekPlanWeek30.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
-            weekPlanWeek31.allShifts.forEach { weekPlanService.addShift(fiktivusSubject, it) }
+            weekPlanWeek29.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
+            weekPlanWeek30.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
+            weekPlanWeek31.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
 
             val response = client.get(urlWeek29To31)
 

@@ -4,10 +4,10 @@ import arrow.core.Either
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,7 +37,7 @@ class LoggingSalarySystemRepository(
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
-    ): Either<ShiftsError, WeekPlan> {
+    ): Either<ShiftsError, SalaryWeekPlan> {
         log.debug { "Reading shifts for $yearWeek" }
         return salarySystemRepository.shifts(subject, yearWeek)
     }
@@ -46,7 +46,7 @@ class LoggingSalarySystemRepository(
         subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<ShiftsError, Shift> {
+    ): Either<ShiftsError, SalaryShift> {
         log.debug { "Creating shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time}" }
         val shift = salarySystemRepository.createShift(subject, start, end)
 

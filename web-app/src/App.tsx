@@ -1,14 +1,14 @@
 import './App.css'
-import {CssBaseline, ThemeProvider} from "@mui/material";
-import {NavigationBar} from "./components/NavigationBar/NavigationBar.tsx";
-import {AuthenticationProvider} from "./contexts/AuthenticationContext/AuthenticationContext.tsx";
-import theme from "./styles/theme.tsx";
-import {createBrowserRouter, RouteObject, RouterProvider} from "react-router-dom";
-import Welcome from "./pages/Welcome/Welcome.tsx";
-import Calendar from "./pages/Calendar/Calendar.tsx";
-import Shifts from "./pages/Shifts/Shifts.tsx";
-import Templates from "./pages/Templates/Templates.tsx";
-import Logout from "./pages/Logout.tsx";
+import {CssBaseline, ThemeProvider} from "@mui/material"
+import {NavigationBar} from "./components/NavigationBar/NavigationBar.tsx"
+import {AuthenticationProvider} from "./contexts/AuthenticationContext/AuthenticationContext.tsx"
+import theme from "./styles/theme.tsx"
+import {createBrowserRouter, RouteObject, RouterProvider} from "react-router-dom"
+import Welcome from "./pages/Welcome/Welcome.tsx"
+import Calendar from "./pages/Calendar/Calendar.tsx"
+import Shifts from "./pages/Shifts/Shifts.tsx"
+import Templates from "./pages/Templates/Templates.tsx"
+import Logout from "./pages/Logout.tsx"
 
 interface RfbpaRoutes {
     calendar: RouteObject,
@@ -42,6 +42,7 @@ export const rfbpaRoutes: RfbpaRoutes = {
 }
 
 function App() {
+
     const routes = createBrowserRouter(Object.values(rfbpaRoutes))
 
     return (

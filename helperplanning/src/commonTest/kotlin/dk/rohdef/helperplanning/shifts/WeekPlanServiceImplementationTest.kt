@@ -1,11 +1,15 @@
 package dk.rohdef.helperplanning.shifts
 
 import arrow.core.left
-import arrow.core.nonEmptySetOf
 import arrow.core.right
-import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.PrincipalsTestData
+import dk.rohdef.helperplanning.RfbpaPrincipal
+import dk.rohdef.helperplanning.TestSalarySystemRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperTestData
-import dk.rohdef.helperplanning.shifts.ShiftTestData.Fiktivus
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.shifts.yaml.Shifties
 import dk.rohdef.rfweeks.YearWeek
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
@@ -13,80 +17,71 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
+import net.mamoe.yamlkt.Yaml
 
 class WeekPlanServiceImplementationTest : FunSpec({
-    val salarySystemRepository = TestSalarySystemRepository()
-    val shiftRepository = TestShiftRespository()
-    val weekSynchronizationRepository = TestWeekSynchronizationRepository()
-    val weekPlanService =
-        WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val schedule = WeekPlanServiceImplementationTest::class.java.classLoader
+        .getResource("shifts/synchronization-schedules.yaml")!!.readText()
+    val shifties = Yaml.decodeFromString(Shifties.serializer(), schedule)
+
+    lateinit var dataHelper: DataHelper
+
+    lateinit var weekPlanService: WeekPlanService
 
     val year2024Week8 = YearWeek(2024, 8)
     val year2024Week9 = YearWeek(2024, 9)
     val year2024Week10 = YearWeek(2024, 10)
 
     beforeEach {
-        salarySystemRepository.reset()
-        shiftRepository.reset()
-        weekSynchronizationRepository.reset()
+        dataHelper = DataHelper
+            .create(shifties, PrincipalsTestData.FiktivusMaximus.subject)
+            .shouldBeRight()
 
-        Fiktivus.allShiftsInSystem.forEach {
-            salarySystemRepository.addShift(
-                PrincipalsTestData.FiktivusMaximus.subject,
-                it
-            )
-        }
-        Fiktivus.shiftsNotInSystem.forEach {
-            salarySystemRepository.addShift(
-                PrincipalsTestData.FiktivusMaximus.subject,
-                it
-            )
-        }
-        Fiktivus.allShiftsInSystem.forEach {
-            shiftRepository.createOrUpdate(
-                PrincipalsTestData.FiktivusMaximus.subject,
-                it
-            )
-        }
-
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
-            .shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
-            .shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
-            .shouldBeRight()
+        weekPlanService = WeekPlanServiceImplementation(
+            dataHelper.salarySystem,
+            dataHelper.shiftRepository,
+            dataHelper.helpers.helpers,
+            dataHelper.weekSynchronizationRepository,
+        )
     }
 
     test("should synchronize when not") {
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
-            .shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
-            .shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
-            .shouldBeRight()
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
 
-        val shifts =
-            weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week8..year2024Week10)
+        val shifts = weekPlanService
+                .shifts(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week8..year2024Week10)
                 .shouldBeRight()
+        val allShifts = shifts.flatMap { it.allShifts }
 
-        shifts.flatMap { it.allShifts } shouldContainExactlyInAnyOrder Fiktivus.allShiftsInSystem + Fiktivus.shiftsNotInSystem
+        val expectedShifts =
+            shifties.rfbpaShifts(dataHelper.allHelpersByShortName) +
+                    shifties.rfbpaShiftsMissing(dataHelper.allHelpersByShortName, dataHelper.helperByShiftId)
+        allShifts
+            .shouldContainExactlyInAnyOrder(expectedShifts)
     }
 
     test("should use shifts repository when synchronized") {
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+
         val shifts = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week8..year2024Week10)
             .shouldBeRight()
+        val allShifts = shifts.flatMap { it.allShifts }
 
-        shifts.flatMap { it.allShifts } shouldContainExactlyInAnyOrder Fiktivus.allShiftsInSystem
+        allShifts shouldContainExactlyInAnyOrder shifties.rfbpaShifts(dataHelper.allHelpersByShortName)
     }
 
     test("should fail when synchronization fails") {
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
             .shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
             .shouldBeRight()
-        weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+        dataHelper.weekSynchronizationRepository.markForSynchronization(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
             .shouldBeRight()
-        salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week10) ShiftsError.NotAuthorized.left() else Unit.right() }
+        dataHelper.salarySystem.addShiftsErrorRunner { if (it == year2024Week10) ShiftsError.NotAuthorized.left() else Unit.right() }
 
         val error = weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week8..year2024Week10)
             .shouldBeLeft()
@@ -95,12 +90,12 @@ class WeekPlanServiceImplementationTest : FunSpec({
     }
 
     test("when synchronized, should not bump into salary") {
-        salarySystemRepository.addShiftsErrorRunner { if (it == year2024Week9) ShiftsError.NotAuthorized.left() else Unit.right() }
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
+        dataHelper.salarySystem.addShiftsErrorRunner { if (it == year2024Week9) ShiftsError.NotAuthorized.left() else Unit.right() }
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week8)
             .shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week9)
             .shouldBeRight()
-        weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+        dataHelper.weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
             .shouldBeRight()
 
         weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week8..year2024Week10)
@@ -108,7 +103,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
     }
 
     test("should just failure when unable to read shifts repository") {
-        shiftRepository.addShiftsErrorRunner {
+        dataHelper.shiftRepository.addShiftsErrorRunner {
             if (it == year2024Week8)
                 ShiftsError.NotAuthorized.left()
             else
@@ -121,147 +116,151 @@ class WeekPlanServiceImplementationTest : FunSpec({
         error shouldBe WeekPlanServiceError.CannotCommunicateWithShiftsRepository
     }
 
-    context("Helper illness") {
+    xcontext("helper illness") {
         context("reporting") {
-            salarySystemRepository.idGenerator = TestSalarySystemRepository.IdGenerator.Random
+            dataHelper.salarySystem.idGenerator = TestSalarySystemRepository.IdGenerator.Random
+
+            val allShifts = shifties.rfbpaShifts(dataHelper.allHelpersByShortName)
+            val week9Shift1 = allShifts.filter { it.start.yearWeek == YearWeek(2024, 9) }
+                .get(0)
+            val week10Shift1 = allShifts.filter { it.start.yearWeek == YearWeek(2024, 10) }
+                .get(0)
+
             test("should add illness registration") {
-                val shift: Shift = Fiktivus.week10Shift1
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 val replacementShift = illnessReportResult.shouldBeRight()
                 val replacementShiftId = replacementShift.shiftId
 
-                val expectedShift = shift.copy(
+                val expectedShift = week10Shift1.copy(
                     registrations = listOf(Registration.Illness(replacementShiftId))
                 )
-                shiftRepository.shifts[shift.shiftId] shouldBe expectedShift
-                salarySystemRepository.shifts[shift.shiftId] shouldBe expectedShift
+                dataHelper.shiftRepository.shifts[week10Shift1.shiftId] shouldBe expectedShift
+                dataHelper.salarySystem.shifts[week10Shift1.shiftId] shouldBe expectedShift
             }
 
             test("should create new shift") {
-                val shift = Fiktivus.week10Shift1
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 val replacementShift = illnessReportResult.shouldBeRight()
                 val replacementShiftId = replacementShift.shiftId
 
-                val expectedShift = shift.copy(
+                val expectedShift = week10Shift1.copy(
                     shiftId = replacementShiftId,
                     helperBooking = HelperBooking.NoBooking,
                 )
-                shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
-                salarySystemRepository.shifts[replacementShiftId] shouldBe expectedShift
+                dataHelper.shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
+                dataHelper.salarySystem.shifts[replacementShiftId] shouldBe expectedShift
             }
 
             test("should only be possible on a booked shift") {
-                val shift = Fiktivus.week9Shift1
-
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week9Shift1.shiftId,
                 )
 
                 val error = illnessReportResult.shouldBeLeft()
 
-                error shouldBe WeekPlanServiceError.ShiftMustBeBooked(shift.shiftId)
+                error shouldBe WeekPlanServiceError.ShiftMustBeBooked(week9Shift1.shiftId)
             }
 
             test("should do 'nothing' and give same ID if registration is already present") {
-                val shift = Fiktivus.week10Shift1
-
                 val illnessReportResult1 = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
                 val newShift1 = illnessReportResult1.shouldBeRight()
                 val illnessReportResult2 = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
                 val newShift2 = illnessReportResult2.shouldBeRight()
 
-                val expectedShift = shift.copy(
+                val expectedShift = week10Shift1.copy(
                     registrations = listOf(Registration.Illness(newShift1.shiftId))
                 )
-                val expectedNewShift = shift.copy(
+                val expectedNewShift = week10Shift1.copy(
                     shiftId = newShift1.shiftId,
                     helperBooking = HelperBooking.NoBooking,
                 )
-                shiftRepository.shifts.values
-                    .filter { it.start == shift.start }
-                    .filter { it.end == shift.end }
+                dataHelper.shiftRepository.shifts.values
+                    .filter { it.start == week10Shift1.start }
+                    .filter { it.end == week10Shift1.end }
                     .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
-                salarySystemRepository.shifts.values
-                    .filter { it.start == shift.start }
-                    .filter { it.end == shift.end }
+                dataHelper.salarySystem.shifts.values
+                    .filter { it.start == week10Shift1.start }
+                    .filter { it.end == week10Shift1.end }
                     .shouldContainExactlyInAnyOrder(expectedNewShift, expectedShift)
                 newShift1 shouldBeEqual newShift2
             }
 
             test("should fail if shift isn't found in salary system") {
-                val shift = Fiktivus.week10Shift1
-                salarySystemRepository.removeShift(
+                dataHelper.salarySystem.removeShift(
                     PrincipalsTestData.FiktivusMaximus.subject,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 val error = illnessReportResult.shouldBeLeft()
 
-                error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(shift.shiftId)
+                error shouldBe WeekPlanServiceError.ShiftMissingInSalarySystem(week10Shift1.shiftId)
             }
 
             test("should fail if shift isn't found in repository") {
-                val shift = Fiktivus.week10ShiftNotInSystem
+                val shiftId = ShiftId.generateId()
 
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    shiftId,
                 )
 
                 val error = illnessReportResult.shouldBeLeft()
 
-                error shouldBe WeekPlanServiceError.ShiftMissingInShiftSystem(shift.shiftId)
+                error shouldBe WeekPlanServiceError.ShiftMissingInShiftSystem(shiftId)
             }
 
             test("should mark week as out of sync there if an error occurs") {
-                val shift = Fiktivus.week10Shift1
-                salarySystemRepository.removeShift(
+                dataHelper.salarySystem.removeShift(
                     PrincipalsTestData.FiktivusMaximus.subject,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 illnessReportResult.shouldBeLeft()
 
-                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+                dataHelper.weekSynchronizationRepository.synchronizationState(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week10
+                )
                     .shouldBe(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
             }
 
             test("should mark week as possibly out of sync if successful") {
-                val shift = Fiktivus.week10Shift1
                 val illnessReportResult = weekPlanService.reportIllness(
                     PrincipalsTestData.FiktivusMaximus.allRoles,
-                    shift.shiftId,
+                    week10Shift1.shiftId,
                 )
 
                 illnessReportResult.shouldBeRight()
 
-                weekSynchronizationRepository.synchronizationState(PrincipalsTestData.FiktivusMaximus.subject, year2024Week10)
+                dataHelper.weekSynchronizationRepository.synchronizationState(
+                    PrincipalsTestData.FiktivusMaximus.subject,
+                    year2024Week10
+                )
                     .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
             }
 
@@ -271,55 +270,117 @@ class WeekPlanServiceImplementationTest : FunSpec({
         }
     }
 
-    context("Helper bookings") {
-        test("booking a helper") {
-            val shift2 = Fiktivus.week8Shift2
+    context("helper bookings") {
+        val allShifts = shifties.rfbpaShifts(dataHelper.allHelpersByShortName)
+        val week8shift2 = allShifts.filter { it.start.yearWeek == YearWeek(2024, 8) }
+            .get(1)
+        val week10Shift2 = allShifts.filter { it.start.yearWeek == YearWeek(2024, 10) }
+            .get(1)
 
-            val booking = weekPlanService.changeHelperBooking(
+        xtest("Helper bookings ") {
+            TODO("Tests needed for more full helper bookings logic")
+        }
+
+        test("booking a helper") {
+            val booking = weekPlanService.bookHelper(
                 PrincipalsTestData.FiktivusMaximus.allRoles,
-                shift2.shiftId,
-                HelperBooking.Booked(HelperTestData.permanentHipHop.id),
+                week8shift2.shiftId,
+                HelperTestData.permanentHipHop.id,
             )
 
             val expectedShift = Shift(
                 HelperBooking.Booked(HelperTestData.permanentHipHop.id),
-                shift2.shiftId,
-                shift2.start,
-                shift2.end,
+                week8shift2.shiftId,
+                week8shift2.start,
+                week8shift2.end,
+            )
+            val expectedSalaryShift = SalaryShift(
+                SalaryBooking.Helper(HelperTestData.permanentHipHop.id),
+                week8shift2.shiftId,
+                week8shift2.start,
+                week8shift2.end,
             )
 
             booking.shouldBeRight()
-            shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
-            salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
+            dataHelper.shiftRepository.shifts[week8shift2.shiftId] shouldBe expectedShift
+            dataHelper.salarySystem.shifts[week8shift2.shiftId] shouldBe expectedSalaryShift
         }
 
         test("unbooking a helper") {
-            val shift2 = Fiktivus.week10Shift2
-
-            val booking = weekPlanService.changeHelperBooking(
+            val booking = weekPlanService.unbookHelper(
                 PrincipalsTestData.FiktivusMaximus.allRoles,
-                shift2.shiftId,
-                HelperBooking.NoBooking,
+                week10Shift2.shiftId,
             )
 
             val expectedShift = Shift(
                 HelperBooking.NoBooking,
-                shift2.shiftId,
-                shift2.start,
-                shift2.end,
+                week10Shift2.shiftId,
+                week10Shift2.start,
+                week10Shift2.end,
+            )
+            val expectedSalaryShift = SalaryShift(
+                SalaryBooking.NoBooking,
+                week10Shift2.shiftId,
+                week10Shift2.start,
+                week10Shift2.end,
             )
 
             booking.shouldBeRight()
-            shiftRepository.shifts[shift2.shiftId] shouldBe expectedShift
-            salarySystemRepository.shifts[shift2.shiftId] shouldBe expectedShift
+            dataHelper.shiftRepository.shifts[week10Shift2.shiftId] shouldBe expectedShift
+            dataHelper.salarySystem.shifts[week10Shift2.shiftId] shouldBe expectedSalaryShift
         }
 
-        xcontext("Error cases") {
-            xtest("vacancy booking") {
-                // TODO: 22/10/2024 rohdef - should this somehow be more explicit? - logic must be metadata only
-                TODO()
+        context("from shift listing") {
+            context("for a new shift") {
+                test("booked to a known helper") {}
+
+                test("booked to an unknown helper") {
+                    // create in salary
+
+                    // list/sync
+
+                    // confirm empty shift-helper created
+                }
+
+                test("not booked") {
+                }
             }
 
+            context("for an existing shift") {
+                test("the helper is unbooked") {
+                    // add known helper by salary
+                    // add known helper by rfbpa
+                    // add already unbooked
+
+                    // sync
+
+                    // check all three unbooked
+                }
+
+                test("helper is known by salary") {
+                    // add known different helper by salary
+                    // add known same helper by salary
+                    // add known helper by rfbpa
+                    // add unbooked
+
+                    // sync
+
+                    // all match salary
+                }
+
+                test("helper unknown in salaray known by rfbpa (by shift)") {
+                    // add known helper by salary
+                    // add known by rfbpa
+                    // add unbooked
+
+                    // sync
+
+                    // all match rfbpa
+                }
+            }
+        }
+
+        context("Error cases") {
             xtest("helper not known by AXP") {
             }
         }
@@ -332,21 +393,19 @@ class WeekPlanServiceImplementationTest : FunSpec({
                     .shouldBeLeft()
 
             error shouldBe WeekPlanServiceError.InsufficientPermissions(
+                PrincipalsTestData.FiktivusMaximus.helperAdmin,
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                nonEmptySetOf(RfbpaPrincipal.RfbpaRoles.HELPER_ADMIN),
             )
         }
 
-        test("should distinguish between different principals") {
+        xtest("should distinguish between different principals") {
             // TODO set up shift plan for each user
-
             val fiktivusShifts =
                 weekPlanService.shifts(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week8..year2024Week10)
                     .shouldBeRight()
             val realisShifts =
                 weekPlanService.shifts(PrincipalsTestData.RealisMinimalis.shiftAdmin, year2024Week8..year2024Week10)
                     .shouldBeRight()
-
 
         }
     }

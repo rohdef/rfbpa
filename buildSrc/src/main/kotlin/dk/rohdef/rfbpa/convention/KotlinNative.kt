@@ -81,9 +81,7 @@ fun Project.nativeTarget() {
         applyDefaultHierarchyTemplate()
 
         jvmToolchain(21)
-        jvm {
-            withJava()
-        }
+        jvm()
 //        linuxX64()
 //        macosX64()
 //        macosArm64()

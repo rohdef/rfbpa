@@ -1,0 +1,44 @@
+# $schema: ./test-schedule-v1-schema.json
+
+inSystem:
+  2024-W08:
+    - day: Monday
+      time: "13:30-14:30"
+      salaryBooking: helper(Jazz)
+      rfbpaBooking: helper(Jazz)
+    - day: Wednesday
+      time: "17:30-21:30"
+      salaryBooking: unknown(Fantasy)
+      rfbpaBooking: helper(Fantasy)
+    - day: Saturday
+      time: "08:00-22:45"
+      salaryBooking: vacancy
+
+  2024-W09:
+    - day: Monday
+      time: "21:00-22:45"
+      salaryBooking: not booked
+
+    - day: Tuesday
+      time: "08:00-19:15"
+      salaryBooking: not booked
+      rfbpaBooking: not booked
+
+  2024-W10:
+    - day: Wednesday
+      time: "10:45-20:30"
+      salaryBooking: helper(HipHop)
+      rfbpaBooking: helper(HipHop)
+    - day: Thursday
+      time: "08:00-15:45"
+      salaryBooking: unknown(Biography)
+    - day: Sunday
+      time: "06:00-23:00"
+      salaryBooking: vacancy
+      rfbpaBooking: helper(SciFi)
+
+
+synchronizationStates:
+  2024-W08: Out of sync
+  2024-W09: Out of sync
+  2024-W10: Out of sync

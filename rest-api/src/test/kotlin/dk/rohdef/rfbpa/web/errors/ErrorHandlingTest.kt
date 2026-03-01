@@ -3,7 +3,6 @@ package dk.rohdef.rfbpa.web.errors
 import com.auth0.jwk.JwkProviderBuilder
 import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
-import dk.rohdef.rfbpa.web.TestWeekPlanService
 import dk.rohdef.rfbpa.web.health.HealthDto
 import dk.rohdef.rfbpa.web.health.HealthService
 import dk.rohdef.rfbpa.web.modules.configuration
@@ -21,10 +20,7 @@ import org.koin.dsl.module
 class ErrorHandlingTest : RfbpaSpec({
     val url = "/health"
 
-    val weekPlanService = TestWeekPlanService()
     beforeEach {
-        weekPlanService.reset()
-
         startKoin {
             modules(
                 configuration(TestConfiguration.default),

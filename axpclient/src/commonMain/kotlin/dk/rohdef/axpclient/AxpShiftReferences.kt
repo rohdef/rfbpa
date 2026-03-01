@@ -5,7 +5,7 @@ import dk.rohdef.helperplanning.shifts.ShiftId
 
 interface AxpShiftReferences {
     suspend fun axpBookingToShiftId(axpBookingId: AxpBookingId): Either<ShiftIdNotFound, ShiftId>
-    suspend fun saveAxpBookingToShiftId(bookingNumber: AxpBookingId, shiftId: ShiftId)
+    suspend fun saveAxpBookingToShiftId(bookingNumber: AxpBookingId, shiftId: ShiftId): Either<Unit, Unit>
     suspend fun shiftIdToAxpBooking(shiftId: ShiftId): Either<BookingIdNotFound, AxpBookingId>
 
     data class BookingIdNotFound(val shiftId: ShiftId)

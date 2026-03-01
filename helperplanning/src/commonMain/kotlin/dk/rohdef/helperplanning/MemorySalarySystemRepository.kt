@@ -4,6 +4,9 @@ import arrow.core.Either
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -16,9 +19,9 @@ class MemorySalarySystemRepository : SalarySystemRepository {
 
     // TODO: 21/09/2024 rohdef - find isolation level - internal doesn't work
     val _shifts =
-        mutableMapOf<RfbpaPrincipal.Subject, Map<ShiftId, Shift>>().withDefault { emptyMap() }
+        mutableMapOf<RfbpaPrincipal.Subject, Map<ShiftId, SalaryShift>>().withDefault { emptyMap() }
 
-    val shifts: Map<ShiftId, Shift>
+    val shifts: Map<ShiftId, SalaryShift>
         get() = _shifts.map { it.value }
             .fold(emptyMap()) { accumulator, value -> accumulator + value }
 
@@ -27,7 +30,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         shiftId: ShiftId,
         helperId: HelperId,
     ): Either<SalarySystemRepository.BookingError, Unit> = either {
-        val helperBooking = HelperBooking.Booked(helperId)
+        val helperBooking = SalaryBooking.Helper(helperId)
 
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
             SalarySystemRepository.BookingError.ShiftNotFound(shiftId)
@@ -55,7 +58,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId
     ): Either<SalarySystemRepository.BookingError, Unit> = either {
-        val helperBooking = HelperBooking.NoBooking
+        val helperBooking = SalaryBooking.NoBooking
 
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
             SalarySystemRepository.BookingError.ShiftNotFound(shiftId)
@@ -67,9 +70,9 @@ class MemorySalarySystemRepository : SalarySystemRepository {
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
-    ): Either<ShiftsError, WeekPlan> = either {
+    ): Either<ShiftsError, SalaryWeekPlan> = either {
         val shiftsForWeek = _shifts.getValue(subject).values.filter { it.start.yearWeek == yearWeek }
-        WeekPlan(
+        SalaryWeekPlan(
             yearWeek,
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.MONDAY },
             shiftsForWeek.filter { it.start.dayOfWeek == DayOfWeek.TUESDAY },
@@ -85,9 +88,9 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
-    ): Either<ShiftsError, Shift> = either {
+    ): Either<ShiftsError, SalaryShift> = either {
         _shifts[subject] = _shifts.getValue(subject)
-        Shift(HelperBooking.NoBooking, ShiftId.generateId(), start, end)
+        SalaryShift(SalaryBooking.NoBooking, ShiftId.generateId(), start, end)
             .also { shift ->
                 _shifts.letValue(subject) { it + (shift.shiftId to shift)}
             }

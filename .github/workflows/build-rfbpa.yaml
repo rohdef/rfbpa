@@ -2,10 +2,6 @@ name: Building and distributing rfbpa
 run-name: rfbpa - ${{ github.actor }} on ${{ github.ref }}
 on: [ push ]
 
-env:
-  REST_API_IMAGE_NAME: rfbpa-rest-api
-  WEB_APP_IMAGE_NAME: rfbpa-web-app
-
 jobs:
   code-scan:
     permissions:
@@ -42,7 +38,7 @@ jobs:
       - name: Set up NodeJS
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "20"
 
       - name: Build web-app
         run: |

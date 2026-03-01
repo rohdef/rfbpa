@@ -1,8 +1,10 @@
 package dk.rohdef.rfbpa.web.persistance.axp
 
 import arrow.core.Either
+import arrow.core.right
 import arrow.core.singleOrNone
 import dk.rohdef.axpclient.AxpHelperReferences
+import dk.rohdef.axpclient.AxpHelperReferences.FindIdMappingError
 import dk.rohdef.axpclient.helper.HelperIdMapping
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
@@ -23,74 +25,75 @@ import kotlin.uuid.toKotlinUuid
 class DatabaseAxpHelperReferences : AxpHelperReferences {
     val log = KotlinLogging.logger {}
 
-    override suspend fun all(): List<HelperIdMapping> = dbQuery {
+    override suspend fun bookings(): List<HelperIdMapping> = dbQuery {
         AxpHelperReferenceTable
             .selectAll()
             .map { it.toHelperIdMapping() }
     }
 
-    override suspend fun helperByTid(tid: HelperTID): Either<Unit, HelperIdMapping> = dbQuery {
-        AxpHelperReferenceTable
-            .selectAll()
-            .where { helperTid eq tid.value }
-            .map { it.toHelperIdMapping() }
-            .singleOrNone()
-            .toEither {}
-    }
-
-    override suspend fun helperByNumber(number: HelperNumber): Either<Unit, HelperIdMapping> = dbQuery {
-        AxpHelperReferenceTable
-            .selectAll()
-            .where { helperNumber eq number.value }
-            .map { it.toHelperIdMapping() }
-            .singleOrNone()
-            .toEither {}
-    }
-
-    override suspend fun helperById(id: HelperId): Either<Unit, HelperIdMapping> = dbQuery {
-        AxpHelperReferenceTable
-            .selectAll()
-            .where { helperId eq id.value.toJavaUuid() }
-            .map { it.toHelperIdMapping() }
-            .singleOrNone()
-            .toEither {}
-    }
-
-    override suspend fun createHelperReference(tid: HelperTID, number: HelperNumber): Either<Unit, HelperId> {
+    override suspend fun helperByTid(tid: HelperTID): Either<FindIdMappingError.HelperTidNotFound, HelperIdMapping> =
         dbQuery {
             AxpHelperReferenceTable
-                .upsert(
-                    helperNumber,
-                    onUpdate = {
-                        it[helperNumber] = number.value
-                        it[helperTid] = tid.value
-                    },
-                ) {
+                .selectAll()
+                .where { helperTid eq tid.value }
+                .map { it.toHelperIdMapping() }
+                .singleOrNone()
+                .toEither { FindIdMappingError.HelperTidNotFound(tid) }
+        }
+
+    override suspend fun helperByNumber(number: HelperNumber): Either<FindIdMappingError.HelperNumberNotFound, HelperIdMapping> =
+        dbQuery {
+            AxpHelperReferenceTable
+                .selectAll()
+                .where { helperNumber eq number.value }
+                .map { it.toHelperIdMapping() }
+                .singleOrNone()
+                .toEither { FindIdMappingError.HelperNumberNotFound(number) }
+        }
+
+    override suspend fun helperById(id: HelperId): Either<FindIdMappingError.HelperIdNotFound, HelperIdMapping> =
+        dbQuery {
+            AxpHelperReferenceTable
+                .selectAll()
+                .where { helperId eq id.value.toJavaUuid() }
+                .map { it.toHelperIdMapping() }
+                .singleOrNone()
+                .toEither { FindIdMappingError.HelperIdNotFound(id) }
+        }
+
+    override suspend fun createHelperReference(
+        number: HelperNumber,
+        tid: HelperTID,
+        id: HelperId
+    ): Either<Unit, HelperId> = dbQuery {
+        AxpHelperReferenceTable
+            .upsert(
+                helperNumber,
+                onUpdate = {
                     it[helperNumber] = number.value
                     it[helperTid] = tid.value
-                    it[helperId] = HelperId.generateId().value.toJavaUuid()
-                }
-        }
-        return helperByNumber(number)
-            .map { it.helperId }
+                },
+            ) {
+                it[helperNumber] = number.value
+                it[helperTid] = tid.value
+                it[helperId] = id.value.toJavaUuid()
+            }
+        id.right()
     }
 
-    override suspend fun createHelperReference(number: HelperNumber): Either<Unit, HelperId> {
-        dbQuery {
-            AxpHelperReferenceTable
-                .upsert(
-                    helperNumber,
-                    onUpdate = {
-                        it[helperNumber] = number.value
-                    },
-                ) {
+    override suspend fun createHelperReference(number: HelperNumber, id: HelperId): Either<Unit, HelperId> = dbQuery {
+        AxpHelperReferenceTable
+            .upsert(
+                helperNumber,
+                onUpdate = {
                     it[helperNumber] = number.value
-                    it[helperId] = HelperId.generateId().value.toJavaUuid()
-                }
-        }
+                },
+            ) {
+                it[helperNumber] = number.value
+                it[helperId] = id.value.toJavaUuid()
+            }
 
-        return helperByNumber(number)
-            .map { it.helperId }
+        id.right()
     }
 
     private fun ResultRow.toHelperIdMapping() =

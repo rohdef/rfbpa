@@ -1,59 +1,64 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.helperplanning.shifts
 
-import arrow.core.Either
-import arrow.core.NonEmptyList
-import arrow.core.mapOrAccumulate
-import arrow.core.nonEmptyListOf
+import arrow.core.*
+import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.withError
-import arrow.core.right
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
+import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.helpers.HelpersRepository
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class WeekPlanServiceImplementation(
     private val salarySystem: SalarySystemRepository,
     private val shiftRepository: ShiftRepository,
+    private val helpersRepository: HelpersRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
 ) : WeekPlanService {
     override suspend fun synchronize(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval
-    ): Either<NonEmptyList<SynchronizationError>, Unit> =
-        either {
-            ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
-                nonEmptyListOf(
-                    SynchronizationError.InsufficientPermissions(
+    ): Either<NonEmptyList<SynchronizationError>, Unit> = either {
+        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
+            nonEmptyListOf(
+                SynchronizationError
+                    .InsufficientPermissions(
+                        principal,
                         RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                        principal.roles,
                     )
-                )
-            }
-
-            val synchronizationStates =
-                weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
-            val weeksToSynchronize = synchronizationStates
-                .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
-                .keys
-            weeksToSynchronize.mapOrAccumulate { synchronize(principal, it).bind() }
-                .bind()
+            )
         }
+
+        val synchronizationStates =
+            weekSynchronizationRepository.synchronizationStates(principal.subject, yearWeekInterval)
+        val weeksToSynchronize = synchronizationStates
+            .filterValues { it == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE }
+            .keys
+        weeksToSynchronize.mapOrAccumulate { synchronize(principal, it).bind() }
+            .bind()
+    }
 
     override suspend fun synchronize(
         principal: RfbpaPrincipal,
         yearWeek: YearWeek
     ): Either<SynchronizationError, Unit> = either {
-        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
-            SynchronizationError.InsufficientPermissions(
-                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                principal.roles,
-            )
-        }
+        ensureRole(
+            principal,
+            RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+            SynchronizationError::InsufficientPermissions,
+        )
 
         val synchronizationState = weekSynchronizationRepository.synchronizationState(principal.subject, yearWeek)
         if (synchronizationState == WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE) {
@@ -61,7 +66,12 @@ class WeekPlanServiceImplementation(
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
-            salaryWeekPlan.allShifts.mapOrAccumulate { shiftRepository.createOrUpdate(principal.subject, it).bind() }
+            salaryWeekPlan.allShifts
+                .map {
+                    it.toShift(principal.subject)
+                        .mapLeft { TODO() }.bind()
+                }
+                .mapOrAccumulate { shiftRepository.createOrUpdate(principal.subject, it).bind() }
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
@@ -71,14 +81,56 @@ class WeekPlanServiceImplementation(
         }
     }
 
+    private suspend fun SalaryShift.toShift(subject: RfbpaPrincipal.Subject): Either<Unit, Shift> = either {
+        val existingBooking: suspend () -> Either<Unit, HelperId> = {
+            shiftRepository.findBooking(subject, shiftId)
+                .fold({
+                    when (it) {
+                        ShiftsError.NotAuthorized -> Unit.left()
+                        is ShiftsError.ShiftNotFound -> helpersRepository.create(
+                            dk.rohdef.helperplanning.helpers.Helper.Permanent(
+                                "Vacancy",
+                                Uuid.random().toHexString(),
+                            )
+                        )
+                            .map { it.id }
+                            .mapLeft { }
+                    }
+                })
+                { it.right() }
+        }
+
+        Shift(
+            helperBooking.toBooking(existingBooking).bind(),
+            shiftId,
+            start,
+            end,
+            registrations,
+        )
+    }
+
+    private suspend fun SalaryBooking.toBooking(
+        findOrCreateBooking: suspend () -> Either<Unit, HelperId>
+    ): Either<Unit, HelperBooking> = either {
+        when (this@toBooking) {
+            is SalaryBooking.Helper -> HelperBooking.Booked(helper)
+            SalaryBooking.NoBooking -> HelperBooking.NoBooking
+            is SalaryBooking.UnknownHelper -> HelperBooking.Booked(helper)
+            SalaryBooking.Vacancy -> findOrCreateBooking().bind()
+                .let { HelperBooking.Booked(it) }
+        }
+    }
+
     override suspend fun createShift(
         principal: RfbpaPrincipal,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ) = either {
-        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
-            WeekPlanServiceError.InsufficientPermissions(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN, principal.roles)
-        }
+        ensureRole(
+            principal,
+            RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+            WeekPlanServiceError::InsufficientPermissions,
+        )
 
         // TODO: 19/08/2024 rohdef -  #41 improve domain errors (i.e., create them)
         when (weekSynchronizationRepository.synchronizationState(principal.subject, start.yearWeek)) {
@@ -92,12 +144,12 @@ class WeekPlanServiceImplementation(
         }
 
         val shift = salarySystem.createShift(principal.subject, start, end)
-            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
-            .bind()
+            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }.bind()
+            .toShift(principal.subject)
+            .mapLeft { TODO() }.bind()
 
         shiftRepository.createOrUpdate(principal.subject, shift)
-            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }
-            .bind()
+            .mapLeft { WeekPlanServiceError.CannotCommunicateWithShiftsRepository }.bind()
 
         shift
     }
@@ -106,12 +158,11 @@ class WeekPlanServiceImplementation(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval
     ): Either<WeekPlanServiceError, List<WeekPlan>> = either {
-        ensure(principal.roles.contains(RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN)) {
-            WeekPlanServiceError.InsufficientPermissions(
-                RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                principal.roles,
-            )
-        }
+        ensureRole(
+            principal,
+            RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+            WeekPlanServiceError::InsufficientPermissions
+        )
 
         withError({ it.first().toServiceError() }) {
             synchronize(principal, yearWeekInterval).bind()
@@ -122,23 +173,29 @@ class WeekPlanServiceImplementation(
         }
     }
 
-    override suspend fun changeHelperBooking(
+    override suspend fun bookHelper(
         principal: RfbpaPrincipal,
         shiftId: ShiftId,
-        helperBooking: HelperBooking
-    ): Either<WeekPlanServiceError, Unit> {
+        helperId: HelperId
+    ): Either<WeekPlanServiceError, Unit> = either {
         // TODO: 27/10/2024 rohdef - ... dealing with synchronization
         // TODO: 27/10/2024 rohdef - deal with principal
         // TODO: 27/10/2024 rohdef - deal with errors
 
-        when (helperBooking) {
-            is HelperBooking.Booked -> salarySystem.bookShift(principal.subject, shiftId, helperBooking.helper)
-            HelperBooking.NoBooking -> salarySystem.unbookShift(principal.subject, shiftId)
-        }
+        salarySystem.bookShift(principal.subject, shiftId, helperId)
+            .mapLeft { TODO() }.bind()
+        shiftRepository.changeBooking(principal.subject, shiftId, HelperBooking.Booked(helperId))
+            .mapLeft { TODO() }.bind()
+    }
 
-        shiftRepository.changeBooking(principal.subject, shiftId, helperBooking)
-
-        return Unit.right()
+    override suspend fun unbookHelper(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId,
+    ): Either<WeekPlanServiceError, Unit> = either {
+        salarySystem.unbookShift(principal.subject, shiftId)
+            .mapLeft { TODO() }.bind()
+        shiftRepository.unbookShift(principal.subject, shiftId)
+            .mapLeft { TODO() }.bind()
     }
 
     override suspend fun reportIllness(
@@ -146,15 +203,14 @@ class WeekPlanServiceImplementation(
         shiftId: ShiftId,
     ): Either<WeekPlanServiceError, Shift> = either {
         val currentShift = shiftRepository.byId(principal.subject, shiftId)
-            .mapLeft { it.toServiceError() }
-            .bind()
+            .mapLeft { it.toServiceError() }.bind()
 
         ensure(currentShift.helperBooking is HelperBooking.Booked) {
             WeekPlanServiceError.ShiftMustBeBooked(shiftId)
         }
 
         val illnessRegistrations = currentShift.registrations.filterIsInstance<Registration.Illness>()
-        if (illnessRegistrations.isEmpty() ) {
+        if (illnessRegistrations.isEmpty()) {
             weekSynchronizationRepository.markForSynchronization(principal.subject, currentShift.start.yearWeek)
 
             val replacementShift = createReplacementShift(principal.subject, currentShift).bind()
@@ -165,8 +221,7 @@ class WeekPlanServiceImplementation(
             replacementShift
         } else {
             shiftRepository.byId(principal.subject, illnessRegistrations.first().replacementShiftId)
-                .mapLeft { it.toServiceError() }
-                .bind()
+                .mapLeft { it.toServiceError() }.bind()
         }
     }
 
@@ -175,15 +230,15 @@ class WeekPlanServiceImplementation(
         shift: Shift
     ): Either<WeekPlanServiceError, Shift> = either {
         val replacementShift = salarySystem.createShift(subject, shift.start, shift.end)
-            .mapLeft { it.toServiceError() }
-            .bind()
+            .mapLeft { it.toServiceError() }.bind()
+            .toShift(subject)
+            .mapLeft { TODO() }.bind()
         shiftRepository.createOrUpdate(subject, replacementShift)
-            .mapLeft { it.toServiceError() }
-            .bind()
+            .mapLeft { it.toServiceError() }.bind()
         replacementShift
     }
 
-    suspend private fun reportAndRegisterIllness(
+    private suspend fun reportAndRegisterIllness(
         subject: RfbpaPrincipal.Subject,
         shift: Shift,
         replacementShiftId: ShiftId,
@@ -198,6 +253,16 @@ class WeekPlanServiceImplementation(
             .bind()
     }
 
+    private fun <ErrorType> Raise<ErrorType>.ensureRole(
+        principal: RfbpaPrincipal,
+        role: RfbpaPrincipal.RfbpaRoles,
+        raise: (RfbpaPrincipal, RfbpaPrincipal.RfbpaRoles) -> ErrorType,
+    ) {
+        ensure(principal.roles.contains(role)) {
+            raise(principal, role)
+        }
+    }
+
     private fun ShiftsError.toServiceError(): WeekPlanServiceError {
         return when (this) {
             ShiftsError.NotAuthorized -> WeekPlanServiceError.CannotCommunicateWithShiftsRepository
@@ -209,7 +274,8 @@ class WeekPlanServiceImplementation(
         return when (this) {
             is SynchronizationError.CouldNotSynchronizeWeek -> WeekPlanServiceError.AccessDeniedToSalarySystem
             is SynchronizationError.InsufficientPermissions -> WeekPlanServiceError.InsufficientPermissions(
-                expectedRole, actualRoles,
+                principal,
+                expectedRole,
             )
         }
     }

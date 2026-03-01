@@ -1,10 +1,15 @@
 package dk.rohdef.helperplanning
 
 import arrow.core.Either
+import arrow.core.NonEmptyList
+import arrow.core.firstOrNone
+import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
+import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.DayOfWeek
 
 class MemoryShiftRepository : ShiftRepository {
@@ -49,28 +54,43 @@ class MemoryShiftRepository : ShiftRepository {
         shift
     }
 
-//    override suspend fun addRegistration(
-//        subject: RfbpaPrincipal.Subject,
-//        shiftId: ShiftId,
-//        registration: Registration
-//    ): Either<Unit, Shift> = either {
-//        val shift = byId(subject, shiftId)
-//            .map { it.copy(registrations = it.registrations + registration) }
-//            .mapLeft {  }
-//            .bind()
-//
-//        createOrUpdate(subject, shift)
-//            .mapLeft {  }
-//            .bind()
-//    }
+    override suspend fun byYearWeekInterval(
+        subject: RfbpaPrincipal.Subject,
+        yearWeeks: YearWeekInterval
+    ): Either<NonEmptyList<ShiftsError>, List<WeekPlan>> = either {
+        return yearWeeks.mapOrAccumulate {
+            byYearWeek(subject, it).bind()
+        }
+    }
+
+    override suspend fun findBooking(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId
+    ): Either<ShiftsError, HelperId> {
+        return shifts.values
+            .filter { it.shiftId == shiftId }
+            .map { it.helperBooking }
+            .filterIsInstance<HelperBooking.Booked>()
+            .map { it.helper }
+            .firstOrNone()
+            .toEither { ShiftsError.ShiftNotFound(shiftId) }
+    }
 
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
-        booking: HelperBooking
+        booking: HelperBooking.Booked
     ): Either<ShiftsError, Shift> = either {
         val shift = byId(subject, shiftId)
             .map { it.copy(helperBooking = booking) }
+            .bind()
+
+        createOrUpdate(subject, shift).bind()
+    }
+
+    override suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, Unit> = either {
+        val shift = byId(subject, shiftId)
+            .map { it.copy(helperBooking = HelperBooking.NoBooking) }
             .bind()
 
         createOrUpdate(subject, shift).bind()

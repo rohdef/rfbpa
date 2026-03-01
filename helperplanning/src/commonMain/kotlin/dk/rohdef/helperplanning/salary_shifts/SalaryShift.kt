@@ -1,20 +1,22 @@
-package dk.rohdef.helperplanning.shifts
+package dk.rohdef.helperplanning.salary_shifts
 
+import dk.rohdef.helperplanning.shifts.Registration
+import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
-data class Shift(
-    val helperBooking: HelperBooking,
+data class SalaryShift(
+    val helperBooking: SalaryBooking,
     val shiftId: ShiftId,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
     val registrations: List<Registration> = emptyList(),
 ) {
     constructor(
-        booking: HelperBooking,
+        helperBooking: SalaryBooking,
         start: YearWeekDayAtTime,
         end: YearWeekDayAtTime,
     ) : this(
-        booking,
+        helperBooking,
         ShiftId.generateId(),
         start,
         end,

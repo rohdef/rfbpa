@@ -78,14 +78,14 @@ fun IllegalArgumentException.toError(input: String): HttpResponse<ErrorDto> {
             )
         }
 
-        message.contains("uuid") -> HttpResponse.badRequest(
+        message.contains("uuid", ignoreCase = true) -> HttpResponse.badRequest(
             ErrorDto(
                 Parsing.InvalidUUID,
                 ErrorData.FormatError(
                     input,
                     "UUID as hex string with dashes"
                 ),
-                "Could not parse Year week interval",
+                "Could not parse UUID",
             ),
         )
 

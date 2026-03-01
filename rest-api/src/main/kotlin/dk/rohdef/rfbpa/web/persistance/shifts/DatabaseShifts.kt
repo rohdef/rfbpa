@@ -51,12 +51,13 @@ class DatabaseShifts : ShiftRepository {
             .leftJoin(ShiftBookingsTable)
             .selectAll()
             .where { ShiftsTable.id eq shiftId.id.toJavaUuid() }
+            .limit(2)
             .map { rowToShift(it) }
 
         when (shifts.size) {
             0 -> ShiftsError.ShiftNotFound(shiftId).left()
             1 -> shifts.first().right()
-            else -> TODO("27/10/2024 rohdef - deal properly with many cases")
+            else -> throw IllegalStateException("More than one shift found for id: $shiftId. Only 0 or 1 shifts are allowed.")
         }
     }
 
@@ -92,14 +93,19 @@ class DatabaseShifts : ShiftRepository {
             it[end] = shift.end.localDateTime.toJavaLocalDateTime()
         }
 
-        changeBooking(shift.shiftId, shift.helperBooking)
+        val booking = shift.helperBooking
+        when (booking) {
+            is HelperBooking.Booked -> changeBooking(shift.shiftId, booking)
+            HelperBooking.NoBooking -> unbookShift(shift.shiftId)
+        }
+
         shift.right()
     }
 
     override suspend fun changeBooking(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,
-        booking: HelperBooking,
+        booking: HelperBooking.Booked,
     ): Either<ShiftsError, Shift> {
         dbQuery {
             changeBooking(shiftId, booking)
@@ -108,17 +114,42 @@ class DatabaseShifts : ShiftRepository {
         return byId(subject, shiftId)
     }
 
-    private fun changeBooking(
-        shift: ShiftId,
-        booking: HelperBooking
-    ) {
-        when (booking) {
-            HelperBooking.NoBooking -> ShiftBookingsTable.deleteWhere { shiftId eq shift.id.toJavaUuid() }
-
-            is HelperBooking.Booked -> ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
-                it[shiftId] = shift.id.toJavaUuid()
-                it[helperId] = booking.helper.value.toJavaUuid()
-            }
+    override suspend fun findBooking(
+        subject: RfbpaPrincipal.Subject,
+        shiftId: ShiftId
+    ): Either<ShiftsError, HelperId> {
+        val helperIds = dbQuery {
+            ShiftBookingsTable
+                .selectAll()
+                .where { ShiftBookingsTable.shiftId eq shiftId.id.toJavaUuid() }
+                .limit(2)
+                .map { it[ShiftBookingsTable.helperId].toKotlinUuid() }
+                .map { HelperId(it) }
         }
+
+        return when (helperIds.size) {
+            0 -> ShiftsError.ShiftNotFound(shiftId).left()
+            1 -> helperIds.first().right()
+            else -> throw IllegalStateException("More than one helper booking found for id: $shiftId. Only 0 or 1 shifts are allowed.")
+        }
+    }
+
+    private fun changeBooking(
+        id: ShiftId,
+        booking: HelperBooking.Booked,
+    ) {
+        ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
+            it[shiftId] = id.id.toJavaUuid()
+            it[helperId] = booking.helper.value.toJavaUuid()
+        }
+    }
+
+    override suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, Unit> = dbQuery {
+        unbookShift(shiftId)
+        Unit.right()
+    }
+
+    private fun unbookShift(id: ShiftId) {
+        ShiftBookingsTable.deleteWhere { shiftId eq id.id.toJavaUuid() }
     }
 }

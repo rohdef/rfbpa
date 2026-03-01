@@ -3,7 +3,7 @@ package dk.rohdef.helperplanning.templates
 import arrow.core.nonEmptyListOf
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperTestData
-import dk.rohdef.helperplanning.shifts.HelperBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -151,16 +151,16 @@ class TemplateApplierTest : FunSpec({
             val sundayHelpers = weekPlanRepository.helpersOnDay(YearWeekDay(schedulingStart, DayOfWeek.SUNDAY))
 
             // TODO: 25/06/2024 rohdef - the dealing with Helper.ID typing should probably be improved
-            mondayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentJazz.id))
+            mondayHelpers shouldBe listOf(SalaryBooking.Helper(HelperTestData.permanentJazz.id))
             tuesdayHelpers shouldBe listOf(
-                HelperBooking.NoBooking,
-                HelperBooking.Booked(HelperTestData.permanentRockabilly.id)
+                SalaryBooking.NoBooking,
+                SalaryBooking.Helper(HelperTestData.permanentRockabilly.id)
             )
-            wednesdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentBlues.id))
-            thurdayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentMetal.id))
+            wednesdayHelpers shouldBe listOf(SalaryBooking.Helper(HelperTestData.permanentBlues.id))
+            thurdayHelpers shouldBe listOf(SalaryBooking.Helper(HelperTestData.permanentMetal.id))
             fridayHelpers shouldBe listOf()
-            saturdayHelpers shouldBe listOf(HelperBooking.NoBooking)
-            sundayHelpers shouldBe listOf(HelperBooking.Booked(HelperTestData.permanentHipHop.id))
+            saturdayHelpers shouldBe listOf(SalaryBooking.NoBooking)
+            sundayHelpers shouldBe listOf(SalaryBooking.Helper(HelperTestData.permanentHipHop.id))
         }
     }
 

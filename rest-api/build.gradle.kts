@@ -12,7 +12,7 @@ description = "Web server for RF BPA"
 
 application {
     applicationName = "rfbpa-web"
-    mainClass.set("dk.rohdef.rfbpa.web.MainKt")
+    mainClass = "dk.rohdef.rfbpa.web.MainKt"
 
     tasks.run.get().workingDir = rootProject.projectDir
 }

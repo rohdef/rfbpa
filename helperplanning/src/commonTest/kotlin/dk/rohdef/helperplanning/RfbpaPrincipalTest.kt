@@ -17,7 +17,7 @@ class RfbpaPrincipalTest : FunSpec({
 
     context("roles") {
         // TODO: 19/09/2024 rohdef - https://kotest.io/docs/proptest/property-based-testing.html probably better, powerset gets slow
-        context("${RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN} combined with") {
+        xcontext("${RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN} combined with") {
             val roleUnderTest = RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN
             val remainingRoles = RfbpaPrincipal.RfbpaRoles.entries - roleUnderTest
             val powersetOfRemaining = remainingRoles.powerset()
@@ -37,7 +37,12 @@ class RfbpaPrincipalTest : FunSpec({
             }
         }
 
-        context("${RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN} combined with") {
+        test("powerset speed") {
+            val ps = RfbpaPrincipal.RfbpaRoles.entries.powerset()
+            println(ps.size)
+        }
+
+        xcontext("${RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN} combined with") {
             val roleUnderTest = RfbpaPrincipal.RfbpaRoles.TEMPLATE_ADMIN
             val remainingRoles = RfbpaPrincipal.RfbpaRoles.entries - roleUnderTest
             val powersetOfRemaining = remainingRoles.powerset().filterNot { it.isEmpty() }

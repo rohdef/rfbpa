@@ -4,6 +4,8 @@ import arrow.core.left
 import arrow.core.nonEmptyListOf
 import arrow.core.right
 import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -17,7 +19,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
 
 class SynchronizationTest : FunSpec({
-    fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
+    fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
         return Shift(
             HelperBooking.NoBooking,
             TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
@@ -26,11 +28,20 @@ class SynchronizationTest : FunSpec({
         )
     }
 
-    fun YearWeek.shift(dayOfWeek: DayOfWeek): ShiftBuilderOnDay {
-        return ShiftBuilderOnDay { startHours, startMinutes ->
-            ShiftBuilderAtStart { endHours, endMinutes ->
+    fun createSalaryShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): SalaryShift {
+        return SalaryShift(
+            SalaryBooking.NoBooking,
+            TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
+            start,
+            end,
+        )
+    }
+
+    fun YearWeek.salaryShift(dayOfWeek: DayOfWeek): SalaryShiftBuilderOnDay {
+        return SalaryShiftBuilderOnDay { startHours, startMinutes ->
+            SalaryShiftBuilderAtStart { endHours, endMinutes ->
                 this.atDayOfWeek(dayOfWeek).let {
-                    createTestShift(
+                    createSalaryShift(
                         it.atTime(startHours, startMinutes),
                         it.atTime(endHours, endMinutes),
                     )
@@ -41,11 +52,25 @@ class SynchronizationTest : FunSpec({
 
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
+    val helpersRepository = MemoryHelpersRepository()
     val weekSynchronizationRepository = TestWeekSynchronizationRepository()
-    val weekPlanService =
-        WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
+    val weekPlanService = WeekPlanServiceImplementation(
+        salarySystemRepository,
+        shiftRepository,
+        helpersRepository,
+        weekSynchronizationRepository,
+    )
 
     val year2024Week13 = YearWeek(2024, 13)
+
+    val week13SalaryShift1 = year2024Week13.salaryShift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
+    val week13SalaryShift2 = year2024Week13.salaryShift(DayOfWeek.WEDNESDAY).start(17, 30).end(21, 30)
+    val week13SalaryShift3 = year2024Week13.salaryShift(DayOfWeek.THURSDAY).start(9, 45).end(15, 15)
+    val week13SalaryShifts = listOf(
+        week13SalaryShift1,
+        week13SalaryShift2,
+        week13SalaryShift3,
+    )
 
     val week13Shift1 = year2024Week13.shift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
     val week13Shift2 = year2024Week13.shift(DayOfWeek.WEDNESDAY).start(17, 30).end(21, 30)
@@ -56,6 +81,7 @@ class SynchronizationTest : FunSpec({
         week13Shift3,
     )
 
+    val salaryShiftNotInSystem = year2024Week13.salaryShift(DayOfWeek.SATURDAY).start(8, 0).end(15, 45)
     val shiftNotInSystem = year2024Week13.shift(DayOfWeek.SATURDAY).start(8, 0).end(15, 45)
 
     val year2024Week14 = YearWeek(2024, 14)
@@ -64,12 +90,26 @@ class SynchronizationTest : FunSpec({
 
     val shift9Start = year2024Week16.atDayOfWeek(DayOfWeek.WEDNESDAY).atTime(9, 45)
     val shift9End = year2024Week16.atDayOfWeek(DayOfWeek.FRIDAY).atTime(23, 45)
+    val salaryShift4 = year2024Week14.salaryShift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
+    val salaryShift5 = year2024Week14.salaryShift(DayOfWeek.MONDAY).start(19, 0).end(20, 45)
+    val salaryShift6 = year2024Week14.salaryShift(DayOfWeek.WEDNESDAY).start(8, 15).end(21, 45)
+    val salaryShift7 = year2024Week15.salaryShift(DayOfWeek.MONDAY).start(11, 15).end(15, 30)
+    val salaryShift8 = year2024Week15.salaryShift(DayOfWeek.THURSDAY).start(5, 45).end(9, 45)
+    val salaryShift9 = createSalaryShift(shift9Start, shift9End)
+    val salaryShift10 = year2024Week16.salaryShift(DayOfWeek.SATURDAY).start(8, 15).end(10, 30)
+    val salaryShift11 = year2024Week16.salaryShift(DayOfWeek.SATURDAY).start(16, 0).end(21, 15)
+    val salaryShift12 = year2024Week16.salaryShift(DayOfWeek.SATURDAY).start(9, 0).end(22, 0)
+    val week14SalaryShifts = listOf(salaryShift4, salaryShift5, salaryShift6)
+    val week15SalaryShifts = listOf(salaryShift7, salaryShift8)
+    val week16SalaryShifts = listOf(salaryShift9, salaryShift10, salaryShift11, salaryShift12)
+    val additionalSalaryShifts = week14SalaryShifts + week15SalaryShifts + week16SalaryShifts
+
     val shift4 = year2024Week14.shift(DayOfWeek.MONDAY).start(13, 30).end(14, 30)
     val shift5 = year2024Week14.shift(DayOfWeek.MONDAY).start(19, 0).end(20, 45)
     val shift6 = year2024Week14.shift(DayOfWeek.WEDNESDAY).start(8, 15).end(21, 45)
     val shift7 = year2024Week15.shift(DayOfWeek.MONDAY).start(11, 15).end(15, 30)
     val shift8 = year2024Week15.shift(DayOfWeek.THURSDAY).start(5, 45).end(9, 45)
-    val shift9 = createTestShift(shift9Start, shift9End)
+    val shift9 = createShift(shift9Start, shift9End)
     val shift10 = year2024Week16.shift(DayOfWeek.SATURDAY).start(8, 15).end(10, 30)
     val shift11 = year2024Week16.shift(DayOfWeek.SATURDAY).start(16, 0).end(21, 15)
     val shift12 = year2024Week16.shift(DayOfWeek.SATURDAY).start(9, 0).end(22, 0)
@@ -78,10 +118,10 @@ class SynchronizationTest : FunSpec({
     val week16Shifts = listOf(shift9, shift10, shift11, shift12)
     val additionalShifts = week14Shifts + week15Shifts + week16Shifts
 
-    val shiftsToAdd = (week13Shifts + additionalShifts).map { it.start.yearWeek }
+    val shiftsToAdd = (week13SalaryShifts + additionalSalaryShifts).map { it.start.yearWeek }
         .distinct()
         .map { it.atDayOfWeek(DayOfWeek.TUESDAY) }
-        .map { createTestShift(it.atTime(4, 0), it.atTime(12, 0)) }
+        .map { createSalaryShift(it.atTime(4, 0), it.atTime(12, 0)) }
 
     beforeEach {
         weekSynchronizationRepository.reset()
@@ -90,9 +130,9 @@ class SynchronizationTest : FunSpec({
         salarySystemRepository.apply {
             reset()
 
-            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift1.start, week13Shift1.end)
-            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift2.start, week13Shift2.end)
-            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13Shift3.start, week13Shift3.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13SalaryShift1.start, week13SalaryShift1.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13SalaryShift2.start, week13SalaryShift2.end)
+            createShift(PrincipalsTestData.FiktivusMaximus.subject, week13SalaryShift3.start, week13SalaryShift3.end)
         }
     }
 
@@ -116,7 +156,7 @@ class SynchronizationTest : FunSpec({
 
         test("Aleady synchronized - synchronization only happens when requested") {
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13)
-            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, shiftNotInSystem)
+            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, salaryShiftNotInSystem)
 
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.allRoles, year2024Week13)
                 .shouldBeRight()
@@ -134,7 +174,7 @@ class SynchronizationTest : FunSpec({
                 PrincipalsTestData.FiktivusMaximus.subject,
                 year2024Week13,
             )
-            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, shiftNotInSystem)
+            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, salaryShiftNotInSystem)
 
             weekPlanService.synchronize(PrincipalsTestData.FiktivusMaximus.shiftAdmin, year2024Week13)
                 .shouldBeRight()
@@ -147,18 +187,18 @@ class SynchronizationTest : FunSpec({
         }
 
         test("Create shift marks for synchhronization") {
-            val targetYearWeek = shiftNotInSystem.start.yearWeek
+            val targetYearWeek = salaryShiftNotInSystem.start.yearWeek
             weekSynchronizationRepository.markSynchronized(PrincipalsTestData.FiktivusMaximus.subject, targetYearWeek)
-            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, shiftNotInSystem)
+            salarySystemRepository.addShift(PrincipalsTestData.FiktivusMaximus.subject, salaryShiftNotInSystem)
 
             weekPlanService.createShift(
                 PrincipalsTestData.FiktivusMaximus.allRoles,
-                shiftNotInSystem.start,
-                shiftNotInSystem.end,
+                salaryShiftNotInSystem.start,
+                salaryShiftNotInSystem.end,
             )
                 .shouldBeRight()
 
-            salarySystemRepository.shiftList shouldContainExactlyInAnyOrder (week13Shifts + shiftNotInSystem)
+            salarySystemRepository.shiftList shouldContainExactlyInAnyOrder (week13SalaryShifts + salaryShiftNotInSystem)
             weekSynchronizationRepository.synchronizationState(
                 PrincipalsTestData.FiktivusMaximus.subject,
                 targetYearWeek,
@@ -168,7 +208,7 @@ class SynchronizationTest : FunSpec({
 
     context("Multiple weeks") {
         beforeEach {
-            additionalShifts.forEach {
+            additionalSalaryShifts.forEach {
                 salarySystemRepository.createShift(
                     PrincipalsTestData.FiktivusMaximus.subject,
                     it.start,
@@ -236,7 +276,7 @@ class SynchronizationTest : FunSpec({
 
     context("Error scenarios") {
         beforeEach {
-            additionalShifts.forEach {
+            additionalSalaryShifts.forEach {
                 salarySystemRepository.createShift(
                     PrincipalsTestData.FiktivusMaximus.subject,
                     it.start,
@@ -466,8 +506,8 @@ class SynchronizationTest : FunSpec({
                 .shouldBeLeft()
 
             error shouldBe SynchronizationError.InsufficientPermissions(
+                PrincipalsTestData.FiktivusMaximus.helperAdmin,
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
             )
         }
 
@@ -498,8 +538,8 @@ class SynchronizationTest : FunSpec({
 
             error shouldBe nonEmptyListOf(
                 SynchronizationError.InsufficientPermissions(
+                    PrincipalsTestData.FiktivusMaximus.helperAdmin,
                     RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                    PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
                 )
             )
         }

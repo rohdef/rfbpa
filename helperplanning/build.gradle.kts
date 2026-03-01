@@ -19,7 +19,11 @@ kotlin {
                 implementation(libs.bundles.kotlinxSerializationJson)
             }
         }
-        val commonTest by getting
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlinxSerializationYaml)
+            }
+        }
 
         val jvmMain by getting
         val jvmTest by getting

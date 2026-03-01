@@ -3,6 +3,7 @@ package dk.rohdef.helperplanning.shifts
 import arrow.core.Either
 import arrow.core.NonEmptyList
 import dk.rohdef.helperplanning.RfbpaPrincipal
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
@@ -15,7 +16,8 @@ interface WeekPlanService {
     suspend fun createShift(principal: RfbpaPrincipal, start: YearWeekDayAtTime, end: YearWeekDayAtTime) : Either<WeekPlanServiceError, Shift>
     suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>>
 
-    suspend fun changeHelperBooking(principal: RfbpaPrincipal, shiftId: ShiftId, helperBooking: HelperBooking): Either<WeekPlanServiceError, Unit>
+    suspend fun bookHelper(principal: RfbpaPrincipal, shiftId: ShiftId, helperId: HelperId): Either<WeekPlanServiceError, Unit>
+    suspend fun unbookHelper(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Unit>
 
     suspend fun reportIllness(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Shift>
 }

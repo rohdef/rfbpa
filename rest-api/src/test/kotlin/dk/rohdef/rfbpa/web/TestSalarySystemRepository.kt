@@ -7,7 +7,11 @@ import dk.rohdef.helperplanning.MemorySalarySystemRepository
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.letValue
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import generateTestShiftId
@@ -27,13 +31,13 @@ class TestSalarySystemRepository(
         _shiftsErrorRunners.clear()
     }
 
-    internal val shifts: Map<ShiftId, Shift>
+    internal val shifts: Map<ShiftId, SalaryShift>
         get() = memoryWeekPlanRepository.shifts
 
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
-    ): Either<ShiftsError, WeekPlan> = either {
+    ): Either<ShiftsError, SalaryWeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
         memoryWeekPlanRepository.shifts(subject, yearWeek).bind()
     }
@@ -41,9 +45,9 @@ class TestSalarySystemRepository(
     override suspend fun createShift(
         subject: RfbpaPrincipal.Subject,
         start: YearWeekDayAtTime, end: YearWeekDayAtTime,
-    ): Either<ShiftsError, Shift> {
+    ): Either<ShiftsError, SalaryShift> {
         val shiftId = generateTestShiftId(start, end)
-        val shift = Shift(HelperBooking.NoBooking, shiftId, start, end)
+        val shift = SalaryShift(SalaryBooking.NoBooking, shiftId, start, end)
 
         memoryWeekPlanRepository._shifts.letValue(subject) {
             it + (shiftId to shift)

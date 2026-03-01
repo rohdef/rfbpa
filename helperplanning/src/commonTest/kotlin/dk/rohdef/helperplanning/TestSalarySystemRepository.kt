@@ -4,7 +4,11 @@ package dk.rohdef.helperplanning
 
 import arrow.core.Either
 import arrow.core.raise.either
-import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -54,15 +58,15 @@ class TestSalarySystemRepository(
         _createShiftErrorRunners.clear()
     }
 
-    internal val shifts: Map<ShiftId, Shift>
+    internal val shifts: Map<ShiftId, SalaryShift>
         get() = memoryWeekPlanRepository.shifts
-    internal val shiftList: List<Shift>
+    internal val shiftList: List<SalaryShift>
         get() = shifts.values.toList()
-    internal val sortedByStartShifts: List<Shift>
+    internal val sortedByStartShifts: List<SalaryShift>
         // TODO: 08/06/2024 rohdef - remove date conversion when implmenting comprable #4
         get() = shiftList.sortedBy { it.start.localDateTime }
 
-    fun addShift(subject: RfbpaPrincipal.Subject, shift: Shift) {
+    fun addShift(subject: RfbpaPrincipal.Subject, shift: SalaryShift) {
         memoryWeekPlanRepository._shifts.letValue(subject) {
             it + (shift.shiftId to shift)
         }
@@ -71,7 +75,7 @@ class TestSalarySystemRepository(
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek
-    ): Either<ShiftsError, WeekPlan> = either {
+    ): Either<ShiftsError, SalaryWeekPlan> = either {
         _shiftsErrorRunners.map { it(yearWeek).bind() }
         memoryWeekPlanRepository.shifts(subject, yearWeek).bind()
     }
@@ -84,7 +88,7 @@ class TestSalarySystemRepository(
         _createShiftErrorRunners.map { it(start, end).bind() }
         memoryWeekPlanRepository._shifts[subject] = memoryWeekPlanRepository._shifts.getValue(subject)
         val shiftId = idGenerator.generate(start, end)
-        Shift(HelperBooking.NoBooking, shiftId, start, end)
+        SalaryShift(SalaryBooking.NoBooking, shiftId, start, end)
             .also { shift -> memoryWeekPlanRepository._shifts.letValue(subject) { it + (shiftId to shift) } }
     }
 
@@ -98,12 +102,12 @@ class TestSalarySystemRepository(
     internal fun shiftListOnDay(yearWeekDay: YearWeekDay) =
         shiftList.filter { it.start.yearWeekDay == yearWeekDay }
 
-    internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<HelperBooking> {
+    internal fun helpersOnDay(yearWeekDay: YearWeekDay): List<SalaryBooking> {
         return shiftsOnDay(yearWeekDay).values
             .map { it.helperBooking }
     }
 
-    internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, Shift> {
+    internal fun shiftsOnDay(yearWeekDay: YearWeekDay): Map<ShiftId, SalaryShift> {
         return shifts.filter { it.value.start.yearWeekDay == yearWeekDay }
     }
 

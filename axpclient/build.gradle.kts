@@ -32,7 +32,7 @@ kotlin {
                 implementation(project(":rfsimplejs"))
                 implementation(libs.jsoup)
 
-                implementation(libs.ktorClientOkHttp)
+                implementation(libs.ktorClientCio)
                 implementation(libs.ktorClientLogging)
             }
         }

@@ -23,12 +23,12 @@ class DatabaseAxpShiftReferences : AxpShiftReferences {
             .toEither { AxpShiftReferences.ShiftIdNotFound(axpBookingId) }
     }
 
-    override suspend fun saveAxpBookingToShiftId(bookingNumber: AxpBookingId, shiftId: ShiftId) = dbQuery {
+    override suspend fun saveAxpBookingToShiftId(bookingNumber: AxpBookingId, shiftId: ShiftId): Either<Unit, Unit> = dbQuery {
         ShiftReferenceTable.insert {
             it[ShiftReferenceTable.bookingNumber] = bookingNumber.axpId
             it[ShiftReferenceTable.shiftId] = shiftId.id.toJavaUuid()
         }
-        Unit
+        Either.Right(Unit)
     }
 
     override suspend fun shiftIdToAxpBooking(shiftId: ShiftId): Either<AxpShiftReferences.BookingIdNotFound, AxpBookingId> = dbQuery {

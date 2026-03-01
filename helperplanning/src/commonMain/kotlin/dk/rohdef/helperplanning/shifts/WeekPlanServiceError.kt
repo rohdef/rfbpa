@@ -7,8 +7,8 @@ sealed interface WeekPlanServiceError {
     object CannotCommunicateWithShiftsRepository : WeekPlanServiceError
 
     data class InsufficientPermissions(
+        val principal: RfbpaPrincipal,
         val expectedRole: RfbpaPrincipal.RfbpaRoles,
-        val actualRoles: Set<RfbpaPrincipal.RfbpaRoles>,
     ) : WeekPlanServiceError
 
     data class ShiftMissingInSalarySystem(

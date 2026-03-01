@@ -1,0 +1,1 @@
+Salary integration should be it's own gradle project to not mix system and salary

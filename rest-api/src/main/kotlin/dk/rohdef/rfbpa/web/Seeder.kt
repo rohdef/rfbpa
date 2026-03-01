@@ -6,6 +6,7 @@ import dk.rohdef.axpclient.AxpHelperReferences
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.helper.HelperTID
 import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.rfbpa.web.persistance.axp.HelperDataBaseItem
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,23 +27,22 @@ class Seeder(
         val helpers = Paths.get("helpers.yaml").readText()
             .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
 
-        helpers.map { helper ->
-            val tid = HelperTID(helper.value.helperTid)
-            val number = HelperNumber(helper.value.helperNumber)
-            val helperId = helperReferenceRepository.createHelperReference(tid, number)
-                .mapLeft {
-                    SeedError.CannotCreateReference(
-                        helper.value.helperTid,
-                        helper.value.helperNumber,
-                    )
-                }
-                .bind()
-
-            Helper.Permanent(helper.key, helper.key, helperId)
-        }.map { helper ->
-            helperRepository.create(helper)
-                .mapLeft { SeedError.CannotCreateHelper(helper) }
-                .bind()
+        helpers
+            .mapKeys { Helper.Permanent(it.key, it.key, HelperId.generateId()) }
+            .mapKeys { helper -> helperRepository.create(helper.key).mapLeft { SeedError.CannotCreateHelper(helper.key) }.bind() }
+            .map { helper ->
+                val tid = HelperTID(helper.value.helperTid)
+                val number = HelperNumber(helper.value.helperNumber)
+                val helperId = helper.key.id
+                helperReferenceRepository.createHelperReference(number, tid, helperId)
+                    .mapLeft {
+                        SeedError.CannotCreateReference(
+                            helper.value.helperTid,
+                            helper.value.helperNumber,
+                        )
+                    }
+                    .bind()
+                helper.key
         }
     }
 

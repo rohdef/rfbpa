@@ -2,8 +2,8 @@ package dk.rohdef.helperplanning.templates
 
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperTestData
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import kotlinx.datetime.DayOfWeek
@@ -75,39 +75,39 @@ object TemplateTestData {
     val idGenerator = TestSalarySystemRepository.IdGenerator.Default
 
     class TestRepositoryShifts(yearWeek: YearWeek) {
-        fun ShiftTemplate.toShift(yearWeekDay: YearWeekDay): Shift {
+        fun ShiftTemplate.toSalaryShift(yearWeekDay: YearWeekDay): SalaryShift {
             val end = if (this.end < this.start) {
                 yearWeekDay.nextDay()
             } else {
                 yearWeekDay
             }.atTime(this.end)
 
-            val helperBooking = when (helper) {
-                is HelperReservation.Helper -> HelperBooking.Booked(helper.asHelper())
-                HelperReservation.NoReservation -> HelperBooking.NoBooking
+            val booking = when (helper) {
+                is HelperReservation.Helper -> SalaryBooking.Helper(helper.asHelper())
+                HelperReservation.NoReservation -> SalaryBooking.NoBooking
             }
 
             val start = yearWeekDay.atTime(this.start)
-            return Shift(
-                helperBooking,
+            return SalaryShift(
+                booking,
                 idGenerator.generate(start, end),
                 start,
                 end,
             )
         }
 
-        val monday_day = ShiftTemplates.monday_day.toShift(yearWeek.atDayOfWeek(DayOfWeek.MONDAY))
+        val monday_day = ShiftTemplates.monday_day.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.MONDAY))
 
-        val tuesday_day = ShiftTemplates.tuesday_day.toShift(yearWeek.atDayOfWeek(DayOfWeek.TUESDAY))
-        val tueday_night = ShiftTemplates.tueday_night.toShift(yearWeek.atDayOfWeek(DayOfWeek.TUESDAY))
+        val tuesday_day = ShiftTemplates.tuesday_day.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.TUESDAY))
+        val tueday_night = ShiftTemplates.tueday_night.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.TUESDAY))
 
-        val wednesday_day = ShiftTemplates.wednesday_day.toShift(yearWeek.atDayOfWeek(DayOfWeek.WEDNESDAY))
+        val wednesday_day = ShiftTemplates.wednesday_day.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.WEDNESDAY))
 
-        val thursday_night = ShiftTemplates.thursday_night.toShift(yearWeek.atDayOfWeek(DayOfWeek.THURSDAY))
+        val thursday_night = ShiftTemplates.thursday_night.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.THURSDAY))
 
-        val saturday_day = ShiftTemplates.saturday_day.toShift(yearWeek.atDayOfWeek(DayOfWeek.SATURDAY))
+        val saturday_day = ShiftTemplates.saturday_day.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.SATURDAY))
 
-        val sunday_day = ShiftTemplates.sunday_day.toShift(yearWeek.atDayOfWeek(DayOfWeek.SUNDAY))
+        val sunday_day = ShiftTemplates.sunday_day.toSalaryShift(yearWeek.atDayOfWeek(DayOfWeek.SUNDAY))
     }
 
     object WeekTemplates {

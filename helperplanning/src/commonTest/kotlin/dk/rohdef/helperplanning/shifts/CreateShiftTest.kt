@@ -2,6 +2,9 @@ package dk.rohdef.helperplanning.shifts
 
 import arrow.core.left
 import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
 import dk.rohdef.rfweeks.YearWeek
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
@@ -12,12 +15,29 @@ import io.kotest.matchers.shouldBe
 import java.time.DayOfWeek
 
 class CreateShiftTest : FunSpec({
+    fun Shift.toSalaryShift(): SalaryShift {
+        val booking = when (this.helperBooking) {
+            is HelperBooking.Booked -> SalaryBooking.Helper(this.helperBooking.helper)
+            HelperBooking.NoBooking -> SalaryBooking.NoBooking
+        }
+        return SalaryShift(
+            booking,
+            this.shiftId,
+            this.start,
+            this.end,
+        )
+    }
+
     val salarySystemRepository = TestSalarySystemRepository()
     val shiftRepository = TestShiftRespository()
+    val helpersRepository = MemoryHelpersRepository()
     val weekSynchronizationRepository = MemoryWeekSynchronizationRepository()
-    val weekPlanService =
-        WeekPlanServiceImplementation(salarySystemRepository, shiftRepository, weekSynchronizationRepository)
-
+    val weekPlanService = WeekPlanServiceImplementation(
+        salarySystemRepository,
+        shiftRepository,
+        helpersRepository,
+        weekSynchronizationRepository,
+    )
 
     val all2024Weeks = YearWeek(2024, 1)..YearWeek(2024, 52)
     val week1to12 = YearWeek(2024, 1)..YearWeek(2024, 12)
@@ -52,11 +72,12 @@ class CreateShiftTest : FunSpec({
     test("Create shift while not synchronized - synchronization state is unchanged") {
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
-        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
-        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
+        val expectedShifts = listOf(testShift1)
+        salarySystemRepository.shiftList shouldContainExactly expectedShifts.map { it.toSalaryShift() }
+        shiftRepository.shiftList shouldContainExactly expectedShifts
 
-        val expectedSynchronizationStates = all2024Weeks.associate {
-            it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+        val expectedSynchronizationStates = all2024Weeks.associateWith {
+            WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
         }
         weekSynchronizationRepository.synchronizationStates(
             PrincipalsTestData.FiktivusMaximus.subject,
@@ -73,14 +94,15 @@ class CreateShiftTest : FunSpec({
         }
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
-        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
-        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
+        val expectedShifts = listOf(testShift1)
+        salarySystemRepository.shiftList shouldContainExactly expectedShifts.map { it.toSalaryShift() }
+        shiftRepository.shiftList shouldContainExactly expectedShifts
 
-        val expectedSynchronizationWeek1To12 = week1to12.associate {
-            it to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
+        val expectedSynchronizationWeek1To12 = week1to12.associateWith {
+            WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
-        val expectedSynchronizationWeek14to52 = week14to52.associate {
-            it to WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
+        val expectedSynchronizationWeek14to52 = week14to52.associateWith {
+            WeekSynchronizationRepository.SynchronizationState.SYNCHRONIZED
         }
         weekSynchronizationRepository.synchronizationStates(
             PrincipalsTestData.FiktivusMaximus.subject,
@@ -100,14 +122,15 @@ class CreateShiftTest : FunSpec({
         weekSynchronizationRepository.markPossiblyOutOfDate(PrincipalsTestData.FiktivusMaximus.subject, week13)
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
 
-        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
-        shiftRepository.shiftList shouldContainExactly listOf(testShift1)
+        val expectedShifts = listOf(testShift1)
+        salarySystemRepository.shiftList shouldContainExactly expectedShifts.map { it.toSalaryShift() }
+        shiftRepository.shiftList shouldContainExactly expectedShifts
 
-        val expectedSynchronizationWeek1To12 = week1to12.associate {
-            it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+        val expectedSynchronizationWeek1To12 = week1to12.associateWith {
+            WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
         }
-        val expectedSynchronizationWeek14to52 = week14to52.associate {
-            it to WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
+        val expectedSynchronizationWeek14to52 = week14to52.associateWith {
+            WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE
         }
         weekSynchronizationRepository.synchronizationStates(
             PrincipalsTestData.FiktivusMaximus.subject,
@@ -128,12 +151,12 @@ class CreateShiftTest : FunSpec({
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
             .shouldBeLeft()
 
-        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1)
+        salarySystemRepository.shiftList shouldContainExactly listOf(testShift1.toSalaryShift())
         shiftRepository.shiftList shouldContainExactly listOf()
     }
 
     test("shift not created in salary system") {
-        salarySystemRepository.addCreateShiftErrorRunner { start, end -> ShiftsError.NotAuthorized.left() }
+        salarySystemRepository.addCreateShiftErrorRunner { _, _ -> ShiftsError.NotAuthorized.left() }
         weekPlanService.createShift(PrincipalsTestData.FiktivusMaximus.allRoles, shift1Start, shift1End)
             .shouldBeLeft()
 
@@ -158,10 +181,13 @@ class CreateShiftTest : FunSpec({
                 .shouldBeRight()
 
             val fiktivusShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift1))
-            val realisShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
-            fiktivusSalaryWeek13 shouldBe fiktivusShiftsExpected
+            val fiktivusSalaryShiftsExpected = SalaryWeekPlan.unsafeFromList(week13, listOf(testShift1.toSalaryShift()))
+            fiktivusSalaryWeek13 shouldBe fiktivusSalaryShiftsExpected
             fiktivusShiftsWeek13 shouldBe fiktivusShiftsExpected
-            realisSalaryWeek13 shouldBe realisShiftsExpected
+
+            val realisShiftsExpected = WeekPlan.unsafeFromList(week13, listOf(testShift2))
+            val realisSalaryShiftsExpected = SalaryWeekPlan.unsafeFromList(week13, listOf(testShift2.toSalaryShift()))
+            realisSalaryWeek13 shouldBe realisSalaryShiftsExpected
             realisShiftsWeek13 shouldBe realisShiftsExpected
         }
 
@@ -178,8 +204,8 @@ class CreateShiftTest : FunSpec({
                 .shouldBeLeft()
 
             error shouldBe WeekPlanServiceError.InsufficientPermissions(
+                PrincipalsTestData.FiktivusMaximus.helperAdmin,
                 RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-                PrincipalsTestData.FiktivusMaximus.helperAdmin.roles,
             )
         }
     }
