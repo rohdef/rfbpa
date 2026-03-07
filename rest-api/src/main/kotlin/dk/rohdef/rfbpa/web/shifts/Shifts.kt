@@ -34,7 +34,7 @@ fun Route.shifts() {
             .domainPrincipal
         val helpers = helperService.all()
             .associate { it.id to it }
-            .withDefault { Helper.Unknown("Helper not found in system", it) }
+            .withDefault { Helper(it, "Helper not found in system", "Helper not found in system") }
 
         val weekPlans = withError({ it.toApiError() }) {
             weekPlanService.shifts(principal, it.yearWeekInterval).bind()

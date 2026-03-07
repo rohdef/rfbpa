@@ -1,6 +1,7 @@
 package dk.rohdef.helperplanning.shifts
 
 import dk.rohdef.helperplanning.TestSalarySystemRepository
+import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
@@ -46,4 +47,17 @@ internal fun interface ShiftBuilderOnDay {
 
 internal fun interface ShiftBuilderAtStart {
     fun end(hours: Int, minutes: Int): Shift
+}
+
+internal interface SalaryShiftBuilderWithHelper {
+    fun helper(helperBooking: HelperBooking): SalaryShiftBuilderOnDay
+    fun start(hours: Int, minutes: Int): SalaryShiftBuilderAtStart
+}
+
+internal fun interface SalaryShiftBuilderOnDay {
+    fun start(hours: Int, minutes: Int): SalaryShiftBuilderAtStart
+}
+
+internal fun interface SalaryShiftBuilderAtStart {
+    fun end(hours: Int, minutes: Int): SalaryShift
 }

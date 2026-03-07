@@ -23,10 +23,9 @@ class MemoryHelpersRepository : HelpersRepository {
             .toEither { HelpersError.CannotFindHelperById(helperId) }
     }
 
-    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper.Permanent> {
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> {
         return _helpers
             .values
-            .filterIsInstance<Helper.Permanent>()
             .firstOrNone { it.shortName == shortName }
             .toEither { HelpersError.CannotFindHelperByShortName(shortName) }
     }

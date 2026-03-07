@@ -30,7 +30,7 @@ interface Helper {
 const helpers: { [name: string]: Helper } = {
     camilla: {
         color: lightGreen["A100"],
-        filtedered: true,
+        filtedered: false,
     },
     helle: {
         color: purple["100"],
@@ -38,6 +38,10 @@ const helpers: { [name: string]: Helper } = {
     },
     jona: {
         color: yellow["100"],
+        filtedered: false,
+    },
+    stella: {
+        color: pink["200"],
         filtedered: false,
     },
     tex: {
@@ -52,7 +56,7 @@ const helpers: { [name: string]: Helper } = {
 
 interface HelperBookingDto {
     type: string,
-    shortName: string,
+    name: string,
 }
 
 interface ShiftDto {
@@ -99,7 +103,7 @@ export default function Shifts() {
                     const toShift = (shift: ShiftDto) => {
                         let helper
                         if (shift.helperBooking.type === "Booking") {
-                            helper = shift.helperBooking.shortName
+                            helper = shift.helperBooking.name
                         } else {
                             helper = "Ikke booket"
                         }

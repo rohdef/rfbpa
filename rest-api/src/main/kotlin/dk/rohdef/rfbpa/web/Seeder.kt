@@ -28,7 +28,7 @@ class Seeder(
             .let { Yaml.decodeFromString<Map<String, HelperDataBaseItem>>(it) }
 
         helpers
-            .mapKeys { Helper.Permanent(it.key, it.key, HelperId.generateId()) }
+            .mapKeys { Helper(HelperId.generateId(), it.key, it.key) }
             .mapKeys { helper -> helperRepository.create(helper.key).mapLeft { SeedError.CannotCreateHelper(helper.key) }.bind() }
             .map { helper ->
                 val tid = HelperTID(helper.value.helperTid)

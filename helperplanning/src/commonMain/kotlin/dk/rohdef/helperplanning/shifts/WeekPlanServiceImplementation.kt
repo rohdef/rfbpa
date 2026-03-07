@@ -88,7 +88,8 @@ class WeekPlanServiceImplementation(
                     when (it) {
                         ShiftsError.NotAuthorized -> Unit.left()
                         is ShiftsError.ShiftNotFound -> helpersRepository.create(
-                            dk.rohdef.helperplanning.helpers.Helper.Permanent(
+                            dk.rohdef.helperplanning.helpers.Helper(
+                                HelperId.generateId(),
                                 "Vacancy",
                                 Uuid.random().toHexString(),
                             )

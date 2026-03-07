@@ -10,7 +10,7 @@ class HelperServiceImplementation(
     override suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper> =
         helperRepository.byId(helperId)
 
-    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper.Permanent> =
+    override suspend fun byShortName(shortName: String): Either<HelpersError.CannotFindHelperByShortName, Helper> =
         helperRepository.byShortName(shortName)
 
     override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> =

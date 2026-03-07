@@ -28,7 +28,8 @@ class HelperMananger private constructor(
             val knownHelpers = (shifties.rfbpaBookingsHelper.map { it.helper } +
                     shifties.salaryBookingsHelper.map { it.helper })
                 .map {
-                    Helper.Permanent(
+                    Helper(
+                        HelperId.generateId(),
                         it,
                         it,
                     )
