@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.shifts
 
 import com.auth0.jwk.JwkProvider
@@ -5,6 +7,7 @@ import dk.rohdef.helperplanning.MemoryHelpersRepository
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
+import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.rfbpa.web.PrincipalsTestData
@@ -29,14 +32,16 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.datetime.Clock
-import kotlinx.uuid.UUID
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import kotlin.uuid.ExperimentalUuidApi
 
 class ShiftsTest : RfbpaSpec({
+//    val log = KotlinLogging.logger {}
+
     val url = "/api/public/shifts"
     val urlInInterval = "$url/in-interval"
     val urlWeek29To31 = "${urlInInterval}/${week29To31}"
@@ -77,6 +82,21 @@ class ShiftsTest : RfbpaSpec({
             TestHelpers.fiktivus.id to TestHelpers.fiktivus,
             TestHelpers.realis.id to TestHelpers.realis,
         )
+
+        restTest("Reading a single shift") { client ->
+            helperService.create(TestHelpers.fiktivus)
+            helperService.create(TestHelpers.realis)
+
+            val shift = weekPlanWeek29.allShifts.first()
+                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+            weekPlanService.shiftRepository.addShift(fiktivusSubject, shift)
+
+            val response = client.get("$url/${shift.shiftId.id.toHexDashString()}")
+
+            response.status shouldBe HttpStatusCode.OK
+            val shiftOut: ShiftOut = response.body()
+            shiftOut shouldBe ShiftOut.from(shift, helpers)
+        }
 
         restTest("Requesting single week") { client ->
             val response = client.get("$urlInInterval/$week29--$week29")
@@ -125,13 +145,15 @@ class ShiftsTest : RfbpaSpec({
         xrestTest("Helper bookings") {}
     }
 
-    xcontext("Reporting illness") {
-        restTest("for existing shift") { client ->
-            val response = client.put("$url/id/registrations/illness")
+    context("Reporting illness") {
+        restTest("creates a new shift") { client ->
+            val response = client.put("$url/45ae986c-3c57-4ffa-9f1f-30ec06b2fc53/registrations/illness") {
+                setBody("I feel under the weather")
+            }
 
             response.status shouldBe HttpStatusCode.OK
 
-            val newShiftId: UUID = response.body()
+//            val newShiftId: UUID = response.body()
             // TODO can it (should it?) be fixed
         }
 

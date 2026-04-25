@@ -13,6 +13,7 @@ import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
 import dk.rohdef.rfbpa.web.errors.UnknownError
+import dk.rohdef.rfbpa.web.shifts.ShiftOut
 import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,6 +33,8 @@ fun Route.shifts() {
         val principal = principal()
             .bind()
             .domainPrincipal
+
+        // TODO - look into this after refactors
         val helpers = helperService.all()
             .associate { it.id to it }
             .withDefault { Helper(it, "Helper not found in system", "Helper not found in system") }
@@ -46,12 +49,24 @@ fun Route.shifts() {
     get<Shifts.ById> { shiftById ->
         log.info { "Getting shift by ID: ${shiftById.id}" }
 
-        raise(WeekPlanServiceError.ShiftMissingInShiftSystem(ShiftId(shiftById.id)).toApiError())
+        val principal = principal()
+            .bind()
+            .domainPrincipal
+        val shiftId = ShiftId(shiftById.id)
 
-        "Having fun ${shiftById.id}?".httpOk()
+        // TODO - look into this after refactors
+        val helpers = helperService.all()
+            .associate { it.id to it }
+            .withDefault { Helper(it, "Helper not found in system", "Helper not found in system") }
+
+        val shift = withError({ it.toApiError() }) {
+            weekPlanService.shiftById(principal, shiftId).bind()
+        }
+
+        ShiftOut.from(shift, helpers).httpOk()
     }
 
-    put<Shifts> {
+    put<Shifts.ById.Registrations.Illness> {
         log.info { "Reporting illness" }
 
 //            weekPlanService.reportIllness(TODO(), ShiftId(it.id))
@@ -72,7 +87,17 @@ class Shifts {
     class ById(
         val parent: Shifts = Shifts(),
         val id: Uuid,
-    )
+    ) {
+        @Resource("registrations")
+        class Registrations(
+            val parent: ById,
+        ) {
+            @Resource("illness")
+            class Illness(
+                val parent: Registrations,
+            )
+        }
+    }
 }
 
 fun WeekPlanServiceError.toApiError(): ApiError {

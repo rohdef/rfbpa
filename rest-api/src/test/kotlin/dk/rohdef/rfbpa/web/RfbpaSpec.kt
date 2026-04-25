@@ -7,12 +7,13 @@ import dk.rohdef.rfbpa.web.modules.errorHandling
 import dk.rohdef.rfbpa.web.modules.routes
 import dk.rohdef.rfbpa.web.modules.security
 import dk.rohdef.rfbpa.web.modules.serialization
-import io.kotest.core.spec.DslDrivenSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContainerScope
 import io.kotest.core.spec.style.scopes.FunSpecRootScope
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
@@ -23,7 +24,7 @@ import java.security.interfaces.RSAPublicKey
 import java.time.Instant
 import java.util.*
 
-abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), FunSpecRootScope {
+abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : FunSpec() {
     val keyPair = KeyPairGenerator.getInstance("RSA")
         .let {
             it.initialize(2048)
@@ -107,6 +108,8 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
             }
 
             val client = createClient {
+                install(Logging)
+
                 install(ContentNegotiation) {
                     json()
                 }
@@ -117,8 +120,6 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : DslDrivenSpec(), Fun
             }
 
             environment {
-                // TODO: 24/11/2024 rohdef - probably wanted, where is it after update to ktor 3?
-//                developmentMode = false
             }
 
             RfBpaSpecScope().block(client)

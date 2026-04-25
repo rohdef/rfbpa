@@ -330,6 +330,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
             dataHelper.salarySystem.shifts[week10Shift2.shiftId] shouldBe expectedSalaryShift
         }
 
+        // TODO tests that needs filling in
         context("from shift listing") {
             context("for a new shift") {
                 test("booked to a known helper") {}

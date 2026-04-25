@@ -155,6 +155,22 @@ class WeekPlanServiceImplementation(
         shift
     }
 
+    override suspend fun shiftById(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId
+    ): Either<WeekPlanServiceError, Shift> = either {
+        ensureRole(
+            principal,
+            RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
+            WeekPlanServiceError::InsufficientPermissions,
+        )
+
+        val shift = shiftRepository.byId(principal.subject, shiftId)
+            .mapLeft { WeekPlanServiceError.ShiftMissingInShiftSystem(shiftId) }.bind()
+
+        shift
+    }
+
     override suspend fun shifts(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval

@@ -110,6 +110,36 @@ internal class AxpClient(
         booking
     }
 
+    suspend fun changeIllness() {
+//        curl 'https://www.handicapformidlingen.axp.dk/citizen_web/index.php' \
+//        -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+//        -H 'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8' \
+//        -H 'Cache-Control: no-cache' \
+//        -H 'Connection: keep-alive' \
+//        -H 'Content-Type: application/x-www-form-urlencoded' \
+//        -b 'PHPSESSID=ufsa6k4cnc0bkdsp55tcblf9f4; adlibitum_sid=ea67bcc446de295139992417608303d3' \
+//        -H 'Origin: https://www.handicapformidlingen.axp.dk' \
+//        -H 'Pragma: no-cache' \
+//        -H 'Referer: https://www.handicapformidlingen.axp.dk/citizen_web/index.php' \
+//        -H 'Sec-Fetch-Dest: frame' \
+//        -H 'Sec-Fetch-Mode: navigate' \
+//        -H 'Sec-Fetch-Site: same-origin' \
+//        -H 'Sec-Fetch-User: ?1' \
+//        -H 'Upgrade-Insecure-Requests: 1' \
+//        -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36' \
+//        -H 'sec-ch-ua: "Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"' \
+//        -H 'sec-ch-ua-mobile: ?0' \
+//        -H 'sec-ch-ua-platform: "Linux"' \
+//        --data-raw 'module_type=AXP&modInstId=20&booking=3164341&axp_act=&act=shift_plan&sub_act=shift_registrations&getting_popped=1&axp_cust_id=1366&date=1773183600&shifttype=4&assigned_temp=97424&regtype=-1&append_registration%5BILL%5D=1&DD%5BILL_FROMDATE%5D=11&MM%5BILL_FROMDATE%5D=03&YY%5BILL_FROMDATE%5D=2026&datepicker_iso_ILL_FROMDATE=2026-03-11&datepicker_display_ILL_FROMDATE=11-03-2026&append_registration%5BILL_DATA%5D%5Bill_from%5D=&append_registration%5B82%5D%5B-1%5D%5Bamount%5D=0&add_registration=Gem'
+
+        // instructions
+        // booking is filled by looking up the booking from the shift id
+        //= client.get("$url/${shift.shiftId.id.toHexDashString()}")
+
+
+        TODO()
+    }
+
     private enum class ShiftPlanAct {
         CHECK_APPROVED_CONFLICT,
         CHECK_DOUBLE_CONFLICT,
