@@ -8,12 +8,13 @@ plugins {
 description = "Integration with Handicapformidlingen"
 
 configureCommon()
+kotest()
 kotlin {
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
             dependencies {
-                kotest()
+                implementation(libs.bundles.kotest)
             }
         }
 

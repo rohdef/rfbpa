@@ -72,7 +72,7 @@ dependencies {
     implementation("io.ktor:ktor-client-logging")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
 
-    implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
+    implementation("org.mnode.ical4j:ical4j:4.2.5")
 
     implementation(libs.bundles.persistence)
 
@@ -80,6 +80,7 @@ dependencies {
     testImplementation(libs.bundles.kotest)
     testImplementation(libs.bundles.kotestJunit)
 
+    testImplementation(libs.kotestKoin)
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation(libs.koinTest)
 }

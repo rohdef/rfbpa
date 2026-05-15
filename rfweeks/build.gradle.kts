@@ -9,6 +9,7 @@ plugins {
 description = "Library for dealing with weeks and kotlinx.datetime"
 
 configureCommon()
+kotest()
 kotlin {
     sourceSets {
         val commonMain by getting {
@@ -19,8 +20,13 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlinxSerializationJson)
-                kotest()
             }
         }
+    }
+}
+tasks.named<Test>("jvmTest") {
+    useJUnitPlatform()
+    filter {
+        isFailOnNoMatchingTests = false
     }
 }

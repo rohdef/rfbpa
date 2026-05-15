@@ -13,18 +13,18 @@ import io.kotest.core.spec.style.scopes.FunSpecRootScope
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
+import org.koin.test.KoinTest
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.time.Instant
 import java.util.*
 
-abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : FunSpec() {
+abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : KoinTest, FunSpec() {
     val keyPair = KeyPairGenerator.getInstance("RSA")
         .let {
             it.initialize(2048)
@@ -108,7 +108,7 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : FunSpec() {
             }
 
             val client = createClient {
-                install(Logging)
+//                install(Logging)
 
                 install(ContentNegotiation) {
                     json()

@@ -14,11 +14,8 @@ interface WeekPlanService {
     suspend fun synchronize(principal: RfbpaPrincipal, yearWeek: YearWeek): Either<SynchronizationError, Unit>
 
     suspend fun createShift(principal: RfbpaPrincipal, start: YearWeekDayAtTime, end: YearWeekDayAtTime) : Either<WeekPlanServiceError, Shift>
-    suspend fun shiftById(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Shift>
     suspend fun shifts(principal: RfbpaPrincipal, yearWeekInterval: YearWeekInterval): Either<WeekPlanServiceError, List<WeekPlan>>
 
     suspend fun bookHelper(principal: RfbpaPrincipal, shiftId: ShiftId, helperId: HelperId): Either<WeekPlanServiceError, Unit>
     suspend fun unbookHelper(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Unit>
-
-    suspend fun reportIllness(principal: RfbpaPrincipal, shiftId: ShiftId): Either<WeekPlanServiceError, Shift>
 }

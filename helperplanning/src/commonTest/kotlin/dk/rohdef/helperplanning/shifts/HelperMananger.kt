@@ -5,12 +5,17 @@ package dk.rohdef.helperplanning.shifts
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.MemoryHelpersRepository
+import dk.rohdef.helperplanning.generateUuid
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.yaml.RfbpaBooking
 import dk.rohdef.helperplanning.shifts.yaml.SalaryBooking
 import dk.rohdef.helperplanning.shifts.yaml.Shifties
+import kotlinx.uuid.generateUUID
+import kotlinx.uuid.nameUUIDFromBytes
+import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class HelperMananger private constructor(
     val helpers: MemoryHelpersRepository,
@@ -18,6 +23,8 @@ class HelperMananger private constructor(
     val shiftIdToHelper: Map<ShiftId, HelperId>,
 ) {
     companion object {
+        private val uuidNamespace = Uuid.random()
+
         suspend fun create(shifties: Shifties): Either<Unit, HelperMananger> = either {
             val helpers = MemoryHelpersRepository()
             val shiftIdToHelper = mutableMapOf<ShiftId, HelperId>()
@@ -27,14 +34,14 @@ class HelperMananger private constructor(
 
             val knownHelpers = (shifties.rfbpaBookingsHelper.map { it.helper } +
                     shifties.salaryBookingsHelper.map { it.helper })
+                .toSet()
                 .map {
                     Helper(
-                        HelperId.generateId(),
+                    Uuid.generateUuid(uuidNamespace, it).let { HelperId(it) },
                         it,
                         it,
                     )
                 }
-                .toSet()
             knownHelpers.forEach { helpers.create(it) }
 
             val unknownSalaryHelpers = shifties.salaryBookingsUnknown.map { it.helper }

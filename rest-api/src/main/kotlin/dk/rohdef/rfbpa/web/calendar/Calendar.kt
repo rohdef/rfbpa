@@ -2,7 +2,6 @@ package dk.rohdef.rfbpa.web.calendar
 
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
@@ -49,8 +48,8 @@ fun Route.calendar() {
                 it.second.toJavaLocalDateTime(),
                 "Arbejde hos Rohde ${config.runtimeMode}"
             )
-                .withProperty(uidGenerator.generateUid())
-                .getFluentTarget<VEvent>()
+//                .withProperty(uidGenerator.generateUid())
+//                .fluentTarget
         }
             .fold(calendar) { calendar: FluentCalendar, event ->
                 calendar.withComponent(event)

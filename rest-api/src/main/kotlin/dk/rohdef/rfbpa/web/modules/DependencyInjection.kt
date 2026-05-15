@@ -11,6 +11,8 @@ import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
+import dk.rohdef.helperplanning.shifts.ShiftsService
+import dk.rohdef.helperplanning.shifts.ShiftsServiceImplementation
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.helperplanning.templates.TemplateApplier
@@ -84,6 +86,7 @@ fun Application.dependencyInjection() {
             repositories(rfBpaConfig),
             module { singleOf(::HelperServiceImplementation) bind HelperService::class },
             module { singleOf(::WeekPlanServiceImplementation) bind WeekPlanService::class },
+            module { singleOf(::ShiftsServiceImplementation) bind ShiftsService::class },
             module { singleOf(::TemplateApplier) bind TemplateApplier::class },
         )
     }

@@ -3,13 +3,13 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import com.auth0.jwk.JwkProvider
-import dk.rohdef.helperplanning.MemoryHelpersRepository
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.ShiftRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.WeekPlan
-import dk.rohdef.helperplanning.shifts.WeekPlanService
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfbpa.web.PrincipalsTestData
 import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
@@ -26,6 +26,7 @@ import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week31
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
+import io.kotest.common.KotestInternal
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
 import io.ktor.client.call.*
@@ -37,17 +38,17 @@ import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 import kotlin.uuid.ExperimentalUuidApi
 
-class ShiftsTest : RfbpaSpec({
-//    val log = KotlinLogging.logger {}
-
+@OptIn(KotestInternal::class)
+class ShiftsTest : KoinTest, RfbpaSpec({
     val url = "/api/public/shifts"
     val urlInInterval = "$url/in-interval"
     val urlWeek29To31 = "${urlInInterval}/${week29To31}"
 
     lateinit var weekPlanService: TestWeekPlanService
-    val helperService = HelperServiceImplementation(MemoryHelpersRepository())
     beforeEach {
         weekPlanService = TestWeekPlanService()
 
@@ -58,13 +59,12 @@ class ShiftsTest : RfbpaSpec({
                     single<Clock> { Clock.System }
                     single<JwkProvider> { JwkProvider { jwk } }
 
-                    // TODO: 29/10/2024 rohdef - introduce test helper service
-                    // TODO: 29/10/2024 rohdef - consider moving towards end to end
-//                    singleOf(::MemoryHelpersRepository) bind HelpersRepository::class
+                    single<SalarySystemRepository> { weekPlanService.salarySystem }
+                    single<WeekSynchronizationRepository> { weekPlanService.synchronizationRepository }
+                    single<ShiftRepository> { weekPlanService.shiftRepository }
                     single<HelpersRepository> { weekPlanService.helpersRepository }
                     singleOf(::HelperServiceImplementation) bind HelperService::class
-
-                    single<HelperService> { helperService }
+                    singleOf(::ShiftsServiceImplementation) bind ShiftsService::class
 
                     single<WeekPlanService> { weekPlanService }
                 },
@@ -83,6 +83,7 @@ class ShiftsTest : RfbpaSpec({
             TestHelpers.realis.id to TestHelpers.realis,
         )
 
+        val helperService by inject<HelperService>()
         restTest("Reading a single shift") { client ->
             helperService.create(TestHelpers.fiktivus)
             helperService.create(TestHelpers.realis)

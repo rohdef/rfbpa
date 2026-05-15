@@ -8,6 +8,7 @@ import dk.rohdef.arrowktor.put
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.ShiftId
+import dk.rohdef.helperplanning.shifts.ShiftsService
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.errors.ErrorData
@@ -26,6 +27,7 @@ import kotlin.uuid.Uuid
 private val log = KotlinLogging.logger {}
 fun Route.shifts() {
     val weekPlanService: WeekPlanService by inject()
+    val shiftsService: ShiftsService by inject()
     val helperService: HelperService by inject()
 
     get<Shifts.InInterval> {
@@ -60,7 +62,7 @@ fun Route.shifts() {
             .withDefault { Helper(it, "Helper not found in system", "Helper not found in system") }
 
         val shift = withError({ it.toApiError() }) {
-            weekPlanService.shiftById(principal, shiftId).bind()
+            shiftsService.shiftById(principal, shiftId).bind()
         }
 
         ShiftOut.from(shift, helpers).httpOk()

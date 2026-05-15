@@ -1,5 +1,5 @@
 [versions]
-kotlinVersion = "2.3.10"
+kotlinVersion = "2.3.21"
 
 kotlinxCoroutines = "1.10.1"
 kotlinxDateTime = "0.6.2"
@@ -20,8 +20,7 @@ koin = "4.1.0-Beta5"
 
 jsoup = "1.17.2"
 
-kotest = "6.0.0.M2"
-kotestAssertionsArrow = "2.0.0"
+kotest = "6.1.11"
 testLogger = "4.0.0"
 
 [libraries]
@@ -70,10 +69,11 @@ ktorClientLogging = { group = "io.ktor", name = "ktor-client-logging", version.r
 
 # Test
 kotestAssertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest"}
-kotestAssertionsArrow = { group = "io.kotest.extensions", name = "kotest-assertions-arrow", version.ref = "kotestAssertionsArrow"}
+kotestAssertionsArrow = { group = "io.kotest", name = "kotest-assertions-arrow", version.ref = "kotest"}
 kotestFrameworkEngine = { group = "io.kotest", name = "kotest-framework-engine", version.ref = "kotest"}
-kotestJunit5Runner   = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest"}
-gradleKotest = { group = "io.kotest", name = "kotest-framework-multiplatform-plugin-gradle", version.ref = "kotest" }
+kotestJunit5Runner = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest"}
+kotestKoin = { group = "io.kotest", name = "kotest-extensions-koin", version.ref = "kotest"}
+gradleKotest = { group = "io.kotest", name = "io.kotest.gradle.plugin", version.ref = "kotest" }
 gradleTestLogging = { group = "com.adarshr.test-logger", name = "com.adarshr.test-logger.gradle.plugin", version.ref = "testLogger" }
 
 

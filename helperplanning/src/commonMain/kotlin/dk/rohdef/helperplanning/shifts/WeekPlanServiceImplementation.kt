@@ -155,22 +155,6 @@ class WeekPlanServiceImplementation(
         shift
     }
 
-    override suspend fun shiftById(
-        principal: RfbpaPrincipal,
-        shiftId: ShiftId
-    ): Either<WeekPlanServiceError, Shift> = either {
-        ensureRole(
-            principal,
-            RfbpaPrincipal.RfbpaRoles.SHIFT_ADMIN,
-            WeekPlanServiceError::InsufficientPermissions,
-        )
-
-        val shift = shiftRepository.byId(principal.subject, shiftId)
-            .mapLeft { WeekPlanServiceError.ShiftMissingInShiftSystem(shiftId) }.bind()
-
-        shift
-    }
-
     override suspend fun shifts(
         principal: RfbpaPrincipal,
         yearWeekInterval: YearWeekInterval
@@ -215,61 +199,6 @@ class WeekPlanServiceImplementation(
             .mapLeft { TODO() }.bind()
     }
 
-    override suspend fun reportIllness(
-        principal: RfbpaPrincipal,
-        shiftId: ShiftId,
-    ): Either<WeekPlanServiceError, Shift> = either {
-        val currentShift = shiftRepository.byId(principal.subject, shiftId)
-            .mapLeft { it.toServiceError() }.bind()
-
-        ensure(currentShift.helperBooking is HelperBooking.Booked) {
-            WeekPlanServiceError.ShiftMustBeBooked(shiftId)
-        }
-
-        val illnessRegistrations = currentShift.registrations.filterIsInstance<Registration.Illness>()
-        if (illnessRegistrations.isEmpty()) {
-            weekSynchronizationRepository.markForSynchronization(principal.subject, currentShift.start.yearWeek)
-
-            val replacementShift = createReplacementShift(principal.subject, currentShift).bind()
-            reportAndRegisterIllness(principal.subject, currentShift, replacementShift.shiftId).bind()
-
-            weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, currentShift.start.yearWeek)
-
-            replacementShift
-        } else {
-            shiftRepository.byId(principal.subject, illnessRegistrations.first().replacementShiftId)
-                .mapLeft { it.toServiceError() }.bind()
-        }
-    }
-
-    suspend private fun createReplacementShift(
-        subject: RfbpaPrincipal.Subject,
-        shift: Shift
-    ): Either<WeekPlanServiceError, Shift> = either {
-        val replacementShift = salarySystem.createShift(subject, shift.start, shift.end)
-            .mapLeft { it.toServiceError() }.bind()
-            .toShift(subject)
-            .mapLeft { TODO() }.bind()
-        shiftRepository.createOrUpdate(subject, replacementShift)
-            .mapLeft { it.toServiceError() }.bind()
-        replacementShift
-    }
-
-    private suspend fun reportAndRegisterIllness(
-        subject: RfbpaPrincipal.Subject,
-        shift: Shift,
-        replacementShiftId: ShiftId,
-    ): Either<WeekPlanServiceError, Unit> = either {
-        val illShift =
-            shift.copy(registrations = shift.registrations + Registration.Illness(replacementShiftId))
-        salarySystem.reportIllness(subject, shift.shiftId, replacementShiftId)
-            .mapLeft { it.toServiceError() }
-            .bind()
-        shiftRepository.createOrUpdate(subject, illShift)
-            .mapLeft { it.toServiceError() }
-            .bind()
-    }
-
     private fun <ErrorType> Raise<ErrorType>.ensureRole(
         principal: RfbpaPrincipal,
         role: RfbpaPrincipal.RfbpaRoles,
@@ -293,14 +222,6 @@ class WeekPlanServiceImplementation(
             is SynchronizationError.InsufficientPermissions -> WeekPlanServiceError.InsufficientPermissions(
                 principal,
                 expectedRole,
-            )
-        }
-    }
-
-    private fun SalarySystemRepository.RegisterIllnessError.toServiceError(): WeekPlanServiceError {
-        return when (this) {
-            is SalarySystemRepository.RegisterIllnessError.ShiftNotFound -> WeekPlanServiceError.ShiftMissingInSalarySystem(
-                this.shiftId
             )
         }
     }

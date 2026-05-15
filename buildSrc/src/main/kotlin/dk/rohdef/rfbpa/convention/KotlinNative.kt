@@ -44,7 +44,7 @@ fun Project.configureCommon() {
 }
 
 fun Project.kotest() {
-    apply(plugin = "io.kotest.multiplatform")
+    apply(plugin = "io.kotest")
     apply(plugin = "com.adarshr.test-logger")
 
     configure<KotlinMultiplatformExtension> {

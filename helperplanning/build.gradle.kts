@@ -22,6 +22,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlinxSerializationYaml)
+                implementation(libs.bundles.kotest)
             }
         }
 
