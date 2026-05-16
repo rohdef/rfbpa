@@ -88,7 +88,7 @@ class ShiftsServiceImplementation(
     ): Either<WeekPlanServiceError, Unit> = either {
         val illShift =
             shift.copy(registrations = shift.registrations + Registration.Illness(replacementShiftId))
-        salarySystem.reportIllness(subject, shift.shiftId, replacementShiftId)
+        salarySystem.reportIllness(subject, shift, replacementShiftId)
             .mapLeft { it.toServiceError() }
             .bind()
         shiftRepository.createOrUpdate(subject, illShift)

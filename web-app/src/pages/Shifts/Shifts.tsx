@@ -1,58 +1,17 @@
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    Button, Checkbox, FormControlLabel,
-    FormGroup,
-    Grid,
-    Paper,
-    TextField
-} from "@mui/material";
-import {FormEvent, useState} from "react";
+import {Accordion, AccordionDetails, AccordionSummary, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
+import React, {useEffect, useState} from "react";
 import axios, {AxiosResponse} from "axios";
 import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
 import {TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
-import {format, parseISO} from "date-fns";
-import {da} from "date-fns/locale";
-import {DayPilot, DayPilotCalendar} from "@daypilot/daypilot-lite-react";
-import {brown, lightGreen, pink, purple, red, yellow} from "@mui/material/colors";
+import {parseISO} from "date-fns";
 import {WeekPlan} from "./WeekPlan.ts";
 import {Shift} from "./Shift.ts";
 import {ExpandMore} from "@mui/icons-material";
 import AuthorizationContext from "../../contexts/AuthorizationContext/AuthorizationContext.tsx";
-
-interface Helper {
-    color: string
-    filtedered: boolean
-}
-
-const helpers: { [name: string]: Helper } = {
-    camilla: {
-        color: lightGreen["A100"],
-        filtedered: false,
-    },
-    helle: {
-        color: purple["100"],
-        filtedered: false,
-    },
-    jona: {
-        color: yellow["100"],
-        filtedered: false,
-    },
-    stella: {
-        color: pink["200"],
-        filtedered: false,
-    },
-    tex: {
-        color: brown["100"],
-        filtedered: false,
-    },
-    ulrik: {
-        color: pink["100"],
-        filtedered: false,
-    },
-}
+import ShiftShedule from "./ShiftShedule.tsx"
+import {HelperStorage} from "../../helpers/HelperStorage.ts"
+import {DayPilot, DayPilotNavigator} from "@daypilot/daypilot-lite-react"
+import Date = DayPilot.Date
 
 interface HelperBookingDto {
     type: string,
@@ -79,20 +38,46 @@ interface WeekPlanDto {
 }
 
 export default function Shifts() {
-    const [unbooked, setUnbooked] = useState("")
-    const [weekPlans, setWeekPlans] = useState<WeekPlan[]>([])
     const {authentication} = useAuthentication()
     const client = axios.create({
         baseURL: "http://localhost:8080/api/public",
     });
 
-    const [startWeek, setStartWeek] = useState("")
-    const [endWeek, setEndWeek] = useState("")
+    const emptyPlan = WeekPlan.create({
+        week: "2026-W01",
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+        sunday: [],
+    })
+    const [weekPlan, setWeekPlan] = useState(emptyPlan)
+    const [startDate, setStartDate] = useState(Date.today)
 
-        const yearWeekInterval = `${startWeek}--${endWeek}`
+    useEffect(() => {
+        const year = startDate.getYear()
+        const weekNumber = `${startDate.weekNumberISO()}`.padStart(2, '0')
+        const week = `${year}-W${weekNumber}`
+        const yearWeekInterval = `${week}--${week}`
+
+        const toShift = (shift: ShiftDto) => {
+            let helper
+            if (shift.helperBooking.type === "Booking") {
+                helper = shift.helperBooking.name
+            } else {
+                helper = "Ikke booket"
+            }
+            return Shift.create({
+                shiftId: shift.shiftId,
+                start: parseISO(shift.start),
+                end: parseISO(shift.end),
+                helper: helper
+            })
+        }
+
         if (authentication instanceof TokenAuthentication) {
             client.get(`shifts/in-interval/${yearWeekInterval}`, {
                 headers: {
@@ -100,192 +85,83 @@ export default function Shifts() {
                 },
             })
                 .then((weekPlans: AxiosResponse<WeekPlanDto[], any>) => {
-                    const toShift = (shift: ShiftDto) => {
-                        let helper
-                        if (shift.helperBooking.type === "Booking") {
-                            helper = shift.helperBooking.name
-                        } else {
-                            helper = "Ikke booket"
-                        }
-                        return Shift.create({
-                            shiftId: shift.shiftId,
-                            start: parseISO(shift.start),
-                            end: parseISO(shift.end),
-                            helper: helper
-                        })
-                    }
-                    return weekPlans.data.map((weekPlan) => {
-                        return WeekPlan.create({
-                            week: weekPlan.week,
+                    return weekPlans.data[0]
+                })
+                .then(weekPlan => {
+                    return WeekPlan.create({
+                        week: weekPlan.week,
 
-                            monday: weekPlan.monday.map(toShift),
-                            tuesday: weekPlan.tuesday.map(toShift),
-                            wednesday: weekPlan.wednesday.map(toShift),
-                            thursday: weekPlan.thursday.map(toShift),
-                            friday: weekPlan.friday.map(toShift),
-                            saturday: weekPlan.saturday.map(toShift),
-                            sunday: weekPlan.sunday.map(toShift),
-                        })
+                        monday: weekPlan.monday.map(toShift),
+                        tuesday: weekPlan.tuesday.map(toShift),
+                        wednesday: weekPlan.wednesday.map(toShift),
+                        thursday: weekPlan.thursday.map(toShift),
+                        friday: weekPlan.friday.map(toShift),
+                        saturday: weekPlan.saturday.map(toShift),
+                        sunday: weekPlan.sunday.map(toShift),
                     })
                 })
-                .then((weekPlans: WeekPlan[]) => {
-                    const shifts = weekPlans.flatMap(weekPlan => {
-                        return weekPlan.allShifts()
-                    })
+                .then(setWeekPlan)
+        }
+    }, [startDate]);
 
-                    const shiftStr = shifts
-                        .filter(shift => shift.helper === "Ikke booket")
-                        .map(shift => {
-                            const formattedDate = format(shift.start, "EEEE 'den' d. MMM:", {
-                                locale: da
-                            })
-
-                            const formattedStart = format(shift.start, "HH:mm")
-                            const formattedEnd = format(shift.end, "HH:mm")
-                            const formattedInterval = `${formattedStart} - ${formattedEnd}`
-
-                            return `${formattedDate}\n${formattedInterval}`
-                        }).join("\n\n")
-
-                    setUnbooked(shiftStr)
-
-                    setWeekPlans(weekPlans)
-                })
+    const styles = {
+        wrap: {
+            display: "flex"
+        },
+        left: {
+            marginRight: "10px"
+        },
+        main: {
+            flexGrow: "1"
         }
     }
 
-    interface WeekPlanViewOptions {
-        weekPlan: WeekPlan
-    }
-
-    const WeekPlanView = ({weekPlan}: WeekPlanViewOptions) => {
-        const startDate = parseISO(`${weekPlan.week}-1`)
-
-        const events: DayPilot.EventData[] = weekPlan.allShifts()
-            .filter(shift => shift.helper !== "camilla")
-            .map(shift => {
-                const helper = helpers[shift.helper]
-                let color
-                if (helper) {
-                    color = helper.color
-                } else {
-                    console.log(`Missing helper: ${shift.helper}`)
-                    color = red["100"]
-                }
-
-                return {
-                    id: shift.shiftId,
-                    text: shift.helper,
-                    start: new DayPilot.Date(shift.start, true),
-                    end: new DayPilot.Date(shift.end, true),
-                    backColor: color,
-                }
-            })
-
-        return (
-            <DayPilotCalendar
-                cellHeight={20}
-
-                heightSpec="Full"
-                events={events}
-                headerDateFormat="dddd"
-                durationBarVisible={false}
-                viewType="Week"
-                weekStarts={1}
-                timeRangeSelectedHandling="Disabled"
-                startDate={new DayPilot.Date(startDate, true)}
-                timeFormat="Clock24Hours"/>
-        )
-    }
+    const helpers = new HelperStorage()
 
     return (
         <AuthorizationContext>
             <div>
                 <h1>Shifts</h1>
 
-                {weekPlans.map((weekPlan, index) => (
-                    <Paper key={index} sx={{ marginBottom: 2 }}>
-                        <h2>{weekPlan.week}</h2>
-                        <WeekPlanView weekPlan={weekPlan}/>
-                    </Paper>
-                ))}
+                <div style={ styles.wrap }>
+                    <div style={styles.left}>
+                        <DayPilotNavigator
+                            selectMode="Week"
+                            showMonths={2}
+                            weekStarts={1}
+                            showWeekNumbers={true}
+                            selectionDay={startDate}
+                            onTimeRangeSelected={ args => { setStartDate(args.start) }}
+                        />
+                        <Accordion sx={{ marginBottom: 2 }}>
+                            <AccordionSummary
+                                id="filters"
+                                aria-controls="accordion-filters"
+                                expandIcon={<ExpandMore/>}>
+                                Filters
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <FormGroup>
+                                    {helpers.all.map((helper) => (
+                                        <FormControlLabel
+                                            key={helper.id}
+                                            label={helper.name}
+                                            control={<Checkbox checked={helper.filtered} />}
+                                            sx={{ backgroundColor: helper.color }}>
+                                        </FormControlLabel>
+                                    ))}
+                                </FormGroup>
+                            </AccordionDetails>
+                        </Accordion>
+                    </div>
 
-                <Box>
-                    <Accordion sx={{ marginBottom: 2 }}>
-                        <AccordionSummary
-                            id="quick-message"
-                            aria-controls="accordion-text-message"
-                            expandIcon={<ExpandMore/>}>
-                            Text message
-                        </AccordionSummary>
-                        <AccordionDetails>
-                    <pre>
-                        {unbooked}
-                    </pre>
-                        </AccordionDetails>
-                    </Accordion>
-
-                    <Accordion sx={{ marginBottom: 2 }}>
-                        <AccordionSummary
-                            id="filters"
-                            aria-controls="accordion-filters"
-                            expandIcon={<ExpandMore/>}>
-                            Filters
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <FormGroup>
-                                {Object.keys(helpers).map((key) => (
-                                    <FormControlLabel
-                                        key={key}
-                                        label={key}
-                                        control={<Checkbox checked={helpers[key].filtedered} />}
-                                        sx={{ backgroundColor: helpers[key].color }} />
-                                ))}
-                            </FormGroup>
-                        </AccordionDetails>
-                    </Accordion>
-                </Box>
-
-                <Box component="form" autoComplete="off" onSubmit={handleSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="From"
-                                margin="normal"
-                                fullWidth
-                                required
-                                onChange={(e) => setStartWeek(e.target.value)}
-                                variant="outlined"
-                                color="secondary"
-                                type="week"
-                                value={startWeek}
-                            />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="To"
-                                margin="normal"
-                                fullWidth
-                                required
-                                onChange={(e) => setEndWeek(e.target.value)}
-                                variant="outlined"
-                                color="secondary"
-                                type="week"
-                                value={endWeek}
-                            />
-                        </Grid>
-                    </Grid>
-
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="secondary"
-                        type="submit"
-                        sx={{ marginTop: 2, marginBottom: 2 }}>
-                        Read
-                    </Button>
-                </Box>
+                    <div style={ styles.main }>
+                        <ShiftShedule
+                            weekPlan={weekPlan}
+                            helpers={helpers}
+                        />
+                    </div>
+                </div>
             </div>
         </AuthorizationContext>
     )

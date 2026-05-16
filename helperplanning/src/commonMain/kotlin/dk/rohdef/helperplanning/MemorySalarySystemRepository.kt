@@ -41,9 +41,10 @@ class MemorySalarySystemRepository : SalarySystemRepository {
 
     override suspend fun reportIllness(
         subject: RfbpaPrincipal.Subject,
-        shiftId: ShiftId,
+        shift: Shift,
         replacementShiftId: ShiftId
     ): Either<SalarySystemRepository.RegisterIllnessError, Unit> = either {
+        val shiftId = shift.shiftId
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
             SalarySystemRepository.RegisterIllnessError.ShiftNotFound(shiftId)
         }
