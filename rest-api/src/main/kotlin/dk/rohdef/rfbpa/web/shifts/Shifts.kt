@@ -1,5 +1,7 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
+package dk.rohdef.rfbpa.web.shifts
+
 import arrow.core.raise.withError
 import dk.rohdef.arrowktor.ApiError
 import dk.rohdef.arrowktor.get
@@ -14,8 +16,6 @@ import dk.rohdef.helperplanning.shifts.WeekPlanServiceError
 import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
 import dk.rohdef.rfbpa.web.errors.UnknownError
-import dk.rohdef.rfbpa.web.shifts.ShiftOut
-import dk.rohdef.rfbpa.web.shifts.WeekPlanOut
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.resources.*
@@ -68,12 +68,24 @@ fun Route.shifts() {
         ShiftOut.from(shift, helpers).httpOk()
     }
 
-    put<Shifts.ById.Registrations.Illness> {
-        log.info { "Reporting illness" }
+    put<Shifts.ById.Registrations.Illness> { illness ->
+        log.info { "Reporting illness for shift ${illness.id}" }
 
-//            weekPlanService.reportIllness(TODO(), ShiftId(it.id))
+        val principal = principal()
+            .bind()
+            .domainPrincipal
+        val shiftId = ShiftId(illness.id)
 
-        "Samuel".httpOk()
+        // TODO - look into this after refactors
+        val helpers = helperService.all()
+            .associate { it.id to it }
+            .withDefault { Helper(it, "Helper not found in system", "Helper not found in system") }
+
+        val replacementShift = withError({ it.toApiError() }) {
+            shiftsService.reportIllness(principal, shiftId).bind()
+        }
+
+        ShiftOut.from(replacementShift, helpers).httpOk()
     }
 }
 
@@ -94,10 +106,13 @@ class Shifts {
         class Registrations(
             val parent: ById,
         ) {
+            val id = parent.id
             @Resource("illness")
             class Illness(
                 val parent: Registrations,
-            )
+            ) {
+                val id = parent.id
+            }
         }
     }
 }

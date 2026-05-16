@@ -3,7 +3,6 @@ package dk.rohdef.helperplanning.shifts
 import dk.rohdef.helperplanning.PrincipalsTestData
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
-import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.shifts.yaml.Shifties

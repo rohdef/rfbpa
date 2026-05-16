@@ -11,9 +11,6 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.yaml.RfbpaBooking
 import dk.rohdef.helperplanning.shifts.yaml.SalaryBooking
 import dk.rohdef.helperplanning.shifts.yaml.Shifties
-import kotlinx.uuid.generateUUID
-import kotlinx.uuid.nameUUIDFromBytes
-import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

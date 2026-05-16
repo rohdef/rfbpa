@@ -5,6 +5,7 @@ import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
@@ -20,7 +21,7 @@ interface SalarySystemRepository {
 
     suspend fun reportIllness(
         subject: RfbpaPrincipal.Subject,
-        shiftId: ShiftId,
+        shift: Shift,
         replacementShiftId: ShiftId,
     ) : Either<RegisterIllnessError, Unit>
 

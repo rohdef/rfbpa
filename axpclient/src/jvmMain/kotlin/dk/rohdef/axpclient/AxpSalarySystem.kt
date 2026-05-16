@@ -14,6 +14,7 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
@@ -44,10 +45,18 @@ class AxpSalarySystem(
 
     override suspend fun reportIllness(
         subject: RfbpaPrincipal.Subject,
-        shiftId: ShiftId,
+        shift: Shift,
         replacementShiftId: ShiftId
-    ): Either<SalarySystemRepository.RegisterIllnessError, Unit> {
-        TODO("Not yet implemented")
+    ): Either<SalarySystemRepository.RegisterIllnessError, Unit> = either {
+        ensureLoggedIn()
+
+        val axpBookingId = axpShiftReferences.shiftIdToAxpBooking(shift.shiftId)
+            .getOrElse { TODO("Handle the optional better") }
+
+        axpClient.reportIllness(
+            axpBookingId,
+            shift.start.date,
+        )
     }
 
     override suspend fun createShift(

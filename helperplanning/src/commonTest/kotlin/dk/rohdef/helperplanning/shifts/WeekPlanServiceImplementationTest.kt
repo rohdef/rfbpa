@@ -4,8 +4,6 @@ import arrow.core.left
 import arrow.core.right
 import dk.rohdef.helperplanning.PrincipalsTestData
 import dk.rohdef.helperplanning.RfbpaPrincipal
-import dk.rohdef.helperplanning.TestSalarySystemRepository
-import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperTestData
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
@@ -15,7 +13,6 @@ import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import net.mamoe.yamlkt.Yaml
 
