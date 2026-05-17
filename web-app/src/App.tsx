@@ -42,7 +42,6 @@ export const rfbpaRoutes: RfbpaRoutes = {
 }
 
 function App() {
-
     const routes = createBrowserRouter(Object.values(rfbpaRoutes))
 
     return (

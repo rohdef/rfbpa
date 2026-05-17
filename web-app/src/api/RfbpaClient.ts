@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {WeekPlan} from "../pages/Shifts/WeekPlan";
 import {Shift} from "../pages/Shifts/Shift";
 import {parseISO} from "date-fns";
+import {TokenAuthentication} from "../contexts/AuthenticationContext/Authentication.tsx"
 
 export interface HelperBookingDto {
     type: string;
@@ -26,15 +27,12 @@ export interface WeekPlanDto {
     sunday: ShiftDto[];
 }
 
-export class RfBpaClient {
+export class RfbpaClient {
     private client: AxiosInstance;
 
-    constructor(token: string) {
+    constructor(baseUrl: string) {
         this.client = axios.create({
-            baseURL: "http://localhost:8080/api/public",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            baseURL: baseUrl,
         });
     }
 
@@ -66,25 +64,56 @@ export class RfBpaClient {
         });
     }
 
-    async getShiftsInWeek(yearWeekInterval: string): Promise<WeekPlan[]> {
+    async getShiftsInWeek(week: string, token: TokenAuthentication): Promise<WeekPlan> {
+        const weekPlans = await this.getShiftsInWeekInterval(week, week, token)
+        return weekPlans[0]
+    }
+
+    async getShiftsInWeekInterval(startWeek: string, endWeek: string, token: TokenAuthentication): Promise<WeekPlan[]> {
+        const yearWeekInterval = `${startWeek}--${endWeek}`
         const response: AxiosResponse<WeekPlanDto[]> = await this.client.get(
-            `shifts/in-interval/${yearWeekInterval}`
+            `shifts/in-interval/${yearWeekInterval}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token.token}`,
+                },
+            }
         );
         return response.data.map((dto) => this.toWeekPlan(dto));
     }
 
-    async updateShift(shift: Shift): Promise<void> {
+    async updateShift(shift: Shift, token: TokenAuthentication): Promise<void> {
         console.log(`Stub: Updating shift ${shift.shiftId}`, shift);
-        // await this.client.put(`shifts/${shift.shiftId}`, shift);
+        // await this.client.put(`shifts/${shift.shiftId}`, shift, {
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // });
     }
 
-    async deleteShift(shiftId: string): Promise<void> {
+    async deleteShift(shiftId: string, token: TokenAuthentication): Promise<void> {
         console.log(`Stub: Deleting shift ${shiftId}`);
-        // await this.client.delete(`shifts/${shiftId}`);
+        // await this.client.delete(`shifts/${shiftId}`, {
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // });
     }
 
-    async reportIllness(shiftId: string): Promise<void> {
-        console.log(`Stub: Reporting illness for shift ${shiftId}`);
-        // await this.client.post(`shifts/${shiftId}/report-illness`);
+    async reportIllness(shiftId: string, token: TokenAuthentication): Promise<string> {
+        console.log(`Reporting illness for shift ${shiftId}`);
+        const response: AxiosResponse<ShiftDto> = await this.client.put(
+            `shifts/${shiftId}/registrations/illness`,
+            "",
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token.token}`,
+                },
+            }
+        );
+        console.log("New shift:");
+        console.log(response.data);
+        return response.data.shiftId
     }
 }

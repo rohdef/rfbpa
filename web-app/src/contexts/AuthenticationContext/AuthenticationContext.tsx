@@ -2,7 +2,6 @@ import React, {ReactNode, useEffect, useState} from "react"
 import {Authentication, AuthenticationHelper, NoAuthentication, TokenAuthentication} from "./Authentication.tsx";
 import {isAfter} from "date-fns/isAfter";
 
-
 interface AuthenticationValues {
     authentication: Authentication
     setAuthentication: (authentication: Authentication) => void,

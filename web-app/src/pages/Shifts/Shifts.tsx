@@ -1,50 +1,30 @@
-import {Accordion, AccordionDetails, AccordionSummary, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary, Alert, CircularProgress,
+    Checkbox,
+    FormControlLabel,
+    FormGroup
+} from "@mui/material";
 import React, {useEffect, useState} from "react";
-import axios, {AxiosResponse} from "axios";
-import {useAuthentication} from "../../contexts/AuthenticationContext/AuthenticationContext.tsx";
-import {TokenAuthentication} from "../../contexts/AuthenticationContext/Authentication.tsx";
-import {parseISO} from "date-fns";
 import {WeekPlan} from "./WeekPlan.ts";
-import {Shift} from "./Shift.ts";
 import {ExpandMore} from "@mui/icons-material";
-import AuthorizationContext from "../../contexts/AuthorizationContext/AuthorizationContext.tsx";
 import ShiftShedule from "./ShiftShedule.tsx"
 import {HelperStorage} from "../../helpers/HelperStorage.ts"
 import {DayPilot, DayPilotNavigator} from "@daypilot/daypilot-lite-react"
+import {RfbpaClientProvider, useRfbpaClient} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
 import Date = DayPilot.Date
 
-interface HelperBookingDto {
-    type: string,
-    name: string,
-}
-
-interface ShiftDto {
-    shiftId: string,
-    start: string,
-    end: string,
-    helperBooking: HelperBookingDto,
-}
-
-interface WeekPlanDto {
-    week: string,
-
-    monday: ShiftDto[],
-    tuesday: ShiftDto[],
-    wednesday: ShiftDto[],
-    thursday: ShiftDto[],
-    friday: ShiftDto[],
-    saturday: ShiftDto[],
-    sunday: ShiftDto[],
+const dateToWeek = (date: Date) => {
+    const year = date.getYear()
+    const weekNumber = `${date.weekNumberISO()}`.padStart(2, '0')
+    return `${year}-W${weekNumber}`
 }
 
 export default function Shifts() {
-    const {authentication} = useAuthentication()
-    const client = axios.create({
-        baseURL: "http://localhost:8080/api/public",
-    });
-
+    const {rfbpaClient} = useRfbpaClient()
     const emptyPlan = WeekPlan.create({
-        week: "2026-W01",
+        week: dateToWeek(Date.today()),
 
         monday: [],
         tuesday: [],
@@ -56,52 +36,24 @@ export default function Shifts() {
     })
     const [weekPlan, setWeekPlan] = useState(emptyPlan)
     const [startDate, setStartDate] = useState(Date.today)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        const year = startDate.getYear()
-        const weekNumber = `${startDate.weekNumberISO()}`.padStart(2, '0')
-        const week = `${year}-W${weekNumber}`
-        const yearWeekInterval = `${week}--${week}`
+        const week = dateToWeek(startDate)
 
-        const toShift = (shift: ShiftDto) => {
-            let helper
-            if (shift.helperBooking.type === "Booking") {
-                helper = shift.helperBooking.name
-            } else {
-                helper = "Ikke booket"
-            }
-            return Shift.create({
-                shiftId: shift.shiftId,
-                start: parseISO(shift.start),
-                end: parseISO(shift.end),
-                helper: helper
+        setIsLoading(true)
+        setError(null)
+        rfbpaClient.getShiftsInWeek(week)
+            .then(weekPlan => {
+                setError(null)
+                setWeekPlan(weekPlan)
             })
-        }
-
-        if (authentication instanceof TokenAuthentication) {
-            client.get(`shifts/in-interval/${yearWeekInterval}`, {
-                headers: {
-                    Authorization: `Bearer ${authentication.token}`
-                },
+            .catch(e => {
+                console.error('Failed to fetch shifts', e)
+                setError('Failed to fetch shifts. Please try again later.')
             })
-                .then((weekPlans: AxiosResponse<WeekPlanDto[], any>) => {
-                    return weekPlans.data[0]
-                })
-                .then(weekPlan => {
-                    return WeekPlan.create({
-                        week: weekPlan.week,
-
-                        monday: weekPlan.monday.map(toShift),
-                        tuesday: weekPlan.tuesday.map(toShift),
-                        wednesday: weekPlan.wednesday.map(toShift),
-                        thursday: weekPlan.thursday.map(toShift),
-                        friday: weekPlan.friday.map(toShift),
-                        saturday: weekPlan.saturday.map(toShift),
-                        sunday: weekPlan.sunday.map(toShift),
-                    })
-                })
-                .then(setWeekPlan)
-        }
+            .finally(() => setIsLoading(false))
     }, [startDate]);
 
     const styles = {
@@ -119,7 +71,7 @@ export default function Shifts() {
     const helpers = new HelperStorage()
 
     return (
-        <AuthorizationContext>
+        <RfbpaClientProvider>
             <div>
                 <h1>Shifts</h1>
 
@@ -156,13 +108,17 @@ export default function Shifts() {
                     </div>
 
                     <div style={ styles.main }>
-                        <ShiftShedule
-                            weekPlan={weekPlan}
-                            helpers={helpers}
-                        />
+                        {isLoading && <CircularProgress />}
+                        {error && <Alert severity="error">{error}</Alert>}
+                        {!isLoading && !error && (
+                            <ShiftShedule
+                                weekPlan={weekPlan}
+                                helpers={helpers}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
-        </AuthorizationContext>
+        </RfbpaClientProvider>
     )
 }

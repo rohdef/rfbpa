@@ -20,7 +20,6 @@ fun Application.routes() {
                 shifts()
             }
         }
-        shifts()
 
         health()
     }

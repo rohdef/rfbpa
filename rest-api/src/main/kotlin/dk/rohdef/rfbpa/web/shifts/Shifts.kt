@@ -19,6 +19,7 @@ import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.resources.*
+import io.ktor.server.resources.delete
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import kotlin.uuid.ExperimentalUuidApi
@@ -48,6 +49,12 @@ fun Route.shifts() {
         weekPlans.map { WeekPlanOut.from(it, helpers) }.httpOk()
     }
 
+    post<Shifts> {
+        log.info { "Pretending to create shift" }
+
+        Uuid.random().httpOk()
+    }
+
     get<Shifts.ById> { shiftById ->
         log.info { "Getting shift by ID: ${shiftById.id}" }
 
@@ -66,6 +73,16 @@ fun Route.shifts() {
         }
 
         ShiftOut.from(shift, helpers).httpOk()
+    }
+
+    put<Shifts.ById> { shiftById ->
+        log.info { "Pretending to update shift ${shiftById.id}" }
+
+        Uuid.random().httpOk()
+    }
+
+    delete<Shifts.ById> { shiftById ->
+        log.info { "Pretending to delete shift ${shiftById.id}" }
     }
 
     put<Shifts.ById.Registrations.Illness> { illness ->
