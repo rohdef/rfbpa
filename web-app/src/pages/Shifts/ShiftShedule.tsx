@@ -1,12 +1,12 @@
 import {DayPilot, DayPilotCalendar} from "@daypilot/daypilot-lite-react"
 import {red} from "@mui/material/colors"
-import {WeekPlan} from "./WeekPlan.ts"
-import {parseISO} from "date-fns"
 import {Helper} from "../../helpers/Helper.ts"
 import {HelperStorage} from "../../helpers/HelperStorage.ts"
+import {RfbpaClientProvider, useRfbpaClient} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
+import React, {useEffect, useState} from "react"
+import {Alert, CircularProgress} from "@mui/material"
 import MenuItemClickArgs = DayPilot.MenuItemClickArgs
 import CalendarTimeRangeSelectedArgs = DayPilot.CalendarTimeRangeSelectedArgs
-import {RfbpaClientProvider, useRfbpaClient} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
 
 const deleteShift = async (shiftId: string) => {
     console.log(`Deleting shift with ID: ${shiftId}`)
@@ -23,41 +23,73 @@ const timeRangeSelect = async (args: CalendarTimeRangeSelectedArgs) => {
 }
 
 interface ShiftSheduleProps {
-    weekPlan: WeekPlan,
+    date: DayPilot.Date,
     helpers: HelperStorage,
 }
 
-export default function ShiftShedule({weekPlan, helpers}: ShiftSheduleProps) {
-    const {rfbpaClient} = useRfbpaClient()
+enum CalendarState {
+    LOADING,
+    ERROR,
+    READY,
+}
 
-    const startDate = parseISO(`${weekPlan.week}-1`)
-    const events: DayPilot.EventData[] = weekPlan.allShifts()
-        .map(shift => {
-            return {shift, helper: helpers.helper(shift.helper)}
-        })
-        .map(({shift, helper}) => {
-            if (helper) {
-                return {shift, helper}
-            } else {
-                const unknownHelper = Helper.create({
-                    id: shift.helper,
-                    name: "Ikke booket",
-                    color: red["100"],
-                    filtered: false,
-                })
-                return { shift, helper: unknownHelper }
-            }
-        })
-        .filter((shiftHelper) => !shiftHelper.helper.filtered)
-        .map(({shift, helper}) => {
-            return {
-                id: shift.shiftId,
-                text: helper.name,
-                start: new DayPilot.Date(shift.start, true),
-                end: new DayPilot.Date(shift.end, true),
-                backColor: helper.color,
-            }
-        })
+const dateToWeek = (date: DayPilot.Date) => {
+    const year = date.getYear()
+    const weekNumber = `${date.weekNumberISO()}`.padStart(2, '0')
+    return `${year}-W${weekNumber}`
+}
+
+export default function ShiftShedule({date, helpers}: ShiftSheduleProps) {
+    const {rfbpaClient} = useRfbpaClient()
+    const [calendarState, setCalendarState] = useState<CalendarState>(CalendarState.LOADING)
+    const [events, setEvents] = useState<DayPilot.EventData[]>([])
+
+    useEffect(() => {
+        setCalendarState(CalendarState.LOADING)
+        const week = dateToWeek(date)
+        rfbpaClient.getShiftsInWeek(week)
+            .then(weekPlan => weekPlan.allShifts() )
+            .then(shifts => {
+                return shifts
+                    .map(shift => {
+                        return {shift, helper: helpers.helper(shift.helper)}
+                    })
+                    .map(({shift, helper}) => {
+                        if (helper) {
+                            return {shift, helper}
+                        } else {
+                            const unknownHelper = Helper.create({
+                                id: shift.helper,
+                                name: "Ikke booket",
+                                color: red["100"],
+                                filtered: false,
+                            })
+                            return { shift, helper: unknownHelper }
+                        }
+                    })
+                    .filter((shiftHelper) => !shiftHelper.helper.filtered)
+                    .map(({shift, helper}): DayPilot.EventData => {
+                        return {
+                            id: shift.shiftId,
+                            text: helper.name,
+                            start: new DayPilot.Date(shift.start, true),
+                            end: new DayPilot.Date(shift.end, true),
+                            backColor: helper.color,
+                        }
+                    })
+            })
+            .then(events => {
+                setEvents(events)
+                setCalendarState(CalendarState.READY)
+            })
+            .catch(error => {
+                setCalendarState(CalendarState.ERROR)
+                setEvents([])
+                console.error("Error loading shifts:", error)
+            })
+    }, [date, helpers, rfbpaClient])
+
+    console.log("Re-render")
 
     const registerIllness = async (shiftId: string) => {
         console.log(`Registering illness for shift with ID: ${shiftId}`)
@@ -111,9 +143,17 @@ export default function ShiftShedule({weekPlan, helpers}: ShiftSheduleProps) {
 
     return (
         <>
+            {calendarState == CalendarState.ERROR ?
+                    (<Alert severity="error">"Halløj"</Alert>) : null
+            }
+            {calendarState == CalendarState.LOADING ?
+                    (<CircularProgress />) : null
+            }
+
             <RfbpaClientProvider>
                 <DayPilotCalendar
                     events={events}
+                    headerTextWrappingEnabled={false}
 
                     cellHeight={15}
                     cellDuration={15}
@@ -122,7 +162,7 @@ export default function ShiftShedule({weekPlan, helpers}: ShiftSheduleProps) {
                     durationBarVisible={false}
                     timeRangeSelectedHandling="Enabled"
                     weekStarts={1}
-                    startDate={new DayPilot.Date(startDate, true)}
+                    startDate={date}
                     timeFormat="Clock24Hours"
 
                     contextMenu={contextMenu}

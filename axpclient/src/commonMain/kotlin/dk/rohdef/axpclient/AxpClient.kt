@@ -133,8 +133,6 @@ internal class AxpClient(
         )
         val body: String = response.body()
         log.debug { "changeIllness: [$body]" }
-
-        TODO()
     }
 
     private enum class ShiftPlanAct {
