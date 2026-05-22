@@ -42,6 +42,20 @@ class ShiftsServiceImplementationTest : FunSpec({
     }
 
     context("helper illness") {
+        context("reading") {
+            test("replacement shift in RFBPA is marked") {
+                val shift = shiftService.shiftById(TODO(), TODO())
+
+                // shift.registrations shouldContainExactly Illeness(dateRegistered, replacementShift.id)
+            }
+
+            test("helper manager does not have replacement shift") {
+                val shift = shiftService.shiftById(TODO(), TODO())
+
+                // shift.registrations shouldContainExactly Illeness(dateRegistered, replacementShift.id)
+            }
+        }
+
         context("reporting") {
             fun HelperBooking.toSal(): SalaryBooking {
                 return when (this) {
