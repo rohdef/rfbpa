@@ -100,8 +100,7 @@ export class RfbpaClient {
         // });
     }
 
-    async reportIllness(shiftId: string, token: TokenAuthentication): Promise<string> {
-        console.log(`Reporting illness for shift ${shiftId}`);
+    async reportIllness(shiftId: string, token: TokenAuthentication): Promise<Shift> {
         const response: AxiosResponse<ShiftDto> = await this.client.put(
             `shifts/${shiftId}/registrations/illness`,
             "",
@@ -112,8 +111,6 @@ export class RfbpaClient {
                 },
             }
         );
-        console.log("New shift:");
-        console.log(response.data);
-        return response.data.shiftId
+        return this.toShift(response.data)
     }
 }

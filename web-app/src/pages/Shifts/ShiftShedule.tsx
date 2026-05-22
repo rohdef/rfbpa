@@ -89,19 +89,26 @@ export default function ShiftShedule({date, helpers}: ShiftSheduleProps) {
             })
     }, [date, helpers, rfbpaClient])
 
-    console.log("Re-render")
+    const registerIllness = async (shiftEvent: DayPilot.EventData) => {
+        const newShiftId = await rfbpaClient.registerIllness(shiftEvent.id.toString())
 
-    const registerIllness = async (shiftId: string) => {
-        console.log(`Registering illness for shift with ID: ${shiftId}`)
-        const newShiftId = await rfbpaClient.reportIllness(shiftId)
-        console.log(`Shift ${shiftId} reported as ill, new shift ID: ${newShiftId}`)
+        const newEvents = events.filter(e => e.id !== shiftEvent.id)
+        const newEvent: DayPilot.EventData = {
+            id: newShiftId.shiftId,
+            text: "Ikke booket",
+            start: shiftEvent.start,
+            end: shiftEvent.end,
+            backColor: red["100"],
+        }
+        newEvents.push(newEvent)
+        setEvents(newEvents)
     }
 
     const contextMenu = new DayPilot.Menu({
         items: [
             {
                 text: "Register illness",
-                onClick: (args: MenuItemClickArgs) => { registerIllness(args.source.data.id) }
+                onClick: (args: MenuItemClickArgs) => { registerIllness(args.source.data) }
             },
             {
                 text: "-"

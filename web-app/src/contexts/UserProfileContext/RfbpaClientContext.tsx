@@ -4,6 +4,7 @@ import AuthorizationContext from "../AuthorizationContext/AuthorizationContext.t
 import {useAuthentication} from "../AuthenticationContext/AuthenticationContext.tsx"
 import {WeekPlan} from "../../pages/Shifts/WeekPlan.ts"
 import {Authentication, NoAuthentication, TokenAuthentication} from "../AuthenticationContext/Authentication.tsx"
+import {Shift} from "../../pages/Shifts/Shift.ts"
 
 interface RfbpaClientValues {
     rfbpaClient: AuthenticatedRfbpaClient
@@ -30,7 +31,7 @@ class AuthenticatedRfbpaClient {
         }
     }
 
-    async reportIllness(shiftId: string): Promise<string> {
+    async registerIllness(shiftId: string): Promise<Shift> {
         if (this._authentication instanceof TokenAuthentication) {
             return await this.client.reportIllness(shiftId, this._authentication)
         } else {
