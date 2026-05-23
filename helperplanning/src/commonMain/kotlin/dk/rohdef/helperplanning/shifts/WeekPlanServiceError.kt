@@ -22,4 +22,12 @@ sealed interface WeekPlanServiceError {
     data class ShiftMustBeBooked(
         val shiftId: ShiftId
     ) : WeekPlanServiceError
+
+    // TODO this is an exception candidate,
+    //  no reasonable system would report an illness of an ill helper from AXP
+    // it might be worth considering a helper for creating replacement shifts
+    // but that should be explicit
+    data class InconsistentIllness(
+        val shiftId: ShiftId
+    ) : WeekPlanServiceError
 }

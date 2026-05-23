@@ -3,8 +3,8 @@ package dk.rohdef.rfweeks
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import java.time.DayOfWeek
 
 class YearWeekDayTest : FunSpec({
     //        DayOfWeek.MONDAY

@@ -2,8 +2,12 @@ package dk.rohdef.rfweeks
 
 import arrow.core.Either
 import arrow.core.raise.either
-import kotlinx.datetime.*
-import java.time.DayOfWeek.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.plus
 
 data class YearWeekDay(
     val yearWeek: YearWeek,
@@ -24,25 +28,25 @@ data class YearWeekDay(
 
     fun nextDay(): YearWeekDay {
         return when (dayOfWeek) {
-            MONDAY -> YearWeekDay(yearWeek, DayOfWeek.TUESDAY)
-            TUESDAY -> YearWeekDay(yearWeek, DayOfWeek.WEDNESDAY)
-            WEDNESDAY -> YearWeekDay(yearWeek, DayOfWeek.THURSDAY)
-            THURSDAY -> YearWeekDay(yearWeek, DayOfWeek.FRIDAY)
-            FRIDAY -> YearWeekDay(yearWeek, DayOfWeek.SATURDAY)
-            SATURDAY -> YearWeekDay(yearWeek, DayOfWeek.SUNDAY)
-            SUNDAY -> YearWeekDay(yearWeek.nextWeek(), DayOfWeek.MONDAY)
+            DayOfWeek.MONDAY -> YearWeekDay(yearWeek, DayOfWeek.TUESDAY)
+            DayOfWeek.TUESDAY -> YearWeekDay(yearWeek, DayOfWeek.WEDNESDAY)
+            DayOfWeek.WEDNESDAY -> YearWeekDay(yearWeek, DayOfWeek.THURSDAY)
+            DayOfWeek.THURSDAY -> YearWeekDay(yearWeek, DayOfWeek.FRIDAY)
+            DayOfWeek.FRIDAY -> YearWeekDay(yearWeek, DayOfWeek.SATURDAY)
+            DayOfWeek.SATURDAY -> YearWeekDay(yearWeek, DayOfWeek.SUNDAY)
+            DayOfWeek.SUNDAY -> YearWeekDay(yearWeek.nextWeek(), DayOfWeek.MONDAY)
         }
     }
 
     private fun DayOfWeek.daysFromMonday() =
         when (this) {
-            MONDAY -> 0
-            TUESDAY -> 1
-            WEDNESDAY -> 2
-            THURSDAY -> 3
-            FRIDAY -> 4
-            SATURDAY -> 5
-            SUNDAY -> 6
+            DayOfWeek.MONDAY -> 0
+            DayOfWeek.TUESDAY -> 1
+            DayOfWeek.WEDNESDAY -> 2
+            DayOfWeek.THURSDAY -> 3
+            DayOfWeek.FRIDAY -> 4
+            DayOfWeek.SATURDAY -> 5
+            DayOfWeek.SUNDAY -> 6
         }
 
     companion object {
@@ -61,7 +65,7 @@ data class YearWeekDay(
             val yearWeek = text.substring(0, 8).let { YearWeek.parse(it) }.mapLeft { }.bind()
             val dayOfWeek = text.substring(9)
                 .toInt()
-                .let { DayOfWeek.of(it) }
+                .let { DayOfWeek(it) }
 
             YearWeekDay(yearWeek, dayOfWeek)
         }

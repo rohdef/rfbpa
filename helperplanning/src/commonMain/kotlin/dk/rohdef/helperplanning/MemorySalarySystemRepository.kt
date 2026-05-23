@@ -11,6 +11,7 @@ import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDateTime
 
 class MemorySalarySystemRepository : SalarySystemRepository {
     fun reset() {
@@ -48,7 +49,8 @@ class MemorySalarySystemRepository : SalarySystemRepository {
         val shift = ensureNotNull(_shifts.getValue(subject)[shiftId]) {
             SalarySystemRepository.RegisterIllnessError.ShiftNotFound(shiftId)
         }
-        val illness = Registration.Illness(replacementShiftId)
+        // TODO remove local date time - will probably fix itself when typed properly???
+        val illness = Registration.Illness(LocalDateTime(1885, 1, 1, 0, 0))
 
         val illShift = shift.copy(registrations = shift.registrations + illness)
 

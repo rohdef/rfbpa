@@ -163,7 +163,7 @@ data class YearWeek(
                 return this
             }
 
-            val daysToAdd = 7 - (this.dayOfWeek.value - dayOfWeek.value)
+            val daysToAdd = 7 - (this.dayOfWeek.isoDayNumber - dayOfWeek.isoDayNumber)
             return this + DatePeriod(days = daysToAdd)
         }
     }

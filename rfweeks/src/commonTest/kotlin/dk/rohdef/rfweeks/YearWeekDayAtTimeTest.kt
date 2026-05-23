@@ -4,10 +4,9 @@ import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.time.DayOfWeek
 
 class YearWeekDayAtTimeTest : FunSpec({
     context("Parsing") {

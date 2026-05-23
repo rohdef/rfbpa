@@ -17,11 +17,12 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
 import org.koin.test.KoinTest
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import java.time.Instant
 import java.util.*
 
 abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : KoinTest, FunSpec() {
@@ -61,8 +62,8 @@ abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : KoinTest, FunSpec() 
         .withKeyId("id-10-t")
 
         .withExpiresAt(Date(System.currentTimeMillis() + 1260000))
-        .withIssuedAt(Instant.now())
-        .withClaim("auth_time", Instant.now().toEpochMilli())
+        .withIssuedAt(Clock.System.now().toJavaInstant())
+        .withClaim("auth_time", Clock.System.now().toJavaInstant().toEpochMilli())
         .withJWTId("some-id-jwt")
         .withIssuer(TestConfiguration.default.auth.jwtIssuer)
         .withAudience("account")

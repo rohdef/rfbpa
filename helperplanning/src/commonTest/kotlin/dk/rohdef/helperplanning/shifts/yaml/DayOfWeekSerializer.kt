@@ -18,13 +18,13 @@ class DayOfWeekSerializer : KSerializer<DayOfWeek> {
 
     override fun serialize(encoder: Encoder, value: DayOfWeek) {
         when (value) {
-            java.time.DayOfWeek.MONDAY -> "Monday"
-            java.time.DayOfWeek.TUESDAY -> "Tuesday"
-            java.time.DayOfWeek.WEDNESDAY -> "Wednesday"
-            java.time.DayOfWeek.THURSDAY -> "Thursday"
-            java.time.DayOfWeek.FRIDAY -> "Friday"
-            java.time.DayOfWeek.SATURDAY -> "Saturday"
-            java.time.DayOfWeek.SUNDAY -> "Sunday"
+            DayOfWeek.MONDAY -> "Monday"
+            DayOfWeek.TUESDAY -> "Tuesday"
+            DayOfWeek.WEDNESDAY -> "Wednesday"
+            DayOfWeek.THURSDAY -> "Thursday"
+            DayOfWeek.FRIDAY -> "Friday"
+            DayOfWeek.SATURDAY -> "Saturday"
+            DayOfWeek.SUNDAY -> "Sunday"
         }.apply { encoder.encodeString(this) }
     }
 }

@@ -6,6 +6,7 @@ import arrow.core.raise.either
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime
+import kotlinx.datetime.isoDayNumber
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -28,7 +29,7 @@ data class YearWeekDayAtTime(
     val localDateTime = date.atTime(time)
 
     override fun toString(): String {
-        return "$year-W${week.toString().padStart(2, '0')}-${dayOfWeek.value}T$time"
+        return "$year-W${week.toString().padStart(2, '0')}-${dayOfWeek.isoDayNumber}T$time"
     }
 
     companion object {

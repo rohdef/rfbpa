@@ -7,7 +7,6 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.time.DayOfWeek.*
 
 @Serializable
 data class WeekTemplate(
@@ -25,13 +24,13 @@ data class WeekTemplate(
 
         override fun serialize(encoder: Encoder, value: DayOfWeek) {
             when (value) {
-                MONDAY -> "Monday"
-                TUESDAY -> "Tuesday"
-                WEDNESDAY -> "Wednesday"
-                THURSDAY -> "Thursday"
-                FRIDAY -> "Friday"
-                SATURDAY -> "Saturday"
-                SUNDAY -> "Sunday"
+                DayOfWeek.MONDAY -> "Monday"
+                DayOfWeek.TUESDAY -> "Tuesday"
+                DayOfWeek.WEDNESDAY -> "Wednesday"
+                DayOfWeek.THURSDAY -> "Thursday"
+                DayOfWeek.FRIDAY -> "Friday"
+                DayOfWeek.SATURDAY -> "Saturday"
+                DayOfWeek.SUNDAY -> "Sunday"
             }.apply { encoder.encodeString(this) }
         }
     }

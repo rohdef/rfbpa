@@ -3,15 +3,13 @@
 package dk.rohdef.helperplanning.shifts
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.right
-import dk.rohdef.helperplanning.RfbpaPrincipal
-import dk.rohdef.helperplanning.SalarySystemRepository
-import dk.rohdef.helperplanning.ShiftRepository
-import dk.rohdef.helperplanning.WeekSynchronizationRepository
+import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
@@ -24,6 +22,7 @@ class ShiftsServiceImplementation(
     private val shiftRepository: ShiftRepository,
     private val helpersRepository: HelpersRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
+    private val time: RfbpaTime<*>,
 ) : ShiftsService {
     override suspend fun shiftById(
         principal: RfbpaPrincipal,
@@ -54,17 +53,21 @@ class ShiftsServiceImplementation(
 
         val illnessRegistrations = currentShift.registrations.filterIsInstance<Registration.Illness>()
         if (illnessRegistrations.isEmpty()) {
-            weekSynchronizationRepository.markForSynchronization(principal.subject, currentShift.start.yearWeek)
+            weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, currentShift.start.yearWeek)
 
             val replacementShift = createReplacementShift(principal.subject, currentShift).bind()
             reportAndRegisterIllness(principal.subject, currentShift, replacementShift.shiftId).bind()
 
-            weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, currentShift.start.yearWeek)
-
             replacementShift
         } else {
-            shiftRepository.byId(principal.subject, illnessRegistrations.first().replacementShiftId)
-                .mapLeft { it.toServiceError() }.bind()
+            val illnessRegistration = illnessRegistrations.first()
+            illnessRegistration.replacementShiftId
+                .toEither { WeekPlanServiceError.InconsistentIllness(shiftId) }
+                .flatMap {
+                    shiftRepository.byId(principal.subject, it)
+                        .mapLeft { it.toServiceError() }
+                }
+                .bind()
         }
     }
 
@@ -86,8 +89,9 @@ class ShiftsServiceImplementation(
         shift: Shift,
         replacementShiftId: ShiftId,
     ): Either<WeekPlanServiceError, Unit> = either {
+        val registrationTime = time.localDateTime()
         val illShift =
-            shift.copy(registrations = shift.registrations + Registration.Illness(replacementShiftId))
+            shift.copy(registrations = shift.registrations + Registration.Illness(registrationTime,replacementShiftId))
         salarySystem.reportIllness(subject, shift, replacementShiftId)
             .mapLeft { it.toServiceError() }
             .bind()
