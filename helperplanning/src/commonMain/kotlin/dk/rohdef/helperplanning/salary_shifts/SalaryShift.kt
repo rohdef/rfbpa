@@ -9,6 +9,7 @@ data class SalaryShift(
     val shiftId: ShiftId,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
+    // TODO - we probably want salary registratio
     val registrations: List<Registration> = emptyList(),
 ) {
     constructor(

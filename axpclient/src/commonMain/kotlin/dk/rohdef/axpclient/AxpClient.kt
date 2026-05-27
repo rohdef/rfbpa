@@ -57,6 +57,12 @@ internal class AxpClient(
         }
     }
 
+    suspend fun helperForShift(bookingNumber: AxpBookingId): HttpResponse {
+        val shiftUrl = urls.helperForShift(bookingNumber.axpId)
+        log.debug { "Requesting shift: $shiftUrl" }
+        return client.request(shiftUrl)
+    }
+
     suspend fun shifts(yearWeek: YearWeek): HttpResponse {
         val shiftsUrl = urls.shiftsForWeek(yearWeek)
         log.debug { shiftsUrl }

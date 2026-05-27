@@ -7,14 +7,13 @@ import kotlinx.datetime.LocalDateTime
 
 sealed interface Registration {
     data class Illness(
-        val timeOfRegistration: LocalDateTime,
         val replacementShiftId: Option<ShiftId>,
     ): Registration {
-        constructor(timeOfRegistration: LocalDateTime) :
-                this(timeOfRegistration, none())
+        constructor() :
+                this(none())
 
-        constructor(timeOfRegistration: LocalDateTime, replacementShiftId: ShiftId) :
-                this(timeOfRegistration, replacementShiftId.some())
+        constructor(shiftId: ShiftId) :
+                this(shiftId.some())
     }
 
     data class IllnessReplacement(

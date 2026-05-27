@@ -75,6 +75,7 @@ class WeekPlanServiceImplementation(
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()
 
+
             weekSynchronizationRepository.markSynchronized(principal.subject, yearWeek)
                 .mapLeft { SynchronizationError.CouldNotSynchronizeWeek(yearWeek) }
                 .bind()

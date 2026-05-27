@@ -3,23 +3,56 @@ package dk.rohdef.axpclient.parsing
 import arrow.core.*
 import dk.rohdef.axpclient.AxpBookingId
 import dk.rohdef.axpclient.helper.AxpHelperBooking
+import dk.rohdef.axpclient.helper.AxpIllnessBooking
 import dk.rohdef.axpclient.helper.HelperNumber
+import dk.rohdef.axpclient.shift.AxpIllnessShift
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.rfsimplejs.JavaScriptParser
 import dk.rohdef.rfsimplejs.ast.*
 import io.ktor.http.*
 import kotlinx.datetime.LocalDateTime
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 
 internal class ShiftParser {
     private val jsParser = JavaScriptParser()
 
-    fun parse(elements: Elements): List<AxpShift> {
-        return elements.map { parseShift(it) }
+    suspend fun pill(element: Element, helperBooking: suspend (AxpBookingId) -> AxpIllnessBooking): AxpIllnessShift {
+        val onclick = element.attr("onclick")
+        val mouseover = element.attr("onmouseover")
+
+        val windowOpenParameter = onclick
+        val functionCalls = jsParser.parse(mouseover)
+            .functionCalls()
+        val tooltipParameter = functionCalls
+            .first { it.name == Name("toolTip") }
+            .parameters as Text
+
+        val windowOpenUrl = Url(windowOpenParameter)
+        val tooltipShiftData = parseTooltip(tooltipParameter.text)
+
+        windowOpenUrl.parameters.get("booking")
+        val axpBookingId = windowOpenUrl
+            .parameters
+            .get("booking")
+            .toOption()
+            .map { AxpBookingId(it) }
+            .getOrElse { throw IllegalStateException("Booking number is missing in $windowOpenUrl\n$windowOpenParameter") }
+        val helperBooking = helperBooking(axpBookingId)
+        val start = tooltipShiftData.getValue(AxpField.SHIFT_START)
+            .map { toLocalDateTime(it) }
+            .getOrElse { TODO() }
+        val end = tooltipShiftData.getValue(AxpField.SHIFT_END)
+            .map { toLocalDateTime(it) }
+            .getOrElse { TODO() }
+        return AxpIllnessShift(
+            helperBooking,
+            axpBookingId,
+            start,
+            end,
+        )
     }
 
-    private fun parseShift(element: Element): AxpShift {
+    fun parseShift(element: Element): AxpShift {
         val onclick = element.attr("onclick")
         val mouseover = element.attr("onmouseover")
 
@@ -38,6 +71,7 @@ internal class ShiftParser {
         val helperBooking = tooltipShiftData.getValue(AxpField.HELPER_ID).map {
             when (it) {
                 "60621" -> AxpHelperBooking.VacancyBooking
+                "60632" -> AxpHelperBooking.VacancyBooking
                 else -> AxpHelperBooking.PermanentHelper(
                     HelperNumber(it),
                 )

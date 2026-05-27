@@ -6,7 +6,9 @@ import arrow.core.raise.either
 import arrow.core.right
 import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.axpclient.helper.AxpHelperBooking
+import dk.rohdef.axpclient.helper.AxpIllnessBooking
 import dk.rohdef.axpclient.parsing.WeekPlanParser
+import dk.rohdef.axpclient.shift.AxpIllnessShift
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
@@ -14,6 +16,7 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.Registration
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -132,7 +135,6 @@ class AxpSalarySystem(
         val shiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
             .getOrElse {
                 ShiftId.generateId().apply {
-                    // TODO: 27/10/2024 rohdef - what to do if this fails
                     axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
                         .mapLeft { ShiftMappingError.UnknownError }
                         .bind()
@@ -151,6 +153,31 @@ class AxpSalarySystem(
         )
     }
 
+    internal suspend fun AxpIllnessShift.shift(): Either<ShiftMappingError, SalaryShift> = either {
+        val shiftId = axpShiftReferences.axpBookingToShiftId(bookingId)
+            .getOrElse {
+                ShiftId.generateId().apply {
+                    axpShiftReferences.saveAxpBookingToShiftId(bookingId, this)
+                        .mapLeft { ShiftMappingError.UnknownError }
+                        .bind()
+                }
+            }
+
+        val helperBooking = axpHelperBooking.toHelperBooking()
+            .mapLeft { ShiftMappingError.UnknownError }
+            .bind()
+
+        SalaryShift(
+            helperBooking,
+            shiftId,
+            YearWeekDayAtTime.from(start),
+            YearWeekDayAtTime.from(end),
+            listOf(
+                Registration.Illness()
+            ),
+        )
+    }
+
     private suspend fun AxpHelperBooking.toHelperBooking(): Either<Unit, SalaryBooking> {
         return when (this) {
             AxpHelperBooking.NoBooking -> SalaryBooking.NoBooking.right()
@@ -164,9 +191,24 @@ class AxpSalarySystem(
             .map { SalaryBooking.Helper(it.helperId) }
 
         return when (helperReference) {
-            is Either.Left ->
-                helperReferences.createHelperReference(helperNumber,HelperId.generateId())
-                    .map { SalaryBooking.UnknownHelper(it) }
+            is Either.Left -> TODO("This will not work, either find a way to resync, look up helper or similar or this has to be an error")
+            is Either.Right -> helperReference
+        }
+    }
+
+    private suspend fun AxpIllnessBooking.toHelperBooking(): Either<Unit, SalaryBooking> {
+        return when (this) {
+            is AxpIllnessBooking.PermanentHelper -> toHelperBooking()
+            AxpIllnessBooking.VacancyBooking -> TODO("Dealing with illness and vacancies is currently not supported")
+        }
+    }
+
+    private suspend fun AxpIllnessBooking.PermanentHelper.toHelperBooking(): Either<Unit, SalaryBooking> {
+        val helperReference = helperReferences.helperByTid(helperTid)
+            .map { SalaryBooking.Helper(it.helperId) }
+
+        return when (helperReference) {
+            is Either.Left -> TODO("We probably want to send a domain error now - either that or find the desired number")
             is Either.Right -> helperReference
         }
     }
@@ -176,6 +218,15 @@ class AxpSalarySystem(
         object UnknownError : ShiftMappingError
     }
 
+    suspend fun illnessBooking(
+        bookingNumber: AxpBookingId
+    ): AxpIllnessBooking {
+        ensureLoggedIn()
+
+        val helpersForShift = axpClient.helperForShift(bookingNumber)
+        return weekPlanParser.illnessBooking(helpersForShift.bodyAsText())
+    }
+
     override suspend fun shifts(
         subject: RfbpaPrincipal.Subject,
         yearWeek: YearWeek,
@@ -183,20 +234,46 @@ class AxpSalarySystem(
         ensureLoggedIn()
 
         val axpShiftPlan = axpClient.shifts(yearWeek)
-        val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText())
+        val weekPlan = weekPlanParser.parse(axpShiftPlan.bodyAsText(), this@AxpSalarySystem::illnessBooking)
 
         val axpToDomainShift: suspend (AxpShift) -> SalaryShift = {
             it.shift()
                 .mapLeft { TODO() }
                 .bind()
         }
-        val monday = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
-        val tuesday = weekPlan.tuesday.allShifts.map { axpToDomainShift(it) }
-        val wednesday = weekPlan.wednesday.allShifts.map { axpToDomainShift(it) }
-        val thursday = weekPlan.thursday.allShifts.map { axpToDomainShift(it) }
-        val friday = weekPlan.friday.allShifts.map { axpToDomainShift(it) }
-        val saturday = weekPlan.saturday.allShifts.map { axpToDomainShift(it) }
-        val sunday = weekPlan.sunday.allShifts.map { axpToDomainShift(it) }
+        val axpToDomainShiftI: suspend (AxpIllnessShift) -> SalaryShift = {
+            it.shift()
+                .mapLeft { TODO() }
+                .bind()
+        }
+
+        val mondayNormal = weekPlan.monday.allShifts.map { axpToDomainShift(it) }
+        val mondayIllness = weekPlan.monday.illness.map { axpToDomainShiftI(it) }
+        val monday = mondayNormal + mondayIllness
+
+        val tuesdayNormal = weekPlan.tuesday.allShifts.map { axpToDomainShift(it) }
+        val tuesdayIllness = weekPlan.tuesday.illness.map { axpToDomainShiftI(it) }
+        val tuesday = tuesdayNormal + tuesdayIllness
+
+        val wednesdayNormal = weekPlan.wednesday.allShifts.map { axpToDomainShift(it) }
+        val wednesdayIllness = weekPlan.wednesday.illness.map { axpToDomainShiftI(it) }
+        val wednesday = wednesdayNormal + wednesdayIllness
+
+        val thursdayNormal = weekPlan.thursday.allShifts.map { axpToDomainShift(it) }
+        val thursdayIllness = weekPlan.thursday.illness.map { axpToDomainShiftI(it) }
+        val thursday = thursdayNormal + thursdayIllness
+
+        val fridayNormal = weekPlan.friday.allShifts.map { axpToDomainShift(it) }
+        val fridayIllness = weekPlan.friday.illness.map { axpToDomainShiftI(it) }
+        val friday = fridayNormal + fridayIllness
+
+        val saturdayNormal = weekPlan.saturday.allShifts.map { axpToDomainShift(it) }
+        val saturdayIllness = weekPlan.saturday.illness.map { axpToDomainShiftI(it) }
+        val saturday = saturdayNormal + saturdayIllness
+
+        val sundayNormal = weekPlan.sunday.allShifts.map { axpToDomainShift(it) }
+        val sundayIllness = weekPlan.sunday.illness.map { axpToDomainShiftI(it) }
+        val sunday = sundayNormal + sundayIllness
 
         SalaryWeekPlan(
             yearWeek,

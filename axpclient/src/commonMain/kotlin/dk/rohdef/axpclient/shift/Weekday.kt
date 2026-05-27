@@ -7,7 +7,7 @@ internal data class Weekday(
     val all24Hours: List<AxpShift>,
     val long: List<AxpShift>,
 
-    val illness: List<AxpShift>,
+    val illness: List<AxpIllnessShift>,
 ) {
     val allShifts =
         day + evening + night + all24Hours + long

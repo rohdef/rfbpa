@@ -1,6 +1,8 @@
 [versions]
 kotlinVersion = "2.3.21"
 
+benManesVersions = "0.54.0"
+
 kotlinxCoroutines = "1.10.1"
 kotlinxDateTime = "0.8.0"
 kotlinxSerialization = "1.10.0"
@@ -18,13 +20,15 @@ h2 = "2.3.232"
 
 koin = "4.1.0-Beta5"
 
-jsoup = "1.17.2"
+jsoup = "1.22.2"
 
 kotest = "6.1.11"
 testLogger = "4.0.0"
 
 [libraries]
 gradleKotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version = "kotlinVersion" }
+
+versionsPlugin = { group = "com.github.ben-manes", name = "gradle-versions-plugin", version.ref = "benManesVersions" }
 
 # Kotlinx
 kotlinxCoroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
