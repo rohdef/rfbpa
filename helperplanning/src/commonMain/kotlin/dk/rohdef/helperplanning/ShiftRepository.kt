@@ -25,4 +25,17 @@ interface ShiftRepository {
     suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId) : Either<ShiftsError, Unit>
 
     suspend fun findBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId) : Either<ShiftsError, HelperId>
+
+    suspend fun linkShifts(subject: RfbpaPrincipal.Subject, from: ShiftId, to: ShiftId, linkType: Reference.LinkType): Either<ShiftsError, Unit> = either {
+        val fromShift = byId(subject, from).bind()
+        val toShift = byId(subject, to).bind()
+
+        // TODO validate and prevent bad links? Might not be worth it if the DB does so
+
+        val linkedFrom = fromShift.copy(references = fromShift.references + Reference.From(to, linkType))
+        val linkedTo = toShift.copy(references = fromShift.references + Reference.To(from, linkType))
+
+        createOrUpdate(subject, linkedFrom).bind()
+        createOrUpdate(subject, linkedTo).bind()
+    }
 }

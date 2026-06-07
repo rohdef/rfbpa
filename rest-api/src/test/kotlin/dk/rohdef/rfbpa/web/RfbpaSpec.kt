@@ -17,13 +17,13 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
-import kotlinx.datetime.Clock
-import kotlinx.datetime.toJavaInstant
 import org.koin.test.KoinTest
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.*
+import kotlin.time.Clock
+import kotlin.time.toJavaInstant
 
 abstract class RfbpaSpec(body: RfbpaSpec.() -> Unit = {}) : KoinTest, FunSpec() {
     val keyPair = KeyPairGenerator.getInstance("RSA")

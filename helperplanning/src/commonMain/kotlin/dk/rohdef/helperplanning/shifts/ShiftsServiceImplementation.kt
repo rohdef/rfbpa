@@ -3,7 +3,6 @@
 package dk.rohdef.helperplanning.shifts
 
 import arrow.core.Either
-import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.raise.Raise
 import arrow.core.raise.either
@@ -12,8 +11,8 @@ import arrow.core.right
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersRepository
-import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -40,6 +39,32 @@ class ShiftsServiceImplementation(
         shift
     }
 
+    override suspend fun createShift(
+        principal: RfbpaPrincipal,
+        start: YearWeekDayAtTime,
+        end: YearWeekDayAtTime,
+        booking: HelperBooking
+    ): Either<WeekPlanServiceError, Shift> = either {
+        val salarayShift = salarySystem.createShift(principal.subject, start, end)
+            .mapLeft { TODO("Could not book $start -- $end to $booking") }
+            .bind()
+        if (booking is HelperBooking.Booked) {
+            salarySystem.bookShift(principal.subject, salarayShift.shiftId, booking.helper)
+                .mapLeft { TODO("Could not book helper (${booking.helper}) for shift ${salarayShift.shiftId}") }
+                .bind()
+        }
+        val shift = Shift(
+            booking,
+            salarayShift.shiftId,
+            start,
+            end,
+        )
+
+        shiftRepository.createOrUpdate(principal.subject, shift)
+            .mapLeft { TODO() }
+            .bind()
+    }
+
     override suspend fun reportIllness(
         principal: RfbpaPrincipal,
         shiftId: ShiftId,
@@ -58,16 +83,21 @@ class ShiftsServiceImplementation(
             val replacementShift = createReplacementShift(principal.subject, currentShift).bind()
             reportAndRegisterIllness(principal.subject, currentShift, replacementShift.shiftId).bind()
 
-            replacementShift
-        } else {
-            val illnessRegistration = illnessRegistrations.first()
-            illnessRegistration.replacementShiftId
-                .toEither { WeekPlanServiceError.InconsistentIllness(shiftId) }
-                .flatMap {
-                    shiftRepository.byId(principal.subject, it)
-                        .mapLeft { it.toServiceError() }
-                }
+            shiftRepository.byId(principal.subject, replacementShift.shiftId)
+                .mapLeft { it.toServiceError() }
                 .bind()
+        } else {
+            // TODO logic flaw - what happens if there's more than one
+            // TODO logic flaw - can we accept 0 in this scenario
+            currentShift.references
+                .filterIsInstance<Reference.From>()
+                .filter { it.linkType == Reference.LinkType.ILLNESS }
+                .map {
+                    shiftRepository.byId(principal.subject, it.id)
+                        .mapLeft { it.toServiceError() }
+                        .bind()
+                }
+                .first()
         }
     }
 
@@ -89,12 +119,16 @@ class ShiftsServiceImplementation(
         shift: Shift,
         replacementShiftId: ShiftId,
     ): Either<WeekPlanServiceError, Unit> = either {
-        val illShift =
-            shift.copy(registrations = shift.registrations + Registration.Illness(replacementShiftId))
+        val illShift = shift.copy(
+            registrations = shift.registrations + Registration.Illness,
+        )
         salarySystem.reportIllness(subject, shift, replacementShiftId)
             .mapLeft { it.toServiceError() }
             .bind()
         shiftRepository.createOrUpdate(subject, illShift)
+            .mapLeft { it.toServiceError() }
+            .bind()
+        shiftRepository.linkShifts(subject, shift.shiftId, replacementShiftId, Reference.LinkType.ILLNESS)
             .mapLeft { it.toServiceError() }
             .bind()
     }
@@ -144,24 +178,6 @@ class ShiftsServiceImplementation(
                 { it.right() }
         }
 
-        Shift(
-            helperBooking.toBooking(existingBooking).bind(),
-            shiftId,
-            start,
-            end,
-            registrations,
-        )
-    }
-
-    private suspend fun SalaryBooking.toBooking(
-        findOrCreateBooking: suspend () -> Either<Unit, HelperId>
-    ): Either<Unit, HelperBooking> = either {
-        when (this@toBooking) {
-            is SalaryBooking.Helper -> HelperBooking.Booked(helper)
-            SalaryBooking.NoBooking -> HelperBooking.NoBooking
-            is SalaryBooking.UnknownHelper -> HelperBooking.Booked(helper)
-            SalaryBooking.Vacancy -> findOrCreateBooking().bind()
-                .let { HelperBooking.Booked(it) }
-        }
+        toShift(existingBooking).bind()
     }
 }

@@ -189,5 +189,7 @@ fun WeekPlanServiceError.toApiError(): ApiError {
                     "Shift with ID: ${this.shiftId} is not booked to a helper. It must be booked.",
                 )
             )
+
+        is WeekPlanServiceError.InconsistentIllness -> TODO()
     }
 }

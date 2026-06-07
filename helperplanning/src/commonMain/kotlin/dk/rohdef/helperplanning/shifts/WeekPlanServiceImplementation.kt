@@ -13,7 +13,6 @@ import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersRepository
-import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -102,25 +101,7 @@ class WeekPlanServiceImplementation(
                 { it.right() }
         }
 
-        Shift(
-            helperBooking.toBooking(existingBooking).bind(),
-            shiftId,
-            start,
-            end,
-            registrations,
-        )
-    }
-
-    private suspend fun SalaryBooking.toBooking(
-        findOrCreateBooking: suspend () -> Either<Unit, HelperId>
-    ): Either<Unit, HelperBooking> = either {
-        when (this@toBooking) {
-            is SalaryBooking.Helper -> HelperBooking.Booked(helper)
-            SalaryBooking.NoBooking -> HelperBooking.NoBooking
-            is SalaryBooking.UnknownHelper -> HelperBooking.Booked(helper)
-            SalaryBooking.Vacancy -> findOrCreateBooking().bind()
-                .let { HelperBooking.Booked(it) }
-        }
+        toShift(existingBooking).bind()
     }
 
     override suspend fun createShift(

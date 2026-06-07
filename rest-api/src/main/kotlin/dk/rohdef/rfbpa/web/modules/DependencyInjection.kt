@@ -28,13 +28,13 @@ import dk.rohdef.rfbpa.web.persistance.helpers.DatabaseHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
-import kotlinx.datetime.Clock
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 
 fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {

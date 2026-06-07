@@ -10,6 +10,7 @@ import dk.rohdef.helperplanning.letValue
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
 import dk.rohdef.rfweeks.YearWeek
@@ -47,6 +48,22 @@ class TestSalarySystemRepository(
         start: YearWeekDayAtTime, end: YearWeekDayAtTime,
     ): Either<ShiftsError, SalaryShift> {
         val shiftId = generateTestShiftId(start, end)
+
+        return addShift(subject, start, end, shiftId)
+    }
+
+    fun addShift(
+        subject: RfbpaPrincipal.Subject,
+        shift: Shift,
+    ): Either<ShiftsError, SalaryShift> {
+        return addShift(subject, shift.start, shift.end, shift.shiftId)
+    }
+
+    fun addShift(
+        subject: RfbpaPrincipal.Subject,
+        start: YearWeekDayAtTime, end: YearWeekDayAtTime,
+        shiftId: ShiftId,
+    ): Either<ShiftsError, SalaryShift> {
         val shift = SalaryShift(SalaryBooking.NoBooking, shiftId, start, end)
 
         memoryWeekPlanRepository._shifts.letValue(subject) {

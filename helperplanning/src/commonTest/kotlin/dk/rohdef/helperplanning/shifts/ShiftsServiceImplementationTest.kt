@@ -1,12 +1,12 @@
 package dk.rohdef.helperplanning.shifts
 
-import arrow.core.none
 import dk.rohdef.helperplanning.PrincipalsTestData
 import dk.rohdef.helperplanning.RfbpaTime
 import dk.rohdef.helperplanning.TestSalarySystemRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryRegistration
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.shifts.yaml.Shifties
 import dk.rohdef.rfweeks.YearWeek
@@ -14,14 +14,11 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import net.mamoe.yamlkt.Yaml
 
 class ShiftsServiceImplementationTest : FunSpec({
@@ -64,10 +61,6 @@ class ShiftsServiceImplementationTest : FunSpec({
         // TODO test synchronization
         context("reading") {
             test("helper manager does not have replacement shift") {
-                // Week 2026-W18 - 27-04-2026 -- 03-05-2026
-                val expectedRegistrationTime = LocalDateTime.parse("2026-04-27T19:41:17+01:00")
-//                time.clock.fixedInstant = expectedRegistrationTime.toInstant(TimeZone.UTC)
-
                 val shiftId = ShiftId.generateId()
                 dataHelper.salarySystem.addShift(
                     PrincipalsTestData.FiktivusMaximus.subject,
@@ -77,7 +70,7 @@ class ShiftsServiceImplementationTest : FunSpec({
                         YearWeekDayAtTime.parseUnsafe("2026-W18-3T11:30"),
                         YearWeekDayAtTime.parseUnsafe("2026-W18-3T22:15"),
                         listOf(
-                            Registration.Illness(expectedRegistrationTime, ShiftId.generateId()),
+                            SalaryRegistration.Illness
                         ),
                     ),
                 )
@@ -92,8 +85,9 @@ class ShiftsServiceImplementationTest : FunSpec({
                     .shouldBeRight()
 
                  shift.registrations shouldContainExactly listOf(
-                     Registration.Illness(expectedRegistrationTime, none())
+                     Registration.Illness
                  )
+                shift.references.shouldBeEmpty()
             }
         }
 
@@ -105,13 +99,19 @@ class ShiftsServiceImplementationTest : FunSpec({
                 }
             }
 
+            fun Registration.toSalaryRegistration(): SalaryRegistration {
+                return when (this) {
+                    is Registration.Illness -> SalaryRegistration.Illness
+                }
+            }
+
             fun Shift.toSalaryShift(): SalaryShift {
                 return SalaryShift(
                     helperBooking.toSalaryBooking(),
                     shiftId,
                     start,
                     end,
-                    registrations,
+                    registrations.map { it.toSalaryRegistration() },
                 )
             }
 
@@ -134,8 +134,9 @@ class ShiftsServiceImplementationTest : FunSpec({
 
                 val expectedShift = week10Shift1.copy(
                     registrations = listOf(
-                        Registration.Illness(time.localDateTime(), replacementShiftId),
-                    )
+                        Registration.Illness,
+                    ),
+                    references = listOf(Reference.From(replacementShiftId, Reference.LinkType.ILLNESS))
                 )
                 dataHelper.shiftRepository.shifts[week10Shift1.shiftId] shouldBe expectedShift
                 dataHelper.salarySystem.shifts[week10Shift1.shiftId] shouldBe expectedShift.toSalaryShift()
@@ -153,8 +154,9 @@ class ShiftsServiceImplementationTest : FunSpec({
                 val expectedShift = week10Shift1.copy(
                     shiftId = replacementShiftId,
                     helperBooking = HelperBooking.NoBooking,
-                    registrations = listOf(
-                        Registration.IllnessReplacement(week10Shift1.shiftId),
+                    registrations = listOf(),
+                    references = listOf(
+                        Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS)
                     )
                 )
                 dataHelper.shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
@@ -185,11 +187,13 @@ class ShiftsServiceImplementationTest : FunSpec({
                 val newShift2 = illnessReportResult2.shouldBeRight()
 
                 val expectedShift = week10Shift1.copy(
-                    registrations = listOf(Registration.Illness(time.localDateTime(), newShift1.shiftId))
+                    registrations = listOf(Registration.Illness),
+                    references = listOf(Reference.From(newShift1.shiftId, Reference.LinkType.ILLNESS))
                 )
                 val expectedNewShift = week10Shift1.copy(
                     shiftId = newShift1.shiftId,
                     helperBooking = HelperBooking.NoBooking,
+                    references = listOf(Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS))
                 )
                 dataHelper.shiftRepository.shifts.values
                     .filter { it.start == week10Shift1.start }
@@ -246,9 +250,9 @@ class ShiftsServiceImplementationTest : FunSpec({
 
                 dataHelper.weekSynchronizationRepository.synchronizationState(
                     PrincipalsTestData.FiktivusMaximus.subject,
-                    year2024Week10
+                    year2024Week10,
                 )
-                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.OUT_OF_DATE)
+                    .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
             }
 
             test("should mark week as possibly out of sync if successful") {
@@ -261,7 +265,7 @@ class ShiftsServiceImplementationTest : FunSpec({
 
                 dataHelper.weekSynchronizationRepository.synchronizationState(
                     PrincipalsTestData.FiktivusMaximus.subject,
-                    year2024Week10
+                    year2024Week10,
                 )
                     .shouldBe(WeekSynchronizationRepository.SynchronizationState.POSSIBLY_OUT_OF_DATE)
             }

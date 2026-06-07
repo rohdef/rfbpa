@@ -3,6 +3,7 @@
 package dk.rohdef.rfbpa.web.shifts
 
 import com.auth0.jwk.JwkProvider
+import dk.rohdef.helperplanning.RfbpaTime
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.ShiftRepository
 import dk.rohdef.helperplanning.WeekSynchronizationRepository
@@ -27,12 +28,13 @@ import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
 import io.kotest.common.KotestInternal
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeEmpty
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.datetime.Clock
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.dsl.singleOf
@@ -40,6 +42,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(KotestInternal::class)
@@ -57,8 +60,9 @@ class ShiftsTest : KoinTest, RfbpaSpec({
                 configuration(TestConfiguration.default),
                 module {
                     single<Clock> { Clock.System }
-                    single<JwkProvider> { JwkProvider { jwk } }
+                    single { JwkProvider { jwk } }
 
+                    single { RfbpaTime(get()) }
                     single<SalarySystemRepository> { weekPlanService.salarySystem }
                     single<WeekSynchronizationRepository> { weekPlanService.synchronizationRepository }
                     single<ShiftRepository> { weekPlanService.shiftRepository }
@@ -148,14 +152,40 @@ class ShiftsTest : KoinTest, RfbpaSpec({
 
     context("Reporting illness") {
         restTest("creates a new shift") { client ->
-            val response = client.put("$url/45ae986c-3c57-4ffa-9f1f-30ec06b2fc53/registrations/illness") {
+            val shift = weekPlanWeek29.allShifts.first()
+                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+
+            weekPlanService.addShift(fiktivusSubject, shift)
+
+            val response = client.put("$url/${shift.shiftId.id.toHexDashString()}/registrations/illness") {
                 setBody("I feel under the weather")
             }
 
             response.status shouldBe HttpStatusCode.OK
 
-//            val newShiftId: UUID = response.body()
-            // TODO can it (should it?) be fixed
+            val newShift: ShiftOut = response.body()
+            println("New shift ID: $newShift")
+
+            newShift.start shouldBe shift.start
+            newShift.end shouldBe shift.end
+            newShift.shiftId shouldNotBe shift.shiftId
+            newShift.helperBooking shouldBe HelperBookingOut.NoBooking
+            newShift.registrations.shouldBeEmpty()
+//            newShift.references shouldContainExactly ReferenceOut.To(shift.shiftId, LinkTypeOut.ILLNESS)
+            // TODO finish test and implementation
+        }
+
+        restTest("illness is registered with reference to the new shift") { client ->
+            val shift = weekPlanWeek29.allShifts.first()
+                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+
+            weekPlanService.addShift(fiktivusSubject, shift)
+
+            val response = client.put("$url/${shift.shiftId.id.toHexDashString()}/registrations/illness") {
+                setBody("I feel under the weather")
+            }
+
+            response.status shouldBe HttpStatusCode.OK
         }
 
         // TODO what are potential errors

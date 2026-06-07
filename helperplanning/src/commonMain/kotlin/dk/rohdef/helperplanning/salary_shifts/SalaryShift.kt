@@ -1,6 +1,9 @@
 package dk.rohdef.helperplanning.salary_shifts
 
-import dk.rohdef.helperplanning.shifts.Registration
+import arrow.core.Either
+import arrow.core.raise.either
+import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
@@ -10,7 +13,7 @@ data class SalaryShift(
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
     // TODO - we probably want salary registratio
-    val registrations: List<Registration> = emptyList(),
+    val registrations: List<SalaryRegistration> = emptyList(),
 ) {
     constructor(
         helperBooking: SalaryBooking,
@@ -22,4 +25,14 @@ data class SalaryShift(
         start,
         end,
     )
+
+    suspend fun toShift(existingBooking: suspend () -> Either<Unit, HelperId>): Either<Unit, Shift> = either {
+        Shift(
+            helperBooking.toBooking(existingBooking).bind(),
+            shiftId,
+            start,
+            end,
+            registrations.map { it.toRegistration() },
+        )
+    }
 }

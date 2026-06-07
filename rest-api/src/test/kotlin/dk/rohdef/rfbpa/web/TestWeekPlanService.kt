@@ -1,7 +1,9 @@
 package dk.rohdef.rfbpa.web
 
 import dk.rohdef.helperplanning.MemoryHelpersRepository
+import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.helpers.HelpersRepository
+import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 
@@ -16,5 +18,10 @@ class TestWeekPlanService(
         salarySystem.reset()
         shiftRepository.reset()
         synchronizationRepository.reset()
+    }
+
+    suspend fun addShift(subject: RfbpaPrincipal.Subject, shift: Shift) {
+        salarySystem.addShift(subject, shift)
+        shiftRepository.addShift(subject, shift)
     }
 }

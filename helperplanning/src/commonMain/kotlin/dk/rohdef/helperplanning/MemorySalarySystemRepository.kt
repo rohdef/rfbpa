@@ -5,9 +5,9 @@ import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryRegistration
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
-import dk.rohdef.helperplanning.shifts.Registration
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -52,7 +52,7 @@ class MemorySalarySystemRepository : SalarySystemRepository {
             SalarySystemRepository.RegisterIllnessError.ShiftNotFound(shiftId)
         }
         // TODO remove local date time - will probably fix itself when typed properly???
-        val illness = Registration.Illness()
+        val illness = SalaryRegistration.Illness
 
         val illShift = shift.copy(registrations = shift.registrations + illness)
 

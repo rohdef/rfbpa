@@ -14,9 +14,9 @@ import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.salary_shifts.SalaryRegistration
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
-import dk.rohdef.helperplanning.shifts.Registration
 import dk.rohdef.helperplanning.shifts.Shift
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsError
@@ -173,7 +173,7 @@ class AxpSalarySystem(
             YearWeekDayAtTime.from(start),
             YearWeekDayAtTime.from(end),
             listOf(
-                Registration.Illness()
+                SalaryRegistration.Illness
             ),
         )
     }

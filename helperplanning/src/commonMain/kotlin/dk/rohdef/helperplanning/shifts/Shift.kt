@@ -8,6 +8,7 @@ data class Shift(
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
     val registrations: List<Registration> = emptyList(),
+    val references: List<Reference> = emptyList(),
 ) {
     constructor(
         booking: HelperBooking,

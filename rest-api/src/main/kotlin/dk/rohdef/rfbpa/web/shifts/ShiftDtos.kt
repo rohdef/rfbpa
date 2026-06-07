@@ -20,6 +20,8 @@ data class ShiftOut(
     val helperBooking: HelperBookingOut,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
+    val registrations: List<String>,
+    val references: List<String>,
 ) {
     companion object {
         fun from(shift: Shift, helpers: Map<HelperId, Helper>): ShiftOut {
@@ -34,6 +36,8 @@ data class ShiftOut(
                 booking,
                 shift.start,
                 shift.end,
+                listOf(),
+                listOf(),
             )
         }
     }
