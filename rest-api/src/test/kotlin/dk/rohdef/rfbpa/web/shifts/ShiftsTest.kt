@@ -29,6 +29,7 @@ import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek30
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.weekPlanWeek31
 import io.kotest.common.KotestInternal
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeEmpty
@@ -164,15 +165,15 @@ class ShiftsTest : KoinTest, RfbpaSpec({
             response.status shouldBe HttpStatusCode.OK
 
             val newShift: ShiftOut = response.body()
-            println("New shift ID: $newShift")
 
             newShift.start shouldBe shift.start
             newShift.end shouldBe shift.end
             newShift.shiftId shouldNotBe shift.shiftId
             newShift.helperBooking shouldBe HelperBookingOut.NoBooking
             newShift.registrations.shouldBeEmpty()
-//            newShift.references shouldContainExactly ReferenceOut.To(shift.shiftId, LinkTypeOut.ILLNESS)
-            // TODO finish test and implementation
+            newShift.references shouldContainExactly listOf(
+                ReferenceOut.To(shift.shiftId.id, ReferenceOut.LinkType.Illness)
+            )
         }
 
         restTest("illness is registered with reference to the new shift") { client ->
@@ -181,11 +182,20 @@ class ShiftsTest : KoinTest, RfbpaSpec({
 
             weekPlanService.addShift(fiktivusSubject, shift)
 
-            val response = client.put("$url/${shift.shiftId.id.toHexDashString()}/registrations/illness") {
+            val registerIllness = client.put("$url/${shift.shiftId.id.toHexDashString()}/registrations/illness") {
                 setBody("I feel under the weather")
             }
+            registerIllness.status shouldBe HttpStatusCode.OK
+            val replacementShift: ShiftOut = registerIllness.body()
 
-            response.status shouldBe HttpStatusCode.OK
+            val illnessResponse = client.get("$url/${shift.shiftId.id.toHexDashString()}")
+            illnessResponse.status shouldBe HttpStatusCode.OK
+
+            val illness: ShiftOut = illnessResponse.body()
+            illness.registrations shouldContainExactly listOf(RegistrationOut.Illness)
+            illness.references shouldContainExactly listOf(
+                ReferenceOut.From(replacementShift.shiftId, ReferenceOut.LinkType.Illness)
+            )
         }
 
         // TODO what are potential errors

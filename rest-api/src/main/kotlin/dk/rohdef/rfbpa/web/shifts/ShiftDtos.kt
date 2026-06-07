@@ -4,9 +4,7 @@ package dk.rohdef.rfbpa.web.shifts
 
 import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 import kotlinx.serialization.SerialName
@@ -20,8 +18,8 @@ data class ShiftOut(
     val helperBooking: HelperBookingOut,
     val start: YearWeekDayAtTime,
     val end: YearWeekDayAtTime,
-    val registrations: List<String>,
-    val references: List<String>,
+    val registrations: List<RegistrationOut>,
+    val references: List<ReferenceOut>,
 ) {
     companion object {
         fun from(shift: Shift, helpers: Map<HelperId, Helper>): ShiftOut {
@@ -36,10 +34,74 @@ data class ShiftOut(
                 booking,
                 shift.start,
                 shift.end,
-                listOf(),
-                listOf(),
+                shift.registrations.map { RegistrationOut.from(it) },
+                shift.references.map { ReferenceOut.from(it) },
             )
         }
+    }
+}
+
+@Serializable
+sealed interface RegistrationOut {
+    @Serializable
+    @SerialName("Illness")
+    object Illness : RegistrationOut
+
+    companion object {
+        fun from(registration: Registration): RegistrationOut =
+            when (registration) {
+                Registration.Illness -> Illness
+            }
+    }
+}
+
+@Serializable
+sealed interface ReferenceOut {
+    @Serializable
+    @SerialName("From")
+    data class From(
+        val id: Uuid,
+        val linkType: LinkType,
+    ) : ReferenceOut {
+        companion object {
+            fun from(link: Reference.From) = From(
+                link.id.id,
+                LinkType.from(link.linkType),
+            )
+        }
+    }
+
+    @Serializable
+    @SerialName("To")
+    data class To(
+        val id: Uuid,
+        val linkType: LinkType,
+    ) : ReferenceOut {
+        companion object {
+            fun from(link: Reference.To) = To(
+                link.id.id,
+                LinkType.from(link.linkType),
+            )
+        }
+    }
+
+    enum class LinkType {
+        Illness;
+
+        companion object {
+            fun from(link: Reference.LinkType): LinkType =
+                when (link) {
+                    Reference.LinkType.ILLNESS -> Illness
+                }
+        }
+    }
+
+    companion object {
+        fun from(reference: Reference) =
+            when (reference) {
+                is Reference.From -> From.from(reference)
+                is Reference.To -> To.from(reference)
+            }
     }
 }
 
