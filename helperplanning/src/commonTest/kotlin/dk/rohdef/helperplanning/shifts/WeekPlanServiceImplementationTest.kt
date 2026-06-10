@@ -131,7 +131,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 HelperTestData.permanentHipHop.id,
             )
 
-            val expectedShift = Shift(
+            val expectedShift = Shift.createUnsafe(
                 HelperBooking.Booked(HelperTestData.permanentHipHop.id),
                 week8shift2.shiftId,
                 week8shift2.start,
@@ -157,7 +157,7 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 week10Shift2.shiftId,
             )
 
-            val expectedShift = Shift(
+            val expectedShift = Shift.createUnsafe(
                 HelperBooking.NoBooking,
                 week10Shift2.shiftId,
                 week10Shift2.start,

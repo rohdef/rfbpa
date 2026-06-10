@@ -53,14 +53,14 @@ class ShiftsServiceImplementation(
                 .mapLeft { TODO("Could not book helper (${booking.helper}) for shift ${salarayShift.shiftId}") }
                 .bind()
         }
-        val shift = Shift(
+        val shift = Shift.create(
             booking,
             salarayShift.shiftId,
             start,
             end,
             listOf(),
             listOf(),
-        )
+        ).mapLeft { TODO() }.bind()
 
         shiftRepository.createOrUpdate(principal.subject, shift)
             .mapLeft { TODO() }
@@ -111,9 +111,9 @@ class ShiftsServiceImplementation(
             .mapLeft { it.toServiceError() }.bind()
             .toShift(subject)
             .mapLeft { TODO() }.bind()
+
         shiftRepository.createOrUpdate(subject, replacementShift)
             .mapLeft { it.toServiceError() }.bind()
-        replacementShift
     }
 
     private suspend fun reportAndRegisterIllness(
@@ -121,9 +121,14 @@ class ShiftsServiceImplementation(
         shift: Shift,
         replacementShiftId: ShiftId,
     ): Either<WeekPlanServiceError, Unit> = either {
-        val illShift = shift.copy(
-            registrations = shift.registrations + Registration.Illness,
-        )
+        val illShift = Shift.create(
+            shift.helperBooking,
+            shift.shiftId,
+            shift.start,
+            shift.end,
+            shift.registrations + Registration.Illness,
+            shift.references
+        ).mapLeft { TODO() }.bind()
         salarySystem.reportIllness(subject, shift, replacementShiftId)
             .mapLeft { it.toServiceError() }
             .bind()

@@ -27,13 +27,13 @@ data class SalaryShift(
     )
 
     suspend fun toShift(existingBooking: suspend () -> Either<Unit, HelperId>): Either<Unit, Shift> = either {
-        Shift(
+        Shift.create(
             helperBooking.toBooking(existingBooking).bind(),
             shiftId,
             start,
             end,
             registrations.map { it.toRegistration() },
             listOf(),
-        )
+        ).mapLeft { }.bind()
     }
 }

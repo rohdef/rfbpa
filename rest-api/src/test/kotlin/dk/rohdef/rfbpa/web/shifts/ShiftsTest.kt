@@ -11,6 +11,7 @@ import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.rfbpa.web.PrincipalsTestData
 import dk.rohdef.rfbpa.web.RfbpaSpec
 import dk.rohdef.rfbpa.web.TestConfiguration
@@ -94,7 +95,7 @@ class ShiftsTest : KoinTest, RfbpaSpec({
             helperService.create(TestHelpers.realis)
 
             val shift = weekPlanWeek29.allShifts.first()
-                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+                .copyUnsafe(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
             weekPlanService.shiftRepository.addShift(fiktivusSubject, shift)
 
             val response = client.get("$url/${shift.shiftId.id.toHexDashString()}")
@@ -154,7 +155,7 @@ class ShiftsTest : KoinTest, RfbpaSpec({
     context("Reporting illness") {
         restTest("creates a new shift") { client ->
             val shift = weekPlanWeek29.allShifts.first()
-                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+                .copyUnsafe(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
 
             weekPlanService.addShift(fiktivusSubject, shift)
 
@@ -178,7 +179,7 @@ class ShiftsTest : KoinTest, RfbpaSpec({
 
         restTest("illness is registered with reference to the new shift") { client ->
             val shift = weekPlanWeek29.allShifts.first()
-                .copy(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
+                .copyUnsafe(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
 
             weekPlanService.addShift(fiktivusSubject, shift)
 

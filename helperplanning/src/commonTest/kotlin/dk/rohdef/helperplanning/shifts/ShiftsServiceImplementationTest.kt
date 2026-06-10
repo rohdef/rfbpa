@@ -8,6 +8,7 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryRegistration
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.helperplanning.shifts.yaml.Shifties
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
@@ -132,7 +133,7 @@ class ShiftsServiceImplementationTest : FunSpec({
                 val replacementShift = illnessReportResult.shouldBeRight()
                 val replacementShiftId = replacementShift.shiftId
 
-                val expectedShift = week10Shift1.copy(
+                val expectedShift = week10Shift1.copyUnsafe(
                     registrations = listOf(
                         Registration.Illness,
                     ),
@@ -140,6 +141,7 @@ class ShiftsServiceImplementationTest : FunSpec({
                 )
                 dataHelper.shiftRepository.shifts[week10Shift1.shiftId] shouldBe expectedShift
                 dataHelper.salarySystem.shifts[week10Shift1.shiftId] shouldBe expectedShift.toSalaryShift()
+                dataHelper.salarySystem.shifts[replacementShiftId] shouldBe replacementShift.toSalaryShift()
             }
 
             test("should create new shift") {
@@ -151,16 +153,16 @@ class ShiftsServiceImplementationTest : FunSpec({
                 val replacementShift = illnessReportResult.shouldBeRight()
                 val replacementShiftId = replacementShift.shiftId
 
-                val expectedShift = week10Shift1.copy(
+                val expectedShift = week10Shift1.copyUnsafe(
                     shiftId = replacementShiftId,
                     helperBooking = HelperBooking.NoBooking,
                     registrations = listOf(),
                     references = listOf(
-                        Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS)
+                        Reference.To(week9Shift1.shiftId, Reference.LinkType.ILLNESS)
                     )
                 )
                 dataHelper.shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
-                dataHelper.salarySystem.shifts[replacementShiftId] shouldBe expectedShift.toSalaryShift()
+                dataHelper.salarySystem.shifts[replacementShiftId] shouldBe expectedShift.toSalaryShift().copy(registrations = listOf())
             }
 
             test("should only be possible on a booked shift") {
@@ -186,11 +188,11 @@ class ShiftsServiceImplementationTest : FunSpec({
                 )
                 val newShift2 = illnessReportResult2.shouldBeRight()
 
-                val expectedShift = week10Shift1.copy(
+                val expectedShift = week10Shift1.copyUnsafe(
                     registrations = listOf(Registration.Illness),
                     references = listOf(Reference.From(newShift1.shiftId, Reference.LinkType.ILLNESS))
                 )
-                val expectedNewShift = week10Shift1.copy(
+                val expectedNewShift = week9Shift1.copyUnsafe(
                     shiftId = newShift1.shiftId,
                     helperBooking = HelperBooking.NoBooking,
                     references = listOf(Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS))

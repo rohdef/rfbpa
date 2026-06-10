@@ -25,23 +25,45 @@ class DatabaseShifts : ShiftRepository {
     private val log = KotlinLogging.logger { }
 
     private fun rowToShift(row: ResultRow): Shift {
+        val shiftIdValue = row[ShiftsTable.id].toKotlinUuid()
         val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUuid()
             ?.let { HelperId(it) }
         val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
-        return Shift(
+        val registrations = RegistrationsTable
+            .selectAll()
+            .where { RegistrationsTable.shiftId eq shiftIdValue.toJavaUuid() }
+            .map { it[RegistrationsTable.registration] }
+
+        val references = ReferencesTable
+            .selectAll()
+            .where { ReferencesTable.fromId eq shiftIdValue.toJavaUuid() }
+            .map {
+                val toId = ShiftId(it[ReferencesTable.toId].toKotlinUuid())
+                val linkType = it[ReferencesTable.linkType]
+
+                Reference.From(toId, linkType)
+            } + ReferencesTable
+            .selectAll()
+            .where { ReferencesTable.toId eq shiftIdValue.toJavaUuid() }
+            .map {
+                val fromId = ShiftId(it[ReferencesTable.fromId].toKotlinUuid())
+                val linkType = it[ReferencesTable.linkType]
+
+                Reference.To(fromId, linkType)
+            }
+
+        return Shift.createUnsafe(
             booking,
-            ShiftId(
-                row[ShiftsTable.id].toKotlinUuid(),
-            ),
+            ShiftId(shiftIdValue),
             YearWeekDayAtTime.from(
                 row[ShiftsTable.start].toKotlinLocalDateTime(),
             ),
             YearWeekDayAtTime.from(
                 row[ShiftsTable.end].toKotlinLocalDateTime(),
             ),
-            listOf(),
-            listOf(),
+            registrations,
+            references,
         )
     }
 

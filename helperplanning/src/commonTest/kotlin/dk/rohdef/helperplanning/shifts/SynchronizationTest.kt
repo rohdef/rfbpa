@@ -20,7 +20,7 @@ import kotlinx.datetime.DayOfWeek
 
 class SynchronizationTest : FunSpec({
     fun createShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
-        return Shift(
+        return Shift.createUnsafe(
             HelperBooking.NoBooking,
             TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,

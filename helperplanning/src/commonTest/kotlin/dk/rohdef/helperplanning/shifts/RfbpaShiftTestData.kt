@@ -10,7 +10,7 @@ internal fun YearWeek.shift(dayOfWeek: DayOfWeek): ShiftBuilderWithHelper {
     val atDayOfWeek = this.atDayOfWeek(dayOfWeek)
 
     fun createTestShift(helperBooking: HelperBooking, start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
-        return Shift(
+        return Shift.createUnsafe(
             helperBooking,
             TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,

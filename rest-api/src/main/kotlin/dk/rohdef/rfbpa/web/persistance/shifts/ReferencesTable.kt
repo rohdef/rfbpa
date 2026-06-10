@@ -3,7 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import dk.rohdef.helperplanning.shifts.Reference
 import org.jetbrains.exposed.sql.Table
 
-object ReferencesTable : Table() {
+object ReferencesTable : Table("references") {
     val fromId = uuid("fromId")
         .references(ShiftsTable.id)
     val toId = uuid("toId")

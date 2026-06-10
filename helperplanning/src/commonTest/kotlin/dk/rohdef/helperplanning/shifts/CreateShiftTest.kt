@@ -47,7 +47,7 @@ class CreateShiftTest : FunSpec({
     val shift1Start = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(13, 30)
     val shift1End = week13.atDayOfWeek(DayOfWeek.MONDAY).atTime(14, 30)
     val testIds = TestSalarySystemRepository.IdGenerator.Default
-    val testShift1 = Shift(
+    val testShift1 = Shift.createUnsafe(
         HelperBooking.NoBooking,
         testIds.generate(shift1Start, shift1End),
         shift1Start,
@@ -58,7 +58,7 @@ class CreateShiftTest : FunSpec({
 
     val shift2Start = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(8, 15)
     val shift2End = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(19, 15)
-    val testShift2 = Shift(
+    val testShift2 = Shift.createUnsafe(
         HelperBooking.NoBooking,
         testIds.generate(shift2Start, shift2End),
         shift2Start,

@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Reference
 import dk.rohdef.helperplanning.shifts.Registration
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfbpa.web.PrincipalsTestData
 import dk.rohdef.rfbpa.web.persistance.TestDatabaseConnection
@@ -65,7 +66,7 @@ class DatabaseShiftsTest : FunSpec({
     context("Bookings") {
         test("Shifts with bookings") {
             val fiktivus = TestHelpers.fiktivus
-            val shift = shiftW29Wednesday1.copy(helperBooking = HelperBooking.Booked(fiktivus.id))
+            val shift = shiftW29Wednesday1.copyUnsafe(helperBooking = HelperBooking.Booked(fiktivus.id))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shift)
 
             val expectedWeekPlanShift1 = WeekPlan.emptyPlan(week29).copy(wednesday = listOf(shift))
@@ -75,7 +76,7 @@ class DatabaseShiftsTest : FunSpec({
         test("Shift with no booking becoming booked") {
             val realis = TestHelpers.realis
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday1)
-            val shift = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(realis.id))
+            val shift = shiftW30Tuesday1.copyUnsafe(helperBooking = HelperBooking.Booked(realis.id))
 
             val expectedWeekPlanUnbooked = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftW30Tuesday1))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanUnbooked
@@ -88,9 +89,9 @@ class DatabaseShiftsTest : FunSpec({
             val fiktivus = TestHelpers.fiktivus
             val realis = TestHelpers.realis
 
-            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(fiktivus.id))
+            val shiftInitial = shiftW30Tuesday1.copyUnsafe(helperBooking = HelperBooking.Booked(fiktivus.id))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftInitial)
-            val shiftRebooked = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(realis.id))
+            val shiftRebooked = shiftW30Tuesday1.copyUnsafe(helperBooking = HelperBooking.Booked(realis.id))
 
             val expectedWeekPlanInitial = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftInitial))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanInitial
@@ -102,12 +103,12 @@ class DatabaseShiftsTest : FunSpec({
         test("Shift already booked becoming unbooked") {
             val fiktivus = TestHelpers.fiktivus
 
-            val shiftInitial = shiftW30Tuesday1.copy(helperBooking = HelperBooking.Booked(fiktivus.id))
+            val shiftInitial = shiftW30Tuesday1.copyUnsafe(helperBooking = HelperBooking.Booked(fiktivus.id))
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftInitial)
             val expectedWeekPlanBooked = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftInitial))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanBooked
 
-            val shiftUnbooked = shiftInitial.copy(helperBooking = HelperBooking.NoBooking)
+            val shiftUnbooked = shiftInitial.copyUnsafe(helperBooking = HelperBooking.NoBooking)
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftUnbooked)
             val expectedWeekPlanUnbooked = WeekPlan.emptyPlan(week30).copy(tuesday = listOf(shiftUnbooked))
             shiftRepository.byYearWeek(fiktivusPrincipal, week30) shouldBeRight expectedWeekPlanUnbooked
@@ -116,7 +117,9 @@ class DatabaseShiftsTest : FunSpec({
 
     context("Registrations") {
         test("of illness") {
-            val shiftWithRegistration = shiftW30Tuesday1.copy(
+            val fiktivus = TestHelpers.fiktivus
+            val shiftWithRegistration = shiftW30Tuesday1.copyUnsafe(
+                helperBooking = HelperBooking.Booked(fiktivus.id),
                 registrations = listOf(Registration.Illness),
             )
 
@@ -130,6 +133,7 @@ class DatabaseShiftsTest : FunSpec({
 
     context("References") {
         test("by saving") {
+            val fiktivus = TestHelpers.fiktivus
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW29Wednesday1)
                 .shouldBeRight()
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday1)
@@ -137,7 +141,8 @@ class DatabaseShiftsTest : FunSpec({
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday2)
                 .shouldBeRight()
 
-            val referenceFromShift = shiftW30Tuesday1.copy(
+            val referenceFromShift = shiftW30Tuesday1.copyUnsafe(
+                helperBooking = HelperBooking.Booked(fiktivus.id),
                 registrations = listOf(Registration.Illness),
                 references = listOf(
                     Reference.From(shiftW29Wednesday1.shiftId, Reference.LinkType.ILLNESS)
@@ -159,12 +164,18 @@ class DatabaseShiftsTest : FunSpec({
         }
 
         test("by linking") {
+            val fiktivus = TestHelpers.fiktivus
+            val bookedShift = shiftW30Tuesday1.copyUnsafe(
+                helperBooking = HelperBooking.Booked(fiktivus.id),
+                registrations = listOf(Registration.Illness),
+            )
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW29Wednesday1)
                 .shouldBeRight()
-            shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday1)
+            shiftRepository.createOrUpdate(fiktivusPrincipal, bookedShift)
                 .shouldBeRight()
             shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday2)
                 .shouldBeRight()
+            shiftRepository.createOrUpdate(fiktivusPrincipal, bookedShift).shouldBeRight()
 
             shiftRepository.linkShifts(fiktivusPrincipal, shiftW30Tuesday1.shiftId, shiftW30Tuesday2.shiftId, Reference.LinkType.ILLNESS)
                 .shouldBeRight()
@@ -177,7 +188,7 @@ class DatabaseShiftsTest : FunSpec({
             shiftFrom.registrations shouldContainExactly listOf(Registration.Illness)
             shiftFrom.references shouldContainExactly listOf(Reference.From(shiftW30Tuesday2.shiftId, Reference.LinkType.ILLNESS))
 
-            shiftTo.registrations.shouldBeEmpty()
+            shiftTo.registrations shouldContainExactly listOf(Registration.Illness)
             shiftTo.references shouldContainExactly listOf(Reference.To(shiftW30Tuesday1.shiftId, Reference.LinkType.ILLNESS))
         }
     }

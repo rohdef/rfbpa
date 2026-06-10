@@ -3,7 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import dk.rohdef.helperplanning.shifts.Registration
 import org.jetbrains.exposed.sql.Table
 
-object RegistrationsTable : Table() {
+object RegistrationsTable : Table("registrations") {
     val shiftId = uuid("shift_id")
         .references(ShiftsTable.id)
         .uniqueIndex()

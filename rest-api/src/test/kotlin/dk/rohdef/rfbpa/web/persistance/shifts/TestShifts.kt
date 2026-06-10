@@ -3,6 +3,7 @@ package dk.rohdef.rfbpa.web.persistance.shifts
 import dk.rohdef.helperplanning.generateUuid
 import dk.rohdef.helperplanning.shifts.HelperBooking
 import dk.rohdef.helperplanning.shifts.Shift
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.WeekPlan
 import dk.rohdef.rfweeks.YearWeek
@@ -35,7 +36,7 @@ internal object TestShifts {
     }
 
     internal fun createTestShift(start: YearWeekDayAtTime, end: YearWeekDayAtTime): Shift {
-        return Shift(
+        return Shift.createUnsafe(
             HelperBooking.NoBooking,
             generateTestShiftId(start, end),
             start,
@@ -58,7 +59,7 @@ internal object TestShifts {
         }
     }
 
-    fun Shift.book(helperBooking: HelperBooking): Shift = this.copy(helperBooking = helperBooking)
+    fun Shift.book(helperBooking: HelperBooking): Shift = this.copyUnsafe(helperBooking = helperBooking)
 
     val week29 = YearWeek(2024, 29)
     val week30 = YearWeek(2024, 30)

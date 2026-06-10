@@ -8,6 +8,7 @@ import arrow.core.raise.either
 import arrow.core.raise.ensureNotNull
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 import kotlinx.datetime.DayOfWeek
@@ -82,7 +83,7 @@ class MemoryShiftRepository : ShiftRepository {
         booking: HelperBooking.Booked
     ): Either<ShiftsError, Shift> = either {
         val shift = byId(subject, shiftId)
-            .map { it.copy(helperBooking = booking) }
+            .map { it.copyUnsafe(helperBooking = booking) }
             .bind()
 
         createOrUpdate(subject, shift).bind()
@@ -90,7 +91,7 @@ class MemoryShiftRepository : ShiftRepository {
 
     override suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, Unit> = either {
         val shift = byId(subject, shiftId)
-            .map { it.copy(helperBooking = HelperBooking.NoBooking) }
+            .map { it.copyUnsafe(helperBooking = HelperBooking.NoBooking) }
             .bind()
 
         createOrUpdate(subject, shift).bind()

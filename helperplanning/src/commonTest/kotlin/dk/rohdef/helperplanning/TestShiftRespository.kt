@@ -5,11 +5,8 @@ import arrow.core.NonEmptyList
 import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.HelperId
-import dk.rohdef.helperplanning.shifts.HelperBooking
-import dk.rohdef.helperplanning.shifts.Shift
-import dk.rohdef.helperplanning.shifts.ShiftId
-import dk.rohdef.helperplanning.shifts.ShiftsError
-import dk.rohdef.helperplanning.shifts.WeekPlan
+import dk.rohdef.helperplanning.shifts.*
+import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
@@ -48,7 +45,7 @@ class TestShiftRespository(
     override suspend fun createOrUpdate(subject: RfbpaPrincipal.Subject, shift: Shift): Either<ShiftsError, Shift> = either {
         _createShiftErrorRunners.map { it(shift).bind() }
         val shiftToSave = _upcommingShiftBooking[shift.shiftId]
-            ?.let { shift.copy(helperBooking = HelperBooking.Booked(it)) }
+            ?.let { shift.copyUnsafe(helperBooking = HelperBooking.Booked(it)) }
             ?: shift
         memoryShiftRepository.createOrUpdate(subject, shiftToSave).bind()
     }

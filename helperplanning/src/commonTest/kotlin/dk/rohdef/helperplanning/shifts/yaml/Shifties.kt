@@ -38,7 +38,7 @@ data class Shifties(
             shifts
                 .filter { it.rfbpaBooking != null }
                 .map { shift ->
-                    Shift(
+                    Shift.createUnsafe(
                         shift.rfbpaBooking!!.asHelperBooking(helperResolver),
                         ShiftId(shift.testId),
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.start),
@@ -57,7 +57,7 @@ data class Shifties(
                 .filter { it.salaryBooking != null }
                 .map { shift ->
                     val shiftId = ShiftId(shift.testId)
-                    Shift(
+                    Shift.createUnsafe(
                         shift.salaryBooking!!.asExpectedHelperBooking(helperResolver, helperByShiftId(shiftId)),
                         shiftId,
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.start),

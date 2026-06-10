@@ -18,7 +18,7 @@ import kotlinx.serialization.encoding.Encoder
 data class YearWeekDayAtTime(
     val yearWeekDay: YearWeekDay,
     val time: LocalTime,
-) {
+) : Comparable<YearWeekDayAtTime> {
     val yearWeek = yearWeekDay.yearWeek
     val year = yearWeekDay.year
     val week = yearWeekDay.week
@@ -27,6 +27,9 @@ data class YearWeekDayAtTime(
     val date = yearWeekDay.date
 
     val localDateTime = date.atTime(time)
+
+    override fun compareTo(other: YearWeekDayAtTime): Int =
+        localDateTime.compareTo(other.localDateTime)
 
     override fun toString(): String {
         return "$year-W${week.toString().padStart(2, '0')}-${dayOfWeek.isoDayNumber}T$time"
