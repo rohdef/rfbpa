@@ -44,6 +44,7 @@ data class Shifties(
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.start),
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.end),
                         shift.registrations.map { TODO("Needs to be fixed when introducing registrations") },
+                        shift.registrations.map { TODO("Needs to be fixed when introducing registrations") },
                     )
                 }
         }
@@ -61,6 +62,7 @@ data class Shifties(
                         shiftId,
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.start),
                         yearWeek.atDayOfWeek(shift.day).atTime(shift.time.end),
+                        shift.registrations.map { TODO("Needs to be fixed when introducing registrations") },
                         shift.registrations.map { TODO("Needs to be fixed when introducing registrations") },
                     )
                 }

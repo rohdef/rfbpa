@@ -58,6 +58,8 @@ class ShiftsServiceImplementation(
             salarayShift.shiftId,
             start,
             end,
+            listOf(),
+            listOf(),
         )
 
         shiftRepository.createOrUpdate(principal.subject, shift)
@@ -76,7 +78,7 @@ class ShiftsServiceImplementation(
             WeekPlanServiceError.ShiftMustBeBooked(shiftId)
         }
 
-        val illnessRegistrations = currentShift.registrations.filterIsInstance<Registration.Illness>()
+        val illnessRegistrations = currentShift.registrations.filter { it == Registration.Illness }
         if (illnessRegistrations.isEmpty()) {
             weekSynchronizationRepository.markPossiblyOutOfDate(principal.subject, currentShift.start.yearWeek)
 

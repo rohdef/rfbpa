@@ -15,6 +15,8 @@ internal fun YearWeek.shift(dayOfWeek: DayOfWeek): ShiftBuilderWithHelper {
             TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,
             end,
+            listOf(),
+            listOf(),
         )
     }
 

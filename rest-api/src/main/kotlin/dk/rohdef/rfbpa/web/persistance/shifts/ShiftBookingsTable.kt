@@ -9,6 +9,7 @@ object ShiftBookingsTable : Table() {
         .uniqueIndex()
     val helperId = uuid("helper_id")
         .references(HelpersTable.id)
+        .index()
 
     override val primaryKey = PrimaryKey(shiftId)
 }

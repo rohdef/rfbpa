@@ -2,10 +2,11 @@ package dk.rohdef.helperplanning.salary_shifts
 
 import dk.rohdef.helperplanning.shifts.Registration
 
-sealed interface SalaryRegistration {
-    fun toRegistration(): Registration
+enum class SalaryRegistration {
+    Illness;
 
-    object Illness : SalaryRegistration {
-        override fun toRegistration() = Registration.Illness
-    }
+    fun toRegistration(): Registration =
+        when (this) {
+            Illness -> Registration.Illness
+        }
 }

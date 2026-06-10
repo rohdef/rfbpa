@@ -33,6 +33,7 @@ data class SalaryShift(
             start,
             end,
             registrations.map { it.toRegistration() },
+            listOf(),
         )
     }
 }

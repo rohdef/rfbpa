@@ -40,6 +40,8 @@ class DatabaseShifts : ShiftRepository {
             YearWeekDayAtTime.from(
                 row[ShiftsTable.end].toKotlinLocalDateTime(),
             ),
+            listOf(),
+            listOf(),
         )
     }
 

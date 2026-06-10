@@ -25,6 +25,8 @@ class SynchronizationTest : FunSpec({
             TestSalarySystemRepository.IdGenerator.Default.generate(start, end),
             start,
             end,
+            listOf(),
+            listOf(),
         )
     }
 

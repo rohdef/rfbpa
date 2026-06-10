@@ -40,6 +40,8 @@ internal object TestShifts {
             generateTestShiftId(start, end),
             start,
             end,
+            listOf(),
+            listOf(),
         )
     }
 

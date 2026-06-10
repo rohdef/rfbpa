@@ -52,6 +52,8 @@ class CreateShiftTest : FunSpec({
         testIds.generate(shift1Start, shift1End),
         shift1Start,
         shift1End,
+        listOf(),
+        listOf(),
     )
 
     val shift2Start = week13.atDayOfWeek(DayOfWeek.THURSDAY).atTime(8, 15)
@@ -61,6 +63,8 @@ class CreateShiftTest : FunSpec({
         testIds.generate(shift2Start, shift2End),
         shift2Start,
         shift2End,
+        listOf(),
+        listOf(),
     )
 
     beforeEach {

@@ -4,6 +4,7 @@ import arrow.core.nonEmptyListOf
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperTestData
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
+import dk.rohdef.helperplanning.shifts.ShiftsServiceImplementation
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDay
 import io.kotest.assertions.arrow.core.shouldBeLeft
@@ -15,14 +16,24 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
+import kotlin.time.Clock
 
 class TemplateApplierTest : FunSpec({
     val memoryHelpers = MemoryHelpersRepository()
+    val memoryShiftRepository = MemoryShiftRepository()
     val memoryWeekPlanRepository = MemorySalarySystemRepository()
     val weekPlanRepository = TestSalarySystemRepository(memoryWeekPlanRepository)
+    val weekSynchronizationRepository = MemoryWeekSynchronizationRepository()
+    val shiftService = ShiftsServiceImplementation(
+        weekPlanRepository,
+        memoryShiftRepository,
+        memoryHelpers,
+        weekSynchronizationRepository,
+        RfbpaTime(Clock.System),
+    )
 
     val templateApplier = TemplateApplier(
-        weekPlanRepository,
+        shiftService,
         memoryHelpers,
     )
 

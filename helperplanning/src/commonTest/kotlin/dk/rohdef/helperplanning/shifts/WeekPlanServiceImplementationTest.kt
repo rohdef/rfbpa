@@ -136,6 +136,8 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 week8shift2.shiftId,
                 week8shift2.start,
                 week8shift2.end,
+                listOf(),
+                listOf(),
             )
             val expectedSalaryShift = SalaryShift(
                 SalaryBooking.Helper(HelperTestData.permanentHipHop.id),
@@ -160,6 +162,8 @@ class WeekPlanServiceImplementationTest : FunSpec({
                 week10Shift2.shiftId,
                 week10Shift2.start,
                 week10Shift2.end,
+                listOf(),
+                listOf(),
             )
             val expectedSalaryShift = SalaryShift(
                 SalaryBooking.NoBooking,

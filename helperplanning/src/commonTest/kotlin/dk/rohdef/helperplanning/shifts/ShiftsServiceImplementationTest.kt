@@ -101,7 +101,7 @@ class ShiftsServiceImplementationTest : FunSpec({
 
             fun Registration.toSalaryRegistration(): SalaryRegistration {
                 return when (this) {
-                    is Registration.Illness -> SalaryRegistration.Illness
+                    Registration.Illness -> SalaryRegistration.Illness
                 }
             }
 
