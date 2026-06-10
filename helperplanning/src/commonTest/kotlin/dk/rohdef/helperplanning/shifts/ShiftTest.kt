@@ -30,24 +30,25 @@ class ShiftTest : FunSpec({
 
     test("Does not allow an illness reference from without illness registration") {
         val illnessReference = Reference.From(ShiftId.generateId(), Reference.LinkType.ILLNESS)
+        val booked = HelperBooking.Booked(HelperId.generateId())
 
         val success = Shift.create(
-            helperBooking = HelperBooking.NoBooking,
-            shiftId = ShiftId.generateId(),
-            start = start,
-            end = end,
-            registrations = listOf(Registration.Illness),
-            references = listOf(illnessReference),
+            booked,
+            ShiftId.generateId(),
+            start,
+            end,
+            listOf(Registration.Illness),
+            listOf(illnessReference),
         )
         success.shouldBeRight()
 
         val failure = Shift.create(
-            helperBooking = HelperBooking.NoBooking,
-            shiftId = ShiftId.generateId(),
-            start = start,
-            end = end,
-            registrations = listOf(),
-            references = listOf(illnessReference),
+            HelperBooking.NoBooking,
+            ShiftId.generateId(),
+            start,
+            end,
+            listOf(),
+            listOf(illnessReference),
         )
         failure.shouldBeLeft(Shift.ShiftError.IllnessReferenceWithoutIllnessRegistration)
     }
@@ -56,22 +57,22 @@ class ShiftTest : FunSpec({
         val booked = HelperBooking.Booked(HelperId.generateId())
 
         val success = Shift.create(
-            helperBooking = booked,
-            shiftId = ShiftId.generateId(),
-            start = start,
-            end = end,
-            registrations = listOf(Registration.Illness),
-            references = listOf(),
+            booked,
+            ShiftId.generateId(),
+            start,
+            end,
+            listOf(Registration.Illness),
+            listOf(),
         )
         success.shouldBeRight()
 
         val failure = Shift.create(
-            helperBooking = HelperBooking.NoBooking,
-            shiftId = ShiftId.generateId(),
-            start = start,
-            end = end,
-            registrations = listOf(Registration.Illness),
-            references = listOf(),
+            HelperBooking.NoBooking,
+            ShiftId.generateId(),
+            start,
+            end,
+            listOf(Registration.Illness),
+            listOf(),
         )
         failure.shouldBeLeft(Shift.ShiftError.IllnessRegistrationWithoutBooking)
     }

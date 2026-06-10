@@ -1,6 +1,8 @@
 package dk.rohdef.helperplanning.shifts
 
 import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.raise.ensure
 import dk.rohdef.rfweeks.YearWeekDayAtTime
 
 data class Shift(
@@ -32,13 +34,46 @@ data class Shift(
             end: YearWeekDayAtTime,
             registrations: List<Registration>,
             references: List<Reference>,
-        ): Either<ShiftError, Shift> = TODO()
+        ): Either<ShiftError, Shift> = either {
+            ensure(start.localDateTime < end.localDateTime) {
+                ShiftError.StartAfterEnd(start, end)
+            }
+
+            val hasIllnessRegistration = registrations.contains(Registration.Illness)
+            val hasIllnessReference = references.any {
+                it.linkType == Reference.LinkType.ILLNESS
+            }
+            ensure(!hasIllnessReference || hasIllnessRegistration) {
+                ShiftError.IllnessReferenceWithoutIllnessRegistration
+            }
+
+            val isBooked = helperBooking is HelperBooking.Booked
+            ensure(!hasIllnessRegistration || isBooked) {
+                ShiftError.IllnessRegistrationWithoutBooking
+            }
+
+            Shift(
+                helperBooking,
+                shiftId,
+                start,
+                end,
+                registrations,
+                references,
+            )
+        }
 
         fun create(
             booking: HelperBooking,
             start: YearWeekDayAtTime,
             end: YearWeekDayAtTime,
-        ): Either<ShiftError, Shift> = TODO()
+        ): Either<ShiftError, Shift> = create(
+            booking,
+            ShiftId.generateId(),
+            start,
+            end,
+            listOf(),
+            listOf(),
+        )
     }
 
     sealed interface ShiftError {
