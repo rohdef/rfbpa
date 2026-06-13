@@ -31,15 +31,12 @@ class DatabaseShiftsTest : FunSpec({
     val helperRepository = DatabaseHelpers()
     val shiftRepository = DatabaseShifts()
 
+    TestDatabaseConnection.connect()
     beforeEach {
         TestDatabaseConnection.init()
 
         helperRepository.create(TestHelpers.fiktivus)
         helperRepository.create(TestHelpers.realis)
-    }
-
-    afterEach {
-        TestDatabaseConnection.disconnect()
     }
 
     val fiktivusPrincipal = PrincipalsTestData.FiktivusMaximus.subject
@@ -160,35 +157,6 @@ class DatabaseShiftsTest : FunSpec({
             shiftFrom.references shouldContainExactly listOf(Reference.From(shiftW29Wednesday1.shiftId, Reference.LinkType.ILLNESS))
 
             shiftTo.registrations.shouldBeEmpty()
-            shiftTo.references shouldContainExactly listOf(Reference.To(shiftW30Tuesday1.shiftId, Reference.LinkType.ILLNESS))
-        }
-
-        test("by linking") {
-            val fiktivus = TestHelpers.fiktivus
-            val bookedShift = shiftW30Tuesday1.copyUnsafe(
-                helperBooking = HelperBooking.Booked(fiktivus.id),
-                registrations = listOf(Registration.Illness),
-            )
-            shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW29Wednesday1)
-                .shouldBeRight()
-            shiftRepository.createOrUpdate(fiktivusPrincipal, bookedShift)
-                .shouldBeRight()
-            shiftRepository.createOrUpdate(fiktivusPrincipal, shiftW30Tuesday2)
-                .shouldBeRight()
-            shiftRepository.createOrUpdate(fiktivusPrincipal, bookedShift).shouldBeRight()
-
-            shiftRepository.linkShifts(fiktivusPrincipal, shiftW30Tuesday1.shiftId, shiftW30Tuesday2.shiftId, Reference.LinkType.ILLNESS)
-                .shouldBeRight()
-
-            val shiftFrom = shiftRepository.byId(fiktivusPrincipal, shiftW30Tuesday1.shiftId)
-                .shouldBeRight()
-            val shiftTo = shiftRepository.byId(fiktivusPrincipal, shiftW30Tuesday2.shiftId)
-                .shouldBeRight()
-
-            shiftFrom.registrations shouldContainExactly listOf(Registration.Illness)
-            shiftFrom.references shouldContainExactly listOf(Reference.From(shiftW30Tuesday2.shiftId, Reference.LinkType.ILLNESS))
-
-            shiftTo.registrations shouldContainExactly listOf(Registration.Illness)
             shiftTo.references shouldContainExactly listOf(Reference.To(shiftW30Tuesday1.shiftId, Reference.LinkType.ILLNESS))
         }
     }

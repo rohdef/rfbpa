@@ -127,15 +127,13 @@ class ShiftsServiceImplementation(
             shift.start,
             shift.end,
             shift.registrations + Registration.Illness,
-            shift.references
+            shift.references + Reference.From(replacementShiftId, Reference.LinkType.ILLNESS),
         ).mapLeft { TODO() }.bind()
+
         salarySystem.reportIllness(subject, shift, replacementShiftId)
             .mapLeft { it.toServiceError() }
             .bind()
         shiftRepository.createOrUpdate(subject, illShift)
-            .mapLeft { it.toServiceError() }
-            .bind()
-        shiftRepository.linkShifts(subject, shift.shiftId, replacementShiftId, Reference.LinkType.ILLNESS)
             .mapLeft { it.toServiceError() }
             .bind()
     }

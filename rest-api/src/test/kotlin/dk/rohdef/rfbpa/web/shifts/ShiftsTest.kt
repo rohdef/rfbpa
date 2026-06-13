@@ -20,6 +20,7 @@ import dk.rohdef.rfbpa.web.errors.ErrorData
 import dk.rohdef.rfbpa.web.errors.ErrorDto
 import dk.rohdef.rfbpa.web.errors.Parsing
 import dk.rohdef.rfbpa.web.modules.configuration
+import dk.rohdef.rfbpa.web.persistance.TestDatabaseConnection
 import dk.rohdef.rfbpa.web.persistance.helpers.TestHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29
 import dk.rohdef.rfbpa.web.persistance.shifts.TestShifts.week29To31
@@ -49,13 +50,16 @@ import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(KotestInternal::class)
 class ShiftsTest : KoinTest, RfbpaSpec({
+    TestDatabaseConnection.connect()
     val url = "/api/public/shifts"
     val urlInInterval = "$url/in-interval"
     val urlWeek29To31 = "${urlInInterval}/${week29To31}"
 
     lateinit var weekPlanService: TestWeekPlanService
     beforeEach {
-        weekPlanService = TestWeekPlanService()
+        weekPlanService = TestWeekPlanService().apply { initialize() }
+        weekPlanService.helpersRepository.create(TestHelpers.fiktivus)
+        weekPlanService.helpersRepository.create(TestHelpers.realis)
 
         startKoin {
             modules(
@@ -91,12 +95,9 @@ class ShiftsTest : KoinTest, RfbpaSpec({
 
         val helperService by inject<HelperService>()
         restTest("Reading a single shift") { client ->
-            helperService.create(TestHelpers.fiktivus)
-            helperService.create(TestHelpers.realis)
-
             val shift = weekPlanWeek29.allShifts.first()
                 .copyUnsafe(helperBooking = HelperBooking.Booked(TestHelpers.fiktivus.id))
-            weekPlanService.shiftRepository.addShift(fiktivusSubject, shift)
+            weekPlanService.shiftRepository.createOrUpdate(fiktivusSubject, shift)
 
             val response = client.get("$url/${shift.shiftId.id.toHexDashString()}")
 
@@ -134,9 +135,9 @@ class ShiftsTest : KoinTest, RfbpaSpec({
 
             // TODO add items to system - maybe lift to all tests
             // query multiple weeks
-            weekPlanWeek29.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
-            weekPlanWeek30.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
-            weekPlanWeek31.allShifts.forEach { weekPlanService.shiftRepository.addShift(fiktivusSubject, it) }
+            weekPlanWeek29.allShifts.forEach { weekPlanService.shiftRepository.createOrUpdate(fiktivusSubject, it) }
+            weekPlanWeek30.allShifts.forEach { weekPlanService.shiftRepository.createOrUpdate(fiktivusSubject, it) }
+            weekPlanWeek31.allShifts.forEach { weekPlanService.shiftRepository.createOrUpdate(fiktivusSubject, it) }
 
             val response = client.get(urlWeek29To31)
 

@@ -12,12 +12,9 @@ import io.kotest.matchers.shouldBe
 class DatabaseHelpersTest : FunSpec({
     val helperRepository = DatabaseHelpers()
 
+    TestDatabaseConnection.connect()
     beforeEach {
         TestDatabaseConnection.init()
-    }
-
-    afterEach {
-        TestDatabaseConnection.disconnect()
     }
 
     test("Get all hellpers") {

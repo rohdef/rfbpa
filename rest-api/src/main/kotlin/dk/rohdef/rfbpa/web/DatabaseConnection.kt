@@ -4,6 +4,8 @@ import dk.rohdef.rfbpa.web.calendar.CalendarTable
 import dk.rohdef.rfbpa.web.persistance.axp.AxpHelperReferenceTable
 import dk.rohdef.rfbpa.web.persistance.axp.ShiftReferenceTable
 import dk.rohdef.rfbpa.web.persistance.helpers.HelpersTable
+import dk.rohdef.rfbpa.web.persistance.shifts.ReferencesTable
+import dk.rohdef.rfbpa.web.persistance.shifts.RegistrationsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,12 +39,16 @@ object DatabaseConnection {
 
         transaction {
             log.debug { "Creating tables" }
-            SchemaUtils.create(CalendarTable)
-            SchemaUtils.create(HelpersTable)
-            SchemaUtils.create(ShiftsTable)
-            SchemaUtils.create(ShiftBookingsTable)
-            SchemaUtils.create(ShiftReferenceTable)
-            SchemaUtils.create(AxpHelperReferenceTable)
+            SchemaUtils.create(
+                CalendarTable,
+                HelpersTable,
+                ShiftsTable,
+                ShiftBookingsTable,
+                ReferencesTable,
+                RegistrationsTable,
+                ShiftReferenceTable,
+                AxpHelperReferenceTable
+            )
             log.debug { "Tables created" }
         }
 

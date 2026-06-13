@@ -6,7 +6,6 @@ import arrow.core.mapOrAccumulate
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.shifts.*
-import dk.rohdef.helperplanning.shifts.Shift.Companion.copyUnsafe
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekInterval
 
@@ -33,26 +32,4 @@ interface ShiftRepository {
     suspend fun unbookShift(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, Unit>
 
     suspend fun findBooking(subject: RfbpaPrincipal.Subject, shiftId: ShiftId): Either<ShiftsError, HelperId>
-
-    suspend fun linkShifts(
-        subject: RfbpaPrincipal.Subject,
-        from: ShiftId,
-        to: ShiftId,
-        linkType: Reference.LinkType
-    ): Either<ShiftsError, Unit> = either {
-        val fromShift = byId(subject, from).bind()
-        val toShift = byId(subject, to).bind()
-
-        // TODO validate and prevent bad links? Might not be worth it if the DB does so
-
-        val linkedFrom = fromShift.copyUnsafe(
-            references = fromShift.references + Reference.From(to, linkType),
-        )
-        val linkedTo = toShift.copyUnsafe(
-            references = toShift.references + Reference.To(from, linkType),
-        )
-
-        createOrUpdate(subject, linkedFrom).bind()
-        createOrUpdate(subject, linkedTo).bind()
-    }
 }

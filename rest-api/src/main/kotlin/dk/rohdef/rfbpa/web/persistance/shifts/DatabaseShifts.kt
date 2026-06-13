@@ -117,6 +117,21 @@ class DatabaseShifts : ShiftRepository {
             it[end] = shift.end.localDateTime.toJavaLocalDateTime()
         }
 
+        RegistrationsTable.batchUpsert(
+            shift.registrations,
+        ) {
+            this[RegistrationsTable.shiftId] = shift.shiftId.id.toJavaUuid()
+            this[RegistrationsTable.registration] = it
+        }
+
+        ReferencesTable.batchUpsert(
+            shift.references,
+        ) {
+            this[ReferencesTable.fromId] = shift.shiftId.id.toJavaUuid()
+            this[ReferencesTable.toId] = it.id.id.toJavaUuid()
+            this[ReferencesTable.linkType] = it.linkType
+        }
+
         val booking = shift.helperBooking
         when (booking) {
             is HelperBooking.Booked -> changeBooking(shift.shiftId, booking)

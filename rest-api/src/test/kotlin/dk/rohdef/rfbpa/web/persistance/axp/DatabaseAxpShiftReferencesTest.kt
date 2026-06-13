@@ -11,12 +11,9 @@ import io.kotest.core.spec.style.FunSpec
 class DatabaseAxpShiftReferencesTest : FunSpec({
     val shiftReferenceRepository: AxpShiftReferences = DatabaseAxpShiftReferences()
 
+    TestDatabaseConnection.connect()
     beforeEach {
         TestDatabaseConnection.init()
-    }
-
-    afterEach {
-        TestDatabaseConnection.disconnect()
     }
 
     test("creating and reading shift references") {

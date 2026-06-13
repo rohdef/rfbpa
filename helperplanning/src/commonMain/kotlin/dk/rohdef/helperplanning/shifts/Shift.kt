@@ -74,14 +74,14 @@ data class Shift private constructor(
             }
 
             val hasIllnessRegistration = registrations.contains(Registration.Illness)
-            ensure(hasIllnessRegistration && helperBooking == HelperBooking.NoBooking) {
+            ensure(!hasIllnessRegistration || helperBooking is HelperBooking.Booked) {
                 ShiftError.IllnessRegistrationWithoutBooking
             }
 
-            val hasIllnessReference = references.any {
-                it.linkType == Reference.LinkType.ILLNESS
-            }
-            ensure (hasIllnessReference && !hasIllnessRegistration) {
+            val hasFromIllnessReference = references
+                .filterIsInstance<Reference.From>()
+                .any() { it.linkType == Reference.LinkType.ILLNESS }
+            ensure(!hasFromIllnessReference || hasIllnessRegistration) {
                 ShiftError.IllnessReferenceWithoutIllnessRegistration
             }
 
