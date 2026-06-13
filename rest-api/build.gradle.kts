@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.ktor)
 
     application
-    idea
 }
 
 description = "Web server for RF BPA"
@@ -13,6 +12,7 @@ description = "Web server for RF BPA"
 application {
     applicationName = "rfbpa-web"
     mainClass = "dk.rohdef.rfbpa.web.MainKt"
+
 
     tasks.run.get().workingDir = rootProject.projectDir
 }
@@ -47,7 +47,6 @@ dependencies {
     implementation(libs.arrowKtCore)
     implementation(libs.kotlinxDateTime)
     implementation("app.softwork:kotlinx-uuid-core:0.0.26")
-
 
     implementation(libs.bundles.loggingJvm)
     implementation(libs.bundles.kotlinxSerializationJson)
@@ -94,12 +93,5 @@ configurations.all {
         force("io.netty:netty-transport-native-epoll:4.1.119.Final")
         force("io.netty:netty-transport-native-kqueue:4.1.119.Final")
         force("io.netty:netty-codec-http2:4.1.119.Final")
-    }
-}
-
-idea {
-    module {
-        isDownloadSources = true
-        isDownloadJavadoc = true
     }
 }
