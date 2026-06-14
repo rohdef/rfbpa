@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.calendar
 
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.datetime
+import kotlin.uuid.ExperimentalUuidApi
 
 object CalendarTable : Table() {
     val id = uuid("id")

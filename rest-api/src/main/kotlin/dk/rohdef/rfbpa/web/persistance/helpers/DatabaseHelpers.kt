@@ -8,18 +8,17 @@ import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersError
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.upsert
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.toJavaUuid
-import kotlin.uuid.toKotlinUuid
 
 @OptIn(ExperimentalUuidApi::class)
 class DatabaseHelpers : HelpersRepository {
     private fun rowToHelper(row: ResultRow): Helper {
         return Helper(
-            HelperId(row[HelpersTable.id].toKotlinUuid()),
+            HelperId(row[HelpersTable.id]),
             row[HelpersTable.name],
             row[HelpersTable.shortName]!!,
         )
@@ -34,7 +33,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun byId(helperId: HelperId): Either<HelpersError.CannotFindHelperById, Helper> = dbQuery {
         HelpersTable
             .selectAll()
-            .where { HelpersTable.id eq helperId.value.toJavaUuid() }
+            .where { HelpersTable.id eq helperId.value }
             .map { rowToHelper(it) }
             .firstOrNone()
             .toEither { HelpersError.CannotFindHelperById(helperId) }
@@ -54,7 +53,7 @@ class DatabaseHelpers : HelpersRepository {
     override suspend fun create(helper: Helper): Either<HelpersError.Create, Helper> = dbQuery {
         catchOrThrow<Exception, Helper> {
             HelpersTable.upsert {
-                it[id] = helper.id.value.toJavaUuid()
+                it[id] = helper.id.value
 
                 it[name] = helper.name
                 it[shortName] = helper.shortName

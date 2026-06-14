@@ -12,13 +12,13 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 private val log = KotlinLogging.logger { }
 
@@ -130,8 +130,8 @@ internal class AxpClient(
 
                 append("regtype", "-1")
                 append("append_registration[ILL]", "1")
-                append("DD[ILL_FROMDATE]", date.dayOfMonth.toString().padStart(2, '0'))
-                append("MM[ILL_FROMDATE]", date.monthNumber.toString().padStart(2, '0'))
+                append("DD[ILL_FROMDATE]", date.day.toString().padStart(2, '0'))
+                append("MM[ILL_FROMDATE]", date.month.toString().padStart(2, '0'))
                 append("YY[ILL_FROMDATE]", "${date.year}")
                 append("append_registration[ILL_DATA][ill_from]", "")
                 append("append_registration[82][-1][amount]", "0")
@@ -284,8 +284,8 @@ internal class AxpClient(
         private constructor(date: LocalDateTime) :
                 this(
                     "${date.year}",
-                    date.monthNumber.toString().padStart(2, '0'),
-                    date.dayOfMonth.toString().padStart(2, '0'),
+                    date.month.toString().padStart(2, '0'),
+                    date.day.toString().padStart(2, '0'),
                 )
     }
 }

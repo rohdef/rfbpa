@@ -9,13 +9,12 @@ import dk.rohdef.rfbpa.web.persistance.shifts.RegistrationsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
 import org.h2.tools.Server
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.Transaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 object DatabaseConnection {
     val log = KotlinLogging.logger {}
@@ -56,5 +55,5 @@ object DatabaseConnection {
     }
 
     suspend fun <T> dbQuery(block: suspend Transaction.() -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+        suspendTransaction { block() }
 }

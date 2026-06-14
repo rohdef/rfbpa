@@ -12,42 +12,42 @@ import dk.rohdef.helperplanning.shifts.*
 import dk.rohdef.rfbpa.web.DatabaseConnection.dbQuery
 import dk.rohdef.rfweeks.YearWeek
 import dk.rohdef.rfweeks.YearWeekDayAtTime
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.batchUpsert
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.toJavaUuid
-import kotlin.uuid.toKotlinUuid
 
 class DatabaseShifts : ShiftRepository {
-    private val log = KotlinLogging.logger { }
-
     private fun rowToShift(row: ResultRow): Shift {
-        val shiftIdValue = row[ShiftsTable.id].toKotlinUuid()
-        val helperId = row[ShiftBookingsTable.helperId]?.toKotlinUuid()
+        val shiftIdValue = row[ShiftsTable.id]
+        val helperId = row[ShiftBookingsTable.helperId]
             ?.let { HelperId(it) }
         val booking = helperId?.let { HelperBooking.Booked(it) } ?: HelperBooking.NoBooking
 
         val registrations = RegistrationsTable
             .selectAll()
-            .where { RegistrationsTable.shiftId eq shiftIdValue.toJavaUuid() }
+            .where { RegistrationsTable.shiftId eq shiftIdValue }
             .map { it[RegistrationsTable.registration] }
 
         val references = ReferencesTable
             .selectAll()
-            .where { ReferencesTable.fromId eq shiftIdValue.toJavaUuid() }
+            .where { ReferencesTable.fromId eq shiftIdValue }
             .map {
-                val toId = ShiftId(it[ReferencesTable.toId].toKotlinUuid())
+                val toId = ShiftId(it[ReferencesTable.toId])
                 val linkType = it[ReferencesTable.linkType]
 
                 Reference.From(toId, linkType)
             } + ReferencesTable
             .selectAll()
-            .where { ReferencesTable.toId eq shiftIdValue.toJavaUuid() }
+            .where { ReferencesTable.toId eq shiftIdValue }
             .map {
-                val fromId = ShiftId(it[ReferencesTable.fromId].toKotlinUuid())
+                val fromId = ShiftId(it[ReferencesTable.fromId])
                 val linkType = it[ReferencesTable.linkType]
 
                 Reference.To(fromId, linkType)
@@ -74,7 +74,7 @@ class DatabaseShifts : ShiftRepository {
         val shifts = ShiftsTable
             .leftJoin(ShiftBookingsTable)
             .selectAll()
-            .where { ShiftsTable.id eq shiftId.id.toJavaUuid() }
+            .where { ShiftsTable.id eq shiftId.id }
             .limit(2)
             .map { rowToShift(it) }
 
@@ -110,7 +110,7 @@ class DatabaseShifts : ShiftRepository {
         shift: Shift,
     ): Either<ShiftsError, Shift> = dbQuery {
         ShiftsTable.upsert(ShiftsTable.id) {
-            it[id] = shift.shiftId.id.toJavaUuid()
+            it[id] = shift.shiftId.id
             it[startYear] = shift.start.year
             it[startWeek] = shift.start.week
             it[start] = shift.start.localDateTime.toJavaLocalDateTime()
@@ -120,15 +120,15 @@ class DatabaseShifts : ShiftRepository {
         RegistrationsTable.batchUpsert(
             shift.registrations,
         ) {
-            this[RegistrationsTable.shiftId] = shift.shiftId.id.toJavaUuid()
+            this[RegistrationsTable.shiftId] = shift.shiftId.id
             this[RegistrationsTable.registration] = it
         }
 
         ReferencesTable.batchUpsert(
             shift.references,
         ) {
-            this[ReferencesTable.fromId] = shift.shiftId.id.toJavaUuid()
-            this[ReferencesTable.toId] = it.id.id.toJavaUuid()
+            this[ReferencesTable.fromId] = shift.shiftId.id
+            this[ReferencesTable.toId] = it.id.id
             this[ReferencesTable.linkType] = it.linkType
         }
 
@@ -160,9 +160,9 @@ class DatabaseShifts : ShiftRepository {
         val helperIds = dbQuery {
             ShiftBookingsTable
                 .selectAll()
-                .where { ShiftBookingsTable.shiftId eq shiftId.id.toJavaUuid() }
+                .where { ShiftBookingsTable.shiftId eq shiftId.id }
                 .limit(2)
-                .map { it[ShiftBookingsTable.helperId].toKotlinUuid() }
+                .map { it[ShiftBookingsTable.helperId] }
                 .map { HelperId(it) }
         }
 
@@ -178,8 +178,8 @@ class DatabaseShifts : ShiftRepository {
         booking: HelperBooking.Booked,
     ) {
         ShiftBookingsTable.upsert(ShiftBookingsTable.shiftId) {
-            it[shiftId] = id.id.toJavaUuid()
-            it[helperId] = booking.helper.value.toJavaUuid()
+            it[shiftId] = id.id
+            it[helperId] = booking.helper.value
         }
     }
 
@@ -189,6 +189,6 @@ class DatabaseShifts : ShiftRepository {
     }
 
     private fun unbookShift(id: ShiftId) {
-        ShiftBookingsTable.deleteWhere { shiftId eq id.id.toJavaUuid() }
+        ShiftBookingsTable.deleteWhere { shiftId eq id.id }
     }
 }

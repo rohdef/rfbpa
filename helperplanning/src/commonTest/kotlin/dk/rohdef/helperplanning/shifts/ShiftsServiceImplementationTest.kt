@@ -158,7 +158,7 @@ class ShiftsServiceImplementationTest : FunSpec({
                     helperBooking = HelperBooking.NoBooking,
                     registrations = listOf(),
                     references = listOf(
-                        Reference.To(week9Shift1.shiftId, Reference.LinkType.ILLNESS)
+                        Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS)
                     )
                 )
                 dataHelper.shiftRepository.shifts[replacementShiftId] shouldBe expectedShift
@@ -192,7 +192,7 @@ class ShiftsServiceImplementationTest : FunSpec({
                     registrations = listOf(Registration.Illness),
                     references = listOf(Reference.From(newShift1.shiftId, Reference.LinkType.ILLNESS))
                 )
-                val expectedNewShift = week9Shift1.copyUnsafe(
+                val expectedNewShift = week10Shift1.copyUnsafe(
                     shiftId = newShift1.shiftId,
                     helperBooking = HelperBooking.NoBooking,
                     references = listOf(Reference.To(week10Shift1.shiftId, Reference.LinkType.ILLNESS))

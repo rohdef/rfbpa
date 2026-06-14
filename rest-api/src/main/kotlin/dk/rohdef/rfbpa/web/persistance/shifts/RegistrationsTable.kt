@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.persistance.shifts
 
 import dk.rohdef.helperplanning.shifts.Registration
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
+import kotlin.uuid.ExperimentalUuidApi
 
 object RegistrationsTable : Table("registrations") {
     val shiftId = uuid("shift_id")

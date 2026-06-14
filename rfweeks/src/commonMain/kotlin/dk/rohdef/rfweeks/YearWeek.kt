@@ -17,20 +17,7 @@ data class YearWeek(
     val year: Int,
     val week: Int,
 ) : Comparable<YearWeek> {
-    val monday = atDayOfWeek(DayOfWeek.MONDAY)
-    val tuesday = atDayOfWeek(DayOfWeek.TUESDAY)
-    val wednesday = atDayOfWeek(DayOfWeek.WEDNESDAY)
-    val thursday = atDayOfWeek(DayOfWeek.THURSDAY)
-    val friday = atDayOfWeek(DayOfWeek.FRIDAY)
-    val saturday = atDayOfWeek(DayOfWeek.SATURDAY)
-    val sunday = atDayOfWeek(DayOfWeek.SUNDAY)
-
-    val firstDayOfWeek: LocalDate
-        get() {
-            return mondaysInWeeksOfYear(year).get(week - 1)
-        }
     private val maxWeekForYear = mondaysInWeeksOfYear(year).size
-
     init {
         if (week <= 0) {
             throw InvalidWeekOfYear(
@@ -47,6 +34,19 @@ data class YearWeek(
             )
         }
     }
+
+    val monday = atDayOfWeek(DayOfWeek.MONDAY)
+    val tuesday = atDayOfWeek(DayOfWeek.TUESDAY)
+    val wednesday = atDayOfWeek(DayOfWeek.WEDNESDAY)
+    val thursday = atDayOfWeek(DayOfWeek.THURSDAY)
+    val friday = atDayOfWeek(DayOfWeek.FRIDAY)
+    val saturday = atDayOfWeek(DayOfWeek.SATURDAY)
+    val sunday = atDayOfWeek(DayOfWeek.SUNDAY)
+
+    val firstDayOfWeek: LocalDate
+        get() {
+            return mondaysInWeeksOfYear(year).get(week - 1)
+        }
 
     operator fun rangeTo(other: YearWeek): YearWeekInterval {
         if (this > other) {

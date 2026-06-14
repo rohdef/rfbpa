@@ -52,7 +52,22 @@ class MemoryShiftRepository : ShiftRepository {
         shift: Shift,
     ): Either<ShiftsError, Shift> = either {
         _shifts.letValue(subject) { it + (shift.shiftId to shift) }
+        fixReferences(subject, shift.shiftId, shift.references).bind()
         shift
+    }
+
+    private suspend fun fixReferences(subject: RfbpaPrincipal.Subject, shiftId: ShiftId, references: List<Reference>): Either<ShiftsError, Unit> = either {
+        references.forEach { reference ->
+            val shift = byId(subject, reference.id)
+                .bind()
+
+            val oppositeReference = when (reference) {
+                is Reference.From -> Reference.To(shiftId, reference.linkType)
+                is Reference.To -> Reference.From(shiftId, reference.linkType)
+            }
+            val updatedShift = shift.copyUnsafe(references = shift.references + oppositeReference)
+            _shifts.letValue(subject) { it + (shift.shiftId to updatedShift) }
+        }
     }
 
     override suspend fun byYearWeekInterval(

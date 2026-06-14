@@ -1,7 +1,7 @@
 package dk.rohdef.axpclient
 
 import dk.rohdef.helperplanning.shifts.HelperBooking
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class CreateAxpShift(
     val start: Instant,

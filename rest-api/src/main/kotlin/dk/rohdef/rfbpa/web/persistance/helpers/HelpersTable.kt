@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dk.rohdef.rfbpa.web.persistance.helpers
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
+import kotlin.uuid.ExperimentalUuidApi
 
 object HelpersTable : Table() {
     val id = uuid("id")

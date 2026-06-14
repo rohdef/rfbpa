@@ -7,9 +7,9 @@ import dk.rohdef.rfbpa.web.persistance.shifts.ReferencesTable
 import dk.rohdef.rfbpa.web.persistance.shifts.RegistrationsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftBookingsTable
 import dk.rohdef.rfbpa.web.persistance.shifts.ShiftsTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 object TestDatabaseConnection {
     fun connect() {

@@ -14,12 +14,11 @@ import dk.rohdef.rfbpa.web.persistance.axp.AxpHelperReferenceTable.helperId
 import dk.rohdef.rfbpa.web.persistance.axp.AxpHelperReferenceTable.helperNumber
 import dk.rohdef.rfbpa.web.persistance.axp.AxpHelperReferenceTable.helperTid
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.upsert
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.upsert
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.toJavaUuid
-import kotlin.uuid.toKotlinUuid
 
 @OptIn(ExperimentalUuidApi::class)
 class DatabaseAxpHelperReferences : AxpHelperReferences {
@@ -55,7 +54,7 @@ class DatabaseAxpHelperReferences : AxpHelperReferences {
         dbQuery {
             AxpHelperReferenceTable
                 .selectAll()
-                .where { helperId eq id.value.toJavaUuid() }
+                .where { helperId eq id.value }
                 .map { it.toHelperIdMapping() }
                 .singleOrNone()
                 .toEither { FindIdMappingError.HelperIdNotFound(id) }
@@ -76,7 +75,7 @@ class DatabaseAxpHelperReferences : AxpHelperReferences {
             ) {
                 it[helperNumber] = number.value
                 it[helperTid] = tid.value
-                it[helperId] = id.value.toJavaUuid()
+                it[helperId] = id.value
             }
         id.right()
     }
@@ -90,7 +89,7 @@ class DatabaseAxpHelperReferences : AxpHelperReferences {
                 },
             ) {
                 it[helperNumber] = number.value
-                it[helperId] = id.value.toJavaUuid()
+                it[helperId] = id.value
             }
 
         id.right()
@@ -98,7 +97,7 @@ class DatabaseAxpHelperReferences : AxpHelperReferences {
 
     private fun ResultRow.toHelperIdMapping() =
         HelperIdMapping(
-            this[helperId].let { HelperId(it.toKotlinUuid()) },
+            this[helperId].let { HelperId(it) },
             this[helperTid]?.let { HelperTID(it) },
             this[helperNumber].let { HelperNumber(it) },
         )
