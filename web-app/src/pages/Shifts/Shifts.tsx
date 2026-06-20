@@ -1,8 +1,7 @@
 import {Accordion, AccordionDetails, AccordionSummary, Checkbox, FormControlLabel, FormGroup} from "@mui/material";
-import React, {useMemo, useState} from "react";
+import {useState} from "react";
 import {ExpandMore} from "@mui/icons-material";
 import ShiftShedule from "./ShiftShedule.tsx"
-import {HelperStorage} from "../../helpers/HelperStorage.ts"
 import {DayPilot, DayPilotNavigator} from "@daypilot/daypilot-lite-react"
 import {RfbpaClientProvider} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
 import Date = DayPilot.Date
@@ -21,8 +20,6 @@ export default function Shifts() {
             flexGrow: "1"
         }
     }
-
-    const helpers = useMemo(() => new HelperStorage(), [])
 
     return (
         <RfbpaClientProvider>
@@ -48,24 +45,24 @@ export default function Shifts() {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <FormGroup>
-                                    {helpers.all.map((helper) => (
+                                    {/* TODO! */}
+                                    {/*{helpers.all.map((helper) => (*/}
                                         <FormControlLabel
-                                            key={helper.id}
-                                            label={helper.name}
-                                            control={<Checkbox checked={helper.filtered} />}
-                                            sx={{ backgroundColor: helper.color }}>
+                                            key={"dummy"}
+                                            label={"yay"}
+                                            // key={helper.id}
+                                            // label={helper.name}
+                                            control={<Checkbox />}
+                                            >
                                         </FormControlLabel>
-                                    ))}
+                                    {/*))}*/}
                                 </FormGroup>
                             </AccordionDetails>
                         </Accordion>
                     </div>
 
                     <div style={ styles.main }>
-                        <ShiftShedule
-                            date={startDate}
-                            helpers={helpers}
-                        />
+                        <ShiftShedule date={startDate} />
                     </div>
                 </div>
             </div>

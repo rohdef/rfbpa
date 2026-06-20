@@ -5,6 +5,7 @@ import {useAuthentication} from "../AuthenticationContext/AuthenticationContext.
 import {WeekPlan} from "../../pages/Shifts/WeekPlan.ts"
 import {Authentication, NoAuthentication, TokenAuthentication} from "../AuthenticationContext/Authentication.tsx"
 import {Shift} from "../../pages/Shifts/Shift.ts"
+import {Helper} from "../../helpers/Helper.ts"
 
 interface RfbpaClientValues {
     rfbpaClient: AuthenticatedRfbpaClient
@@ -21,6 +22,14 @@ class AuthenticatedRfbpaClient {
 
     set authentication(value: Authentication) {
         this._authentication = value
+    }
+
+    async getHelpers(): Promise<Helper[]> {
+        if (this._authentication instanceof TokenAuthentication) {
+            return await this.client.getHelpers(this._authentication)
+        } else {
+            throw new Error(`Cannot read helpers without authentication`)
+        }
     }
 
     async getShiftsInWeek(week: string): Promise<WeekPlan> {

@@ -3,20 +3,22 @@ import {WeekPlan} from "../pages/Shifts/WeekPlan";
 import {Shift} from "../pages/Shifts/Shift";
 import {parseISO} from "date-fns";
 import {TokenAuthentication} from "../contexts/AuthenticationContext/Authentication.tsx"
+import {Helper} from "../helpers/Helper.ts"
+import {HelperStorage} from "../helpers/HelperStorage.ts"
 
-export interface HelperBookingDto {
+interface HelperBookingDto {
     type: string;
     name: string;
 }
 
-export interface ShiftDto {
+interface ShiftDto {
     shiftId: string;
     start: string;
     end: string;
     helperBooking: HelperBookingDto;
 }
 
-export interface WeekPlanDto {
+interface WeekPlanDto {
     week: string;
     monday: ShiftDto[];
     tuesday: ShiftDto[];
@@ -25,6 +27,11 @@ export interface WeekPlanDto {
     friday: ShiftDto[];
     saturday: ShiftDto[];
     sunday: ShiftDto[];
+}
+
+interface HelperDto {
+    id: string;
+    name: string;
 }
 
 export class RfbpaClient {
@@ -62,6 +69,26 @@ export class RfbpaClient {
             saturday: dto.saturday.map((s) => this.toShift(s)),
             sunday: dto.sunday.map((s) => this.toShift(s)),
         });
+    }
+
+    private toHelper(dto: HelperDto): Helper {
+        return Helper.create({
+            id: dto.id,
+            name: dto.name,
+        })
+    }
+
+    async getHelpers(token: TokenAuthentication): Promise<Helper[]> {
+        const helpers = await this.client.get<HelperDto[]>(
+            "/helpers",
+            {
+                headers: {
+                    Authorization: `Bearer ${token.token}`,
+                },
+            },
+        )
+
+        return helpers.data.map((h) => this.toHelper(h))
     }
 
     async getShiftsInWeek(week: string, token: TokenAuthentication): Promise<WeekPlan> {

@@ -1,12 +1,51 @@
 import {DayPilot, DayPilotCalendar} from "@daypilot/daypilot-lite-react"
-import {red} from "@mui/material/colors"
+import {brown, lightGreen, pink, purple, red, yellow} from "@mui/material/colors"
 import {Helper} from "../../helpers/Helper.ts"
-import {HelperStorage} from "../../helpers/HelperStorage.ts"
 import {RfbpaClientProvider, useRfbpaClient} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
-import React, {useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {Alert, CircularProgress} from "@mui/material"
 import MenuItemClickArgs = DayPilot.MenuItemClickArgs
 import CalendarTimeRangeSelectedArgs = DayPilot.CalendarTimeRangeSelectedArgs
+
+
+interface HelperVisual {
+    color: string
+}
+
+interface VisualSettings {
+    helpers: {
+        [shortName: string]: HelperVisual,
+        default: HelperVisual,
+    }
+}
+
+const visualSettings: VisualSettings = {
+    helpers: {
+        camilla: {
+            color: lightGreen["A100"],
+        },
+        helle: {
+            color: purple["100"],
+        },
+        stella: {
+            color: pink["200"],
+        },
+        tex: {
+            color: brown["100"],
+        },
+        ulrik: {
+            color: pink["100"],
+        },
+        walter: {
+            color: yellow["100"],
+        },
+        default: {
+            color: red["100"],
+        },
+    },
+}
+
+
 
 const deleteShift = async (shiftId: string) => {
     console.log(`Deleting shift with ID: ${shiftId}`)
@@ -24,7 +63,6 @@ const timeRangeSelect = async (args: CalendarTimeRangeSelectedArgs) => {
 
 interface ShiftSheduleProps {
     date: DayPilot.Date,
-    helpers: HelperStorage,
 }
 
 enum CalendarState {
@@ -39,20 +77,27 @@ const dateToWeek = (date: DayPilot.Date) => {
     return `${year}-W${weekNumber}`
 }
 
-export default function ShiftShedule({date, helpers}: ShiftSheduleProps) {
+export default function ShiftShedule({date}: ShiftSheduleProps) {
     const {rfbpaClient} = useRfbpaClient()
     const [calendarState, setCalendarState] = useState<CalendarState>(CalendarState.LOADING)
     const [events, setEvents] = useState<DayPilot.EventData[]>([])
+    const [helpers, setHelpers] = useState<Helper[]>([])
+
+    useEffect(() => {
+        rfbpaClient.getHelpers()
+            .then(setHelpers)
+    }, []);
 
     useEffect(() => {
         setCalendarState(CalendarState.LOADING)
+
         const week = dateToWeek(date)
         rfbpaClient.getShiftsInWeek(week)
-            .then(weekPlan => weekPlan.allShifts() )
+            .then(it => it.allShifts() )
             .then(shifts => {
                 return shifts
                     .map(shift => {
-                        return {shift, helper: helpers.helper(shift.helper)}
+                        return {shift, helper: helpers.find(it => it.id === shift.helper)}
                     })
                     .map(({shift, helper}) => {
                         if (helper) {
@@ -61,20 +106,18 @@ export default function ShiftShedule({date, helpers}: ShiftSheduleProps) {
                             const unknownHelper = Helper.create({
                                 id: shift.helper,
                                 name: "Ikke booket",
-                                color: red["100"],
-                                filtered: false,
                             })
                             return { shift, helper: unknownHelper }
                         }
                     })
-                    .filter((shiftHelper) => !shiftHelper.helper.filtered)
+                    // .filter((shiftHelper) => !shiftHelper.helper.filtered)
                     .map(({shift, helper}): DayPilot.EventData => {
                         return {
                             id: shift.shiftId,
                             text: helper.name,
                             start: new DayPilot.Date(shift.start, true),
                             end: new DayPilot.Date(shift.end, true),
-                            backColor: helper.color,
+                            backColor: visualSettings.helpers[helper.id]?.color ?? visualSettings.helpers.default.color,
                         }
                     })
             })
@@ -104,8 +147,23 @@ export default function ShiftShedule({date, helpers}: ShiftSheduleProps) {
         setEvents(newEvents)
     }
 
+    const changeBooking = async (shiftId: string, helperId: string) => {
+        console.log(shiftId, helperId)
+    }
+
+    const helperMenuItems = helpers.map(helper => ({
+        text: helper.name,
+        onClick: (args: MenuItemClickArgs) => {
+            changeBooking(args.source.data.id, helper.id)
+        }
+    }))
+
     const contextMenu = new DayPilot.Menu({
         items: [
+            ...helperMenuItems,
+            {
+                text: "-"
+            },
             {
                 text: "Register illness",
                 onClick: (args: MenuItemClickArgs) => { registerIllness(args.source.data) }
