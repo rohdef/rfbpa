@@ -48,7 +48,7 @@ private fun Throwable.toError(call: ApplicationCall): HttpResponse<ErrorDto> {
         }
 
         else -> {
-            log.error(cause) { "Unknown error occurred" }
+            log.error(this) { "Unknown error occurred" }
 
             HttpResponse.internalServerError(
                 ErrorDto(

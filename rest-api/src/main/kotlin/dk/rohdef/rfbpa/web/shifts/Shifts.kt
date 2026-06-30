@@ -8,6 +8,7 @@ import dk.rohdef.arrowktor.get
 import dk.rohdef.arrowktor.httpOk
 import dk.rohdef.arrowktor.put
 import dk.rohdef.helperplanning.helpers.Helper
+import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.shifts.ShiftId
 import dk.rohdef.helperplanning.shifts.ShiftsService
@@ -19,6 +20,7 @@ import dk.rohdef.rfbpa.web.errors.UnknownError
 import dk.rohdef.rfweeks.YearWeekInterval
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.resources.*
+import io.ktor.server.request.*
 import io.ktor.server.resources.delete
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -81,6 +83,21 @@ fun Route.shifts() {
         Uuid.random().httpOk()
     }
 
+    put<Shifts.ById.Booking> { shiftById ->
+        log.info { "Updating booking for ${shiftById.parent.id}" }
+
+        val principal = principal()
+            .bind()
+            .domainPrincipal
+        val shiftId = ShiftId(shiftById.parent.id)
+        val helperId = call.receive<String>().let { HelperId.fromString(it) }
+
+        shiftsService.bookShift(principal, shiftId, helperId)
+            .mapLeft { it.toApiError() }
+            .bind()
+            .httpOk()
+    }
+
     delete<Shifts.ById> { shiftById ->
         log.info { "Pretending to delete shift ${shiftById.id}" }
     }
@@ -131,6 +148,12 @@ class Shifts {
                 val id = parent.id
             }
         }
+
+        @Resource("booking")
+        class Booking(
+            val parent: ById,
+        )
+
     }
 }
 

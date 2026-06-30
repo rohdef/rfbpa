@@ -63,7 +63,7 @@ class TemplateApplier(
     private suspend fun applyWeekTemplates(principal: RfbpaPrincipal, allHelpers: Map<String, Helper>, week: YearWeek, weekTemplate: WeekTemplate) {
         log.info { "Creating shifts for week $week - using template ${weekTemplate.name}" }
 
-        fun HelperReservation.bah(): HelperBooking {
+        fun HelperReservation.toBooking(): HelperBooking {
             return when (this) {
                 is HelperReservation.Helper -> HelperBooking.Booked(allHelpers.getValue(this.id).id)
                 HelperReservation.NoReservation -> HelperBooking.NoBooking
@@ -81,7 +81,7 @@ class TemplateApplier(
                     principal,
                     start,
                     end,
-                    it.helper.bah(),
+                    it.helper.toBooking(),
                 )
                 log.info { "\tcreated shift: ${start.week} ${start.dayOfWeek} ${start.time} -- ${end.time} with id ${shiftId}" }
             }

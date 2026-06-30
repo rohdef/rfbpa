@@ -204,7 +204,7 @@ class AxpSalarySystem(
     }
 
     private suspend fun AxpIllnessBooking.PermanentHelper.toHelperBooking(): Either<Unit, SalaryBooking> {
-        val helperReference = helperReferences.helperByTid(helperTid)
+        val helperReference = helperReferences.helperByNumber(helperNumber)
             .map { SalaryBooking.Helper(it.helperId) }
 
         return when (helperReference) {
@@ -295,6 +295,8 @@ class AxpSalarySystem(
         if (seessionId == null) {
             log.info { "Logging in" }
             axpClient.login()
+        } else {
+            log.info { "Already logged in $seessionId" }
         }
     }
 }

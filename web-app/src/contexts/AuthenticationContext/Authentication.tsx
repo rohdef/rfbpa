@@ -9,7 +9,7 @@ export class AuthenticationHelper {
 
     public static fromJSON(object: any): Authentication {
         if (object.__type === NoAuthentication.name) {
-            return NoAuthentication.instance()
+            return NoAuthentication.instance
         } else if (object.__type === TokenAuthentication.name) {
             let token = object.token
             return new TokenAuthentication(token)
@@ -37,7 +37,7 @@ export class NoAuthentication implements Authentication {
     private constructor() {
     }
 
-    public static instance() {
+    public static get instance() {
         if (!NoAuthentication._instance) {
             NoAuthentication._instance = new NoAuthentication()
         }

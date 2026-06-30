@@ -17,7 +17,7 @@ class AuthenticatedRfbpaClient {
 
     constructor(client: RfbpaClient) {
         this.client = client
-        this._authentication = NoAuthentication.instance()
+        this._authentication = NoAuthentication.instance
     }
 
     set authentication(value: Authentication) {
@@ -37,6 +37,22 @@ class AuthenticatedRfbpaClient {
             return await this.client.getShiftsInWeek(week, this._authentication)
         } else {
             throw new Error(`Cannot read week ${week} without authentication`)
+        }
+    }
+
+    async updateShift(shift: Shift) {
+        if (this._authentication instanceof TokenAuthentication) {
+            await this.client.updateShift(shift, this._authentication)
+        } else {
+            throw new Error(`Cannot update shift ${shift.shiftId} without authentication`)
+        }
+    }
+
+    async changeBooking(shiftId: string, helperId: string) {
+        if (this._authentication instanceof TokenAuthentication) {
+            await this.client.changeBooking(shiftId, helperId, this._authentication)
+        } else {
+            throw new Error(`Cannot booking on shift ${shiftId} without authentication`)
         }
     }
 

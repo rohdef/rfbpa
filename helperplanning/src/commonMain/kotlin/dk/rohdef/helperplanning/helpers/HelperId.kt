@@ -12,5 +12,9 @@ value class HelperId(
         fun generateId(): HelperId {
             return HelperId(Uuid.random())
         }
+
+        fun fromString(uuidString: String): HelperId {
+            return HelperId(Uuid.parse(uuidString))
+        }
     }
 }

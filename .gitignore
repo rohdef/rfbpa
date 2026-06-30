@@ -3,7 +3,6 @@
 
 ### RF BPA
 rfbpa.yaml
-helpers.yaml
 schedule*.yaml
 
 ### Gradle

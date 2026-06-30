@@ -1,9 +1,11 @@
 import {DayPilot, DayPilotCalendar} from "@daypilot/daypilot-lite-react"
-import {brown, lightGreen, pink, purple, red, yellow} from "@mui/material/colors"
-import {Helper} from "../../helpers/Helper.ts"
+import {brown, grey, lightGreen, pink, purple, red, yellow} from "@mui/material/colors"
 import {RfbpaClientProvider, useRfbpaClient} from "../../contexts/UserProfileContext/RfbpaClientContext.tsx"
 import {useEffect, useState} from "react"
 import {Alert, CircularProgress} from "@mui/material"
+import {Shift} from "./Shift.ts"
+import {HelperBooking} from "./Booking.ts"
+import {useHelpers} from "../../contexts/HelpersContext/HelpersContext.tsx"
 import MenuItemClickArgs = DayPilot.MenuItemClickArgs
 import CalendarTimeRangeSelectedArgs = DayPilot.CalendarTimeRangeSelectedArgs
 
@@ -16,35 +18,48 @@ interface VisualSettings {
     helpers: {
         [shortName: string]: HelperVisual,
         default: HelperVisual,
+        noHelper: HelperVisual,
     }
 }
 
 const visualSettings: VisualSettings = {
     helpers: {
-        camilla: {
+        "cb295b4b-98d9-4ef6-9e21-8e72eced814a": {
+            // Camilla
             color: lightGreen["A100"],
         },
-        helle: {
+        "3f42d1ec-96ab-4554-bd78-eeb5406e8970": {
+            // Helle
             color: purple["100"],
         },
-        stella: {
+        "93b2edf4-e6ff-4a9d-bf55-c7cf7eac1e86": {
+            // Janus
+            color: red["100"],
+        },
+        "c6fff973-5f84-4e8c-964e-caa932edcd3c": {
+            // Stella
             color: pink["200"],
         },
-        tex: {
+        "d4ce9adf-f00b-4f76-b883-eec91d30c344": {
+            // Tex
             color: brown["100"],
         },
-        ulrik: {
+        "be85f9b3-dab5-4e30-a64f-2b53abd40a01": {
+            // Ulrik
             color: pink["100"],
         },
-        walter: {
+        "cebceeac-9f8f-4874-95d5-63caab4fe61e": {
+            // Walter
             color: yellow["100"],
         },
         default: {
             color: red["100"],
         },
+        noHelper: {
+            color: grey["50"],
+        },
     },
 }
-
 
 
 const deleteShift = async (shiftId: string) => {
@@ -79,39 +94,35 @@ const dateToWeek = (date: DayPilot.Date) => {
 
 export default function ShiftShedule({date}: ShiftSheduleProps) {
     const {rfbpaClient} = useRfbpaClient()
+    const {helpers} = useHelpers()
     const [calendarState, setCalendarState] = useState<CalendarState>(CalendarState.LOADING)
     const [events, setEvents] = useState<DayPilot.EventData[]>([])
-    const [helpers, setHelpers] = useState<Helper[]>([])
+    const [shifts, setShifts] = useState<Shift[]>([])
 
     useEffect(() => {
-        rfbpaClient.getHelpers()
-            .then(setHelpers)
-    }, []);
+        const week = dateToWeek(date)
+        rfbpaClient.getShiftsInWeek(week)
+            .then(it => it.allShifts() )
+            .then(setShifts)
+            .catch(error => {
+                setCalendarState(CalendarState.ERROR)
+                setShifts([])
+                console.error("Error loading shifts:", error)
+            })
+    }, [date]);
 
     useEffect(() => {
         setCalendarState(CalendarState.LOADING)
 
-        const week = dateToWeek(date)
-        rfbpaClient.getShiftsInWeek(week)
-            .then(it => it.allShifts() )
-            .then(shifts => {
-                return shifts
-                    .map(shift => {
-                        return {shift, helper: helpers.find(it => it.id === shift.helper)}
-                    })
-                    .map(({shift, helper}) => {
-                        if (helper) {
-                            return {shift, helper}
-                        } else {
-                            const unknownHelper = Helper.create({
-                                id: shift.helper,
-                                name: "Ikke booket",
-                            })
-                            return { shift, helper: unknownHelper }
-                        }
-                    })
-                    // .filter((shiftHelper) => !shiftHelper.helper.filtered)
-                    .map(({shift, helper}): DayPilot.EventData => {
+        const events = shifts
+            // .filter((shiftHelper) => !shiftHelper.helper.filtered)
+            .map((shift): DayPilot.EventData => {
+                const booking = shift.booking
+
+                if (booking instanceof HelperBooking) {
+                    const helper = helpers.find(it => it.id === booking.id)
+
+                    if (helper) {
                         return {
                             id: shift.shiftId,
                             text: helper.name,
@@ -119,18 +130,28 @@ export default function ShiftShedule({date}: ShiftSheduleProps) {
                             end: new DayPilot.Date(shift.end, true),
                             backColor: visualSettings.helpers[helper.id]?.color ?? visualSettings.helpers.default.color,
                         }
-                    })
+                    } else {
+                        return {
+                            id: shift.shiftId,
+                            text: "Ukendt hjælper",
+                            start: new DayPilot.Date(shift.start, true),
+                            end: new DayPilot.Date(shift.end, true),
+                            backColor: visualSettings.helpers.default.color,
+                        }
+                    }
+                } else {
+                    return {
+                        id: shift.shiftId,
+                        text: "Ikke booket",
+                        start: new DayPilot.Date(shift.start, true),
+                        end: new DayPilot.Date(shift.end, true),
+                        backColor: visualSettings.helpers.noHelper.color,
+                    }
+                }
             })
-            .then(events => {
-                setEvents(events)
-                setCalendarState(CalendarState.READY)
-            })
-            .catch(error => {
-                setCalendarState(CalendarState.ERROR)
-                setEvents([])
-                console.error("Error loading shifts:", error)
-            })
-    }, [date, helpers, rfbpaClient])
+        setEvents(events)
+        setCalendarState(CalendarState.READY)
+    }, [helpers, shifts])
 
     const registerIllness = async (shiftEvent: DayPilot.EventData) => {
         const newShiftId = await rfbpaClient.registerIllness(shiftEvent.id.toString())
@@ -148,7 +169,20 @@ export default function ShiftShedule({date}: ShiftSheduleProps) {
     }
 
     const changeBooking = async (shiftId: string, helperId: string) => {
-        console.log(shiftId, helperId)
+        const shift = shifts.find(it => it.shiftId === shiftId)!!
+        const originalShiftList = shifts
+        const newShift = shift.copy({
+            booking: HelperBooking.create({id: helperId})
+        })
+        const newShiftList = shifts
+            .map(it => it.shiftId === shiftId ? newShift : it)
+        setShifts(newShiftList)
+
+        await rfbpaClient.changeBooking(shiftId, helperId)
+            .catch(error => {
+                console.error("Error changeBooking:", error)
+                setShifts(originalShiftList)
+            })
     }
 
     const helperMenuItems = helpers.map(helper => ({
@@ -208,20 +242,23 @@ export default function ShiftShedule({date}: ShiftSheduleProps) {
 
     return (
         <>
-            {calendarState == CalendarState.ERROR ?
-                    (<Alert severity="error">"Halløj"</Alert>) : null
-            }
-            {calendarState == CalendarState.LOADING ?
-                    (<CircularProgress />) : null
-            }
-
             <RfbpaClientProvider>
+                {calendarState == CalendarState.ERROR ?
+                        (<Alert severity="error">Fejl i datalæsning"</Alert>) : null
+                }
+                {calendarState == CalendarState.LOADING ?
+                        (<CircularProgress />) : null
+                }
+
                 <DayPilotCalendar
                     events={events}
                     headerTextWrappingEnabled={false}
 
-                    cellHeight={15}
-                    cellDuration={15}
+                    businessBeginsHour={6}
+                    businessEndsHour={23}
+                    heightSpec="Full"
+                    // cellHeight={15}
+                    cellDuration={30}
                     headerDateFormat="dddd"
                     viewType="Week"
                     durationBarVisible={false}

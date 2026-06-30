@@ -27,7 +27,7 @@ class SimpleJavaScriptGrammarTest {
         }
 
         @Test
-        fun `whitespaces`() {
+        fun whitespaces() {
             val text = "  \t  "
 
             val result = parser.run(text)
@@ -86,7 +86,7 @@ class SimpleJavaScriptGrammarTest {
     @Nested
     inner class `Quote text` {
         @Test
-        fun `empty`() {
+        fun empty() {
             val text = "''"
 
             val result = parser.run(text)
@@ -117,7 +117,7 @@ class SimpleJavaScriptGrammarTest {
     @Nested
     inner class `Chained function calls` {
         @Test
-        fun `string`() {
+        fun string() {
             val text = "'foo'.toUpper(true)"
 
             val result = parser.run(text)
@@ -133,7 +133,7 @@ class SimpleJavaScriptGrammarTest {
         }
 
         @Test
-        fun `function`() {
+        fun function() {
             val text = "bar('42').send('somewhere')"
 
             val result = parser.run(text)
@@ -152,7 +152,7 @@ class SimpleJavaScriptGrammarTest {
         }
 
         @Test
-        fun `name`() {
+        fun name() {
             val text = "baz.send('somewhere')"
 
             val result = parser.run(text)
@@ -218,8 +218,19 @@ class SimpleJavaScriptGrammarTest {
 
     @Test
     fun `parse hf thing`() {
+//        val text =
+//            "windowopen('/citizen_web/index.php?&module_type=AXP&modInstId=20&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1684706400&shifttype=1&booking=4004211&displaytype=1&axp_startdate=1684706400'); cancelBubbling(event);\n"
         val text =
-            "windowopen('/citizen_web/index.php?&module_type=AXP&modInstId=20&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1684706400&shifttype=1&booking=4004211&displaytype=1&axp_startdate=1684706400'); cancelBubbling(event);\n"
+            "windowopen('/citizen_web/index.php?&module_type=AXP&modInstId=20&getting_popped=1&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1782079200&shifttype=4&booking=3239027&displaytype=1&axp_startdate=1782079200'); cancelBubbling(event);\n"
+
+        val rs = listOf(
+            parser.run(text),
+            parser.run(text),
+            parser.run(text),
+            parser.run(text),
+            parser.run(text),
+        )
+        println(rs)
 
         val result = parser.run(text)
             .stackTop
@@ -228,7 +239,7 @@ class SimpleJavaScriptGrammarTest {
             listOf(
                 FunctionCall(
                     Name("windowopen"),
-                    Text("/citizen_web/index.php?&module_type=AXP&modInstId=20&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1684706400&shifttype=1&booking=4004211&displaytype=1&axp_startdate=1684706400"),
+                    Text("/citizen_web/index.php?&module_type=AXP&modInstId=20&getting_popped=1&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1782079200&shifttype=4&booking=3239027&displaytype=1&axp_startdate=1782079200"),
                 ),
                 FunctionCall(
                     Name("cancelBubbling"),

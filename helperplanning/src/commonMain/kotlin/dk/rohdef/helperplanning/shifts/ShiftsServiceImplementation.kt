@@ -8,7 +8,10 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.right
-import dk.rohdef.helperplanning.*
+import dk.rohdef.helperplanning.RfbpaPrincipal
+import dk.rohdef.helperplanning.SalarySystemRepository
+import dk.rohdef.helperplanning.ShiftRepository
+import dk.rohdef.helperplanning.WeekSynchronizationRepository
 import dk.rohdef.helperplanning.helpers.HelperId
 import dk.rohdef.helperplanning.helpers.HelpersRepository
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
@@ -21,7 +24,6 @@ class ShiftsServiceImplementation(
     private val shiftRepository: ShiftRepository,
     private val helpersRepository: HelpersRepository,
     private val weekSynchronizationRepository: WeekSynchronizationRepository,
-    private val time: RfbpaTime<*>,
 ) : ShiftsService {
     override suspend fun shiftById(
         principal: RfbpaPrincipal,
@@ -64,6 +66,16 @@ class ShiftsServiceImplementation(
 
         shiftRepository.createOrUpdate(principal.subject, shift)
             .mapLeft { TODO() }
+            .bind()
+    }
+
+    override suspend fun bookShift(
+        principal: RfbpaPrincipal,
+        shiftId: ShiftId,
+        helperId: HelperId,
+    ): Either<WeekPlanServiceError, Unit> = either {
+        salarySystem.bookShift(principal.subject, shiftId, helperId)
+            .mapLeft { TODO("Could not book helper (${helperId}) for shift ${shiftId}") }
             .bind()
     }
 

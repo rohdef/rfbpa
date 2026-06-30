@@ -11,7 +11,7 @@ interface AuthenticationValues {
 // @ts-ignore
 export const AuthenticationContext = React.createContext<AuthenticationValues>(
     {
-        authentication: NoAuthentication.instance(),
+        authentication: NoAuthentication.instance,
         // @ts-ignore
         setAuthentication: (authentication: Authentication) => {},
         resetAuthentication: () => {},
@@ -47,7 +47,7 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
         }
 
         localStorage.removeItem("authentication")
-        return NoAuthentication.instance()
+        return NoAuthentication.instance
     })
 
     useEffect(() => {
@@ -58,7 +58,7 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
         <AuthenticationContext.Provider value={{
             authentication,
             setAuthentication,
-            resetAuthentication: () => setAuthentication(NoAuthentication.instance())
+            resetAuthentication: () => setAuthentication(NoAuthentication.instance)
         }}>
             {children}
         </AuthenticationContext.Provider>

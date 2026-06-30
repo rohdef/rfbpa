@@ -2,7 +2,7 @@ package dk.rohdef.axpclient.parsing
 
 import dk.rohdef.axpclient.AxpBookingId
 import dk.rohdef.axpclient.helper.AxpIllnessBooking
-import dk.rohdef.axpclient.helper.HelperTID
+import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.shift.AxpIllnessShift
 import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.axpclient.shift.WeekPlan
@@ -61,12 +61,12 @@ internal class WeekPlanParser {
             .select(".citizen_search_result_container input[type=\"checkbox\"]")
             .first { it.hasAttr("checked") }!! // TODO Better execption/error
 
-        val tid = checkedCheckbox.bookinData()
+        val helperNumber = checkedCheckbox.bookinData()
 
-        return when(tid) {
+        return when(helperNumber) {
             "92505" -> AxpIllnessBooking.VacancyBooking
             "92580" -> AxpIllnessBooking.VacancyBooking
-            else -> AxpIllnessBooking.PermanentHelper(HelperTID(tid))
+            else -> AxpIllnessBooking.PermanentHelper(HelperNumber(helperNumber))
         }
     }
 
@@ -74,7 +74,7 @@ internal class WeekPlanParser {
         this.`val`()
             .trim()
             .let {
-                if (it.isBlank()) throw IllegalArgumentException("Helper TID cannot be blank")
+                if (it.isBlank()) throw IllegalArgumentException("Helper Number cannot be blank")
                 else it
             }
 

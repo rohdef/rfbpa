@@ -18,7 +18,11 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
             oneOrMore(
                 sequence(
                     expression2(),
-                    command { (peek(1, it) as ExpressionCollector).collection.add(pop(it)) }
+                    command {
+                        (peek(1, it) as ExpressionCollector)
+                            .collection
+                            .add(pop(it))
+                    }
                 )
             ),
             push { Expressions((pop(it) as ExpressionCollector).collection.toList()) },

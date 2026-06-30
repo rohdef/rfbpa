@@ -1,14 +1,14 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, {AxiosInstance, AxiosResponse} from "axios";
 import {WeekPlan} from "../pages/Shifts/WeekPlan";
 import {Shift} from "../pages/Shifts/Shift";
-import {parseISO} from "date-fns";
+import {formatISO, parseISO} from "date-fns";
 import {TokenAuthentication} from "../contexts/AuthenticationContext/Authentication.tsx"
 import {Helper} from "../helpers/Helper.ts"
-import {HelperStorage} from "../helpers/HelperStorage.ts"
+import {Booking, HelperBooking, NoBooking} from "../pages/Shifts/Booking.ts"
 
 interface HelperBookingDto {
     type: string;
-    name: string;
+    id: string;
 }
 
 interface ShiftDto {
@@ -44,18 +44,40 @@ export class RfbpaClient {
     }
 
     private toShift(shift: ShiftDto): Shift {
-        let helper: string;
+        let booking: Booking;
         if (shift.helperBooking.type === "Booking") {
-            helper = shift.helperBooking.name;
+            booking = HelperBooking.create({ id: shift.helperBooking.id });
         } else {
-            helper = "Ikke booket";
+            booking = NoBooking.instance;
         }
         return Shift.create({
             shiftId: shift.shiftId,
             start: parseISO(shift.start),
             end: parseISO(shift.end),
-            helper: helper,
+            booking: booking,
         });
+    }
+
+    private toShiftDto(shift: Shift): ShiftDto {
+        let helperBooking: HelperBookingDto
+        if (shift.booking instanceof HelperBooking) {
+            helperBooking = {
+                type: "Booking",
+                id: shift.booking.id,
+            }
+        } else {
+            helperBooking = {
+                type: "NoBooking",
+                id: "N/A",
+            }
+        }
+
+        return {
+            shiftId: shift.shiftId,
+            start: formatISO(shift.start),
+            end: formatISO(shift.end),
+            helperBooking,
+        }
     }
 
     private toWeekPlan(dto: WeekPlanDto): WeekPlan {
@@ -109,13 +131,23 @@ export class RfbpaClient {
         return response.data.map((dto) => this.toWeekPlan(dto));
     }
 
+    async changeBooking(shiftId: string, helperId: string, token: TokenAuthentication): Promise<void> {
+        console.log(`Changing shift ${shiftId} to have helper ${helperId}`)
+        await this.client.put(`shifts/${shiftId}/booking`, helperId, {
+            headers: {
+                Authorization: `Bearer ${token.token}`,
+            },
+        });
+    }
+
     async updateShift(shift: Shift, token: TokenAuthentication): Promise<void> {
-        console.log(`Stub: Updating shift ${shift.shiftId}`, shift);
-        // await this.client.put(`shifts/${shift.shiftId}`, shift, {
-        //     headers: {
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        // });
+        console.log(`Stub: Updating shift ${shift.shiftId}`, shift)
+        const shiftDto = this.toShiftDto(shift)
+        await this.client.put(`shifts/${shift.shiftId}`, shiftDto, {
+            headers: {
+                Authorization: `Bearer ${token.token}`,
+            },
+        });
     }
 
     async deleteShift(shiftId: string, token: TokenAuthentication): Promise<void> {

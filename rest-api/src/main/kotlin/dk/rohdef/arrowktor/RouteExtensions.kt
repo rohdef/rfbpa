@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.resources.get as resourceGet
 import io.ktor.server.resources.put as resourcePut
 
-fun Route.typedPost (
+fun Route.typedPost(
     path: String,
     body: suspend RoutingContext.() -> Either<ApiError, Any>,
 ) {
@@ -31,6 +31,9 @@ fun Route.typedPost (
 
 interface RaisedRoute : Route, Raise<ApiError> {
     val routingContext: RoutingContext
+    val call: RoutingCall get() {
+        return routingContext.call
+    }
 
     fun principal(): Either<ApiError, dk.rohdef.rfbpa.web.modules.RfbpaPrincipal> = either {
         ensureNotNull(routingContext.call.principal<dk.rohdef.rfbpa.web.modules.RfbpaPrincipal>()) {
@@ -46,7 +49,7 @@ interface RaisedRoute : Route, Raise<ApiError> {
 }
 
 
-        class RaisedRouteImpl(
+class RaisedRouteImpl(
     override val routingContext: RoutingContext,
     val route: Route,
     val raise: Raise<ApiError>,
@@ -89,6 +92,7 @@ inline suspend fun <reified Resource : Any> RoutingContext.handleRequest(
             log.error { "Error: ${result.value}" }
             call.respond(result.value.status, result.value.error)
         }
+
         is Either.Right -> call.respond(result.value.status, result.value.message)
     }
 }

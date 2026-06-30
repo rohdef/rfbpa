@@ -9,6 +9,7 @@ import Calendar from "./pages/Calendar/Calendar.tsx"
 import Shifts from "./pages/Shifts/Shifts.tsx"
 import Templates from "./pages/Templates/Templates.tsx"
 import Logout from "./pages/Logout.tsx"
+import {HelpersProvider} from "./contexts/HelpersContext/HelpersContext.tsx"
 
 interface RfbpaRoutes {
     calendar: RouteObject,
@@ -48,8 +49,13 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline/>
             <AuthenticationProvider>
-                <NavigationBar/>
-                <RouterProvider router={routes}/>
+                <HelpersProvider>
+                    <NavigationBar/>
+
+                    <div className="app-content">
+                        <RouterProvider router={routes}/>
+                    </div>
+                </HelpersProvider>
             </AuthenticationProvider>
         </ThemeProvider>
     )

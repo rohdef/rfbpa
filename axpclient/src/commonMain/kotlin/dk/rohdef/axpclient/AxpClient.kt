@@ -37,7 +37,6 @@ internal class AxpClient(
             parameters {
                 append("username", configuration.username)
                 append("password", configuration.password)
-                append("login", "hmm")
             },
         )
 
@@ -65,7 +64,6 @@ internal class AxpClient(
 
     suspend fun shifts(yearWeek: YearWeek): HttpResponse {
         val shiftsUrl = urls.shiftsForWeek(yearWeek)
-        log.debug { shiftsUrl }
         return client.request(shiftsUrl)
     }
 
