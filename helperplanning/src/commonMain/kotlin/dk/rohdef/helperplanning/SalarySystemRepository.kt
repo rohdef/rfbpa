@@ -3,6 +3,7 @@ package dk.rohdef.helperplanning
 import arrow.core.Either
 import arrow.core.raise.either
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.salary_helper.SalaryHelper
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
 import dk.rohdef.helperplanning.salary_shifts.SalaryWeekPlan
 import dk.rohdef.helperplanning.shifts.Shift
@@ -13,6 +14,10 @@ import dk.rohdef.rfweeks.YearWeekDayAtTime
 import dk.rohdef.rfweeks.YearWeekInterval
 
 interface SalarySystemRepository {
+    suspend fun helpers(
+        subject: RfbpaPrincipal.Subject,
+    ) : Either<Unit, List<SalaryHelper>>
+
     suspend fun bookShift(
         subject: RfbpaPrincipal.Subject,
         shiftId: ShiftId,

@@ -1,3 +1,3 @@
 package dk.rohdef.rfsimplejs.ast
 
-sealed interface Expression
+interface Expression

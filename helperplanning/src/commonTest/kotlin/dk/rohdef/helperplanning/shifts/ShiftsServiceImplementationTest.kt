@@ -47,7 +47,7 @@ class ShiftsServiceImplementationTest : FunSpec({
             dataHelper.shiftRepository,
             dataHelper.helpers.helpers,
             dataHelper.weekSynchronizationRepository,
-            time
+//            time,
         )
 
         weekPlanService = WeekPlanServiceImplementation(

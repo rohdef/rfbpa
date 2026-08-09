@@ -5,7 +5,7 @@ import dk.rohdef.helperplanning.helpers.Helper
 import dk.rohdef.rfbpa.web.modules.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
-import io.ktor.server.plugins.calllogging.CallLogging
+import io.ktor.server.plugins.calllogging.*
 import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.inject
 
@@ -27,6 +27,7 @@ fun Application.main() {
 
     val seeder by inject<Seeder>()
     runBlocking {
+        seeder.users()
         val helpers = seeder.seedHelpers()
 
         when (helpers) {

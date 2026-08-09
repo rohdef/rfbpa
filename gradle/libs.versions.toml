@@ -1,5 +1,5 @@
 [versions]
-kotlinVersion = "2.3.21"
+kotlinVersion = "2.4.10"
 
 benManesVersions = "0.54.0"
 
@@ -20,7 +20,7 @@ h2 = "2.4.240"
 
 koin = "4.2.1"
 
-jsoup = "1.22.2"
+ksoup = "0.2.6"
 
 kotest = "6.1.11"
 testLogger = "4.0.0"
@@ -56,8 +56,7 @@ koinKtor = { group = "io.insert-koin", name = "koin-ktor", version.ref = "koin" 
 koinLogger = { group = "io.insert-koin", name = "koin-logger-slf4j", version.ref = "koin" }
 koinTest = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 
-
-jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+jsoup = { group = "com.fleeksoft.ksoup", name = "ksoup", version.ref = "ksoup" }
 
 # Persistence
 exposedCore = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
@@ -70,6 +69,10 @@ h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
 ktorClientCore = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktorClientCio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 ktorClientLogging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktorClientContentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktorClientSerializationJson = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+# medaut@sos.eu
 
 # Test
 kotestAssertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest"}
@@ -79,7 +82,6 @@ kotestJunit5Runner = { group = "io.kotest", name = "kotest-runner-junit5", versi
 kotestKoin = { group = "io.kotest", name = "kotest-extensions-koin", version.ref = "kotest"}
 gradleKotest = { group = "io.kotest", name = "io.kotest.gradle.plugin", version.ref = "kotest" }
 gradleTestLogging = { group = "com.adarshr.test-logger", name = "com.adarshr.test-logger.gradle.plugin", version.ref = "testLogger" }
-
 
 [bundles]
 loggingJvm = ["log4jApi", "log4jCore", "log4jSlf4jImpl", "slf4jApi", "kotlinLogging"]
@@ -93,7 +95,7 @@ kotestJunit = [ "kotestJunit5Runner" ]
 
 persistence = [ "exposedCore", "exposedDao", "exposedJdbc", "exposedJavaTime", "h2" ]
 
-ktorClient = [ "ktorClientCore", "ktorClientCio", "ktorClientLogging" ]
+ktorClient = [ "ktorClientCore", "ktorClientCio", "ktorClientLogging", "ktorClientContentNegotiation", "ktorClientSerializationJson" ]
 ktorServer = [ "ktorClientCore", "ktorClientCio", "ktorClientLogging" ]
 
 [plugins]

@@ -1,12 +1,6 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package dk.rohdef.rfbpa.web.modules
 
 import com.auth0.jwk.JwkProviderBuilder
-import dk.rohdef.axpclient.AxpHelperReferences
-import dk.rohdef.axpclient.AxpSalarySystem
-import dk.rohdef.axpclient.AxpShiftReferences
-import dk.rohdef.axpclient.configuration.AxpConfiguration
 import dk.rohdef.helperplanning.*
 import dk.rohdef.helperplanning.helpers.HelperService
 import dk.rohdef.helperplanning.helpers.HelperServiceImplementation
@@ -16,14 +10,14 @@ import dk.rohdef.helperplanning.shifts.ShiftsServiceImplementation
 import dk.rohdef.helperplanning.shifts.WeekPlanService
 import dk.rohdef.helperplanning.shifts.WeekPlanServiceImplementation
 import dk.rohdef.helperplanning.templates.TemplateApplier
+import dk.rohdef.MithfSalarySystem
+import dk.rohdef.mithfclient.configuration.MithfConfiguration
 import dk.rohdef.rfbpa.configuration.RfBpaConfig
 import dk.rohdef.rfbpa.configuration.RuntimeMode
 import dk.rohdef.rfbpa.web.LoggingSalarySystemRepository
 import dk.rohdef.rfbpa.web.Seeder
 import dk.rohdef.rfbpa.web.health.HealthService
 import dk.rohdef.rfbpa.web.health.HealthServiceImplementation
-import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpHelperReferences
-import dk.rohdef.rfbpa.web.persistance.axp.DatabaseAxpShiftReferences
 import dk.rohdef.rfbpa.web.persistance.helpers.DatabaseHelpers
 import dk.rohdef.rfbpa.web.persistance.shifts.DatabaseShifts
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,30 +29,27 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import kotlin.time.Clock
-import kotlin.uuid.ExperimentalUuidApi
 
 fun KoinApplication.configuration(rfBpaConfig: RfBpaConfig): Module = module {
     single<RfBpaConfig> { rfBpaConfig }
 
-    single<AxpConfiguration> {
-        rfBpaConfig.axp.let { AxpConfiguration(it.host, it.username, it.password) }
+    single<MithfConfiguration> {
+        rfBpaConfig.mithf.let { MithfConfiguration(it.mithfHost, it.temponizerHost) }
     }
 }
 
 fun KoinApplication.repositories(rfBpaConfig: RfBpaConfig): Module = module {
-    singleOf(::DatabaseAxpShiftReferences) bind AxpShiftReferences::class
     singleOf(::DatabaseShifts) bind ShiftRepository::class
     singleOf(::MemoryWeekSynchronizationRepository) bind WeekSynchronizationRepository::class
 
     singleOf(::DatabaseHelpers) bind HelpersRepository::class
-    singleOf(::DatabaseAxpHelperReferences) bind AxpHelperReferences::class
 
     singleOf(::Seeder) bind Seeder::class
 
     when (rfBpaConfig.runtimeMode) {
         RuntimeMode.DEVELOPMENT -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository()) }
         RuntimeMode.TEST -> single<SalarySystemRepository> { LoggingSalarySystemRepository(MemorySalarySystemRepository()) }
-        RuntimeMode.PRODUCTION -> singleOf(::AxpSalarySystem) bind SalarySystemRepository::class
+        RuntimeMode.PRODUCTION -> singleOf(::MithfSalarySystem) bind SalarySystemRepository::class
     }
 }
 

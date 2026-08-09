@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":axpclient"))
+    implementation(project(":mithfclient"))
     implementation(project(":helperplanning"))
     implementation(project(":rfweeks"))
 

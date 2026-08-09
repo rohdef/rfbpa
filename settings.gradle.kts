@@ -6,6 +6,7 @@ include(
     "helperplanning",
 
     "axpclient",
+    "mithfclient",
     "rfsimplejs",
     "rfweeks",
 )

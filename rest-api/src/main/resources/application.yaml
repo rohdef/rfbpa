@@ -6,10 +6,11 @@ rfbpa:
     jwtIssuer: "$RFBPA_JWT_ISSUER:http://localhost:8383/realms/rfbpa"
     jwtRealm: "$RFBPA_JWT_REALM:rfbpa"
 
-  axp:
-    host: "$RFBPA_AXP_HOST:https://www.handicapformidlingen.axp.dk"
-    username: $RFBPA_AXP_USER
-    password: $RFBPA_AXP_PASSWORD
+  mithf:
+    mithfHost: "$RFBPA_MITHF_HOST:https://mithf.handicapformidlingen.dk"
+    temponizerHost: "$RFBPA_TEMPONIZER_HOST:https://handicapformidlingen.temponizer.dk"
+    username: $RFBPA_MITHF_USER
+    password: $RFBPA_MITHF_PASSWORD
 
 ktor:
   development: true

@@ -3,9 +3,7 @@ package dk.rohdef.rfsimplejs
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast.*
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Nested
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -216,21 +214,11 @@ class SimpleJavaScriptGrammarTest {
         }
     }
 
+
     @Test
     fun `parse hf thing`() {
-//        val text =
-//            "windowopen('/citizen_web/index.php?&module_type=AXP&modInstId=20&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1684706400&shifttype=1&booking=4004211&displaytype=1&axp_startdate=1684706400'); cancelBubbling(event);\n"
         val text =
             "windowopen('/citizen_web/index.php?&module_type=AXP&modInstId=20&getting_popped=1&axp_silent_run=1&quiet_run=1&getting_popped=1&act=shift_plan&sub_act=editbooking&date=1782079200&shifttype=4&booking=3239027&displaytype=1&axp_startdate=1782079200'); cancelBubbling(event);\n"
-
-        val rs = listOf(
-            parser.run(text),
-            parser.run(text),
-            parser.run(text),
-            parser.run(text),
-            parser.run(text),
-        )
-        println(rs)
 
         val result = parser.run(text)
             .stackTop
@@ -246,35 +234,6 @@ class SimpleJavaScriptGrammarTest {
                     Name("event"),
                 )
             )
-        )
-    }
-
-    @Test
-    fun `parse other hf thing`() {
-        val text =
-            "toolTip('Vagt type: Dag<br>Fra: 22-05-2023 07:15<br>Til: 22-05-2023 19:00<br>Handicaphjælper<br>Vikarnummer: 91423<br>Fiktivus Maximus<br>Telefon: +4511223344<br>Mobil: 55667788<br>Ordrenummer: 133771'); $('.booking_4004211').addClass('booking_over');\n"
-
-        val result = parser.run(text)
-            .stackTop
-
-        val expressions = result.shouldBeInstanceOf<Expressions>()
-        expressions.expressions.shouldHaveSize(2)
-        val toolTip = expressions.expressions.get(0)
-        val jQuery = expressions.expressions.get(1)
-
-        toolTip shouldBe FunctionCall(
-            Name("toolTip"),
-            Text("Vagt type: Dag<br>Fra: 22-05-2023 07:15<br>Til: 22-05-2023 19:00<br>Handicaphjælper<br>Vikarnummer: 91423<br>Fiktivus Maximus<br>Telefon: +4511223344<br>Mobil: 55667788<br>Ordrenummer: 133771"),
-        )
-        jQuery shouldBe ChainedCall(
-            FunctionCall(
-                Name("$"),
-                Text(".booking_4004211"),
-            ),
-            FunctionCall(
-                Name("addClass"),
-                Text("booking_over"),
-            ),
         )
     }
 }

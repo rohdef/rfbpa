@@ -13,6 +13,7 @@ import dk.rohdef.axpclient.shift.AxpShift
 import dk.rohdef.helperplanning.RfbpaPrincipal
 import dk.rohdef.helperplanning.SalarySystemRepository
 import dk.rohdef.helperplanning.helpers.HelperId
+import dk.rohdef.helperplanning.salary_helper.SalaryHelper
 import dk.rohdef.helperplanning.salary_shifts.SalaryBooking
 import dk.rohdef.helperplanning.salary_shifts.SalaryRegistration
 import dk.rohdef.helperplanning.salary_shifts.SalaryShift
@@ -46,6 +47,10 @@ class AxpSalarySystem(
     )
     private val weekPlanParser = WeekPlanParser()
 
+    override suspend fun helpers(subject: RfbpaPrincipal.Subject): Either<Unit, List<SalaryHelper>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun reportIllness(
         subject: RfbpaPrincipal.Subject,
         shift: Shift,
@@ -73,7 +78,7 @@ class AxpSalarySystem(
         val endInstant = end.localDateTime.toInstant(configuration.timeZone)
 
         val axpBookingId = axpClient.createShift(startInstant, endInstant, CreateAxpShift.ShiftType.LONG)
-            .mapLeft { TODO("Domain error should be added here") }
+            .mapLeft { TODO("Domain error should be added here $it") }
             .bind()
 
         val shift = SalaryShift(

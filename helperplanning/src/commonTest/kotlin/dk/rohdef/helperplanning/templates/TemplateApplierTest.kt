@@ -16,7 +16,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DayOfWeek
-import kotlin.time.Clock
 
 class TemplateApplierTest : FunSpec({
     val memoryHelpers = MemoryHelpersRepository()
@@ -29,7 +28,6 @@ class TemplateApplierTest : FunSpec({
         memoryShiftRepository,
         memoryHelpers,
         weekSynchronizationRepository,
-        RfbpaTime(Clock.System),
     )
 
     val templateApplier = TemplateApplier(
