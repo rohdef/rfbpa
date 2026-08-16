@@ -1,3 +1,3 @@
 package dk.rohdef.rfsimplejs.ast
 
-interface Expression
+interface Exp

@@ -1,4 +1,4 @@
-package dk.rohdef.rfsimplejs.ast2.literals
+package dk.rohdef.rfsimplejs.ast2.statement.literals
 
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 

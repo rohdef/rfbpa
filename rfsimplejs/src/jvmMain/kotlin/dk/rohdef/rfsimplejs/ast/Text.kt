@@ -1,3 +1,3 @@
 package dk.rohdef.rfsimplejs.ast
 
-data class Text(val text: String) : Expression
+data class Text(val text: String) : Exp

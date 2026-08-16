@@ -4,8 +4,8 @@ import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
 import dk.rohdef.rfsimplejs.ast.*
 
-open class SimpleJavaScript : AbstractGrammar<Expression>() {
-    override fun start(): Rule<Expression> {
+open class SimpleJavaScript : AbstractGrammar<Exp>() {
+    override fun start(): Rule<Exp> {
         return whitespaces() +
                 expression() +
                 eoi()
@@ -14,18 +14,18 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
     open fun expressions() =
         sequence(
             expression2(),
-            push { ExpressionCollector(mutableListOf(pop(it))) },
+            push { ExpCollector(mutableListOf(pop(it))) },
             oneOrMore(
                 sequence(
                     expression2(),
                     command {
-                        (peek(1, it) as ExpressionCollector)
+                        (peek(1, it) as ExpCollector)
                             .collection
                             .add(pop(it))
                     }
                 )
             ),
-            push { Expressions((pop(it) as ExpressionCollector).collection.toList()) },
+            push { Expressions((pop(it) as ExpCollector).collection.toList()) },
         )
 
     open fun expression() = choice(
@@ -60,7 +60,7 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
         }
     )
 
-    open fun name(): Rule<Expression> {
+    open fun name(): Rule<Exp> {
         return sequence(
             sequence(
                 nameFirstChar(),
@@ -71,7 +71,7 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
         )
     }
 
-    open fun nameFirstChar(): Rule<Expression> {
+    open fun nameFirstChar(): Rule<Exp> {
         return choice(
             letter(),
             char('_'),
@@ -79,7 +79,7 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
         )
     }
 
-    open fun nameChars(): Rule<Expression> {
+    open fun nameChars(): Rule<Exp> {
         return choice(
             letterOrDigit(),
             char('_'),
@@ -87,7 +87,7 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
         )
     }
 
-    open fun funcCall(): Rule<Expression> {
+    open fun funcCall(): Rule<Exp> {
         return sequence(
             name(),
             parenthesisLeft(),
@@ -105,7 +105,7 @@ open class SimpleJavaScript : AbstractGrammar<Expression>() {
         )
     }
 
-    open fun quoteString(): Rule<Expression> {
+    open fun quoteString(): Rule<Exp> {
         return sequence(
             singleQuote(),
 

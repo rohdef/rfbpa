@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested
 import kotlin.test.Test
 
 class Statements {
-    private val grammar = SimpleJavaScript2::class.createGrammar()
+    private val grammar = JavaScriptGrammar::class.createGrammar()
     private val parser = Parser(grammar)
 
     @Nested

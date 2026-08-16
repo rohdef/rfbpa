@@ -11,22 +11,18 @@ configureCommon()
 kotest()
 kotlin {
     sourceSets {
-        val commonMain by getting
-        val commonTest by getting {
-            dependencies {
-                implementation(libs.bundles.kotest)
-            }
+        commonMain.dependencies {}
+
+        commonTest.dependencies {
+            implementation(libs.bundles.kotest)
         }
 
-        val jvmMain by getting {
-            dependencies {
-                implementation("com.github.mpe85:grampa:1.7.0")
-            }
+        jvmMain.dependencies {
+            implementation("com.github.mpe85:grampa:1.7.0")
         }
-        val jvmTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
+
+        jvmTest.dependencies {
+            implementation(kotlin("test"))
         }
     }
 }

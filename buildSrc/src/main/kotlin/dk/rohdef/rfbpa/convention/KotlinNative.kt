@@ -1,10 +1,13 @@
 package dk.rohdef.rfbpa.convention
 
 import com.adarshr.gradle.testlogger.TestLoggerExtension
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import libs
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.invoke
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureCommon() {
     nativeTarget()
@@ -15,29 +18,22 @@ fun Project.configureCommon() {
         }
 
         sourceSets {
-            val commonMain by getting {
-                dependencies {
-                    // Base functionality
-                    implementation(libs.kotlinxCoroutines)
-                    implementation(libs.kotlinLogging)
-                    implementation("com.marcinmoskala:DiscreteMathToolkit:1.0.3")
+            commonMain.dependencies {
+                // Base functionality
+                implementation(libs.kotlinxCoroutines)
+                implementation(libs.kotlinLogging)
+                implementation("com.marcinmoskala:DiscreteMathToolkit:1.0.3")
 
-                    // Base types
-                    implementation(libs.arrowKtCore)
-                    implementation(libs.kotlinxDateTime)
-                    implementation("app.softwork:kotlinx-uuid-core:0.0.26")
-                }
+                // Base types
+                implementation(libs.arrowKtCore)
+                implementation(libs.kotlinxDateTime)
             }
 
-            val commonTest by getting {
-                dependencies {
-                }
+            commonTest.dependencies {
             }
 
-            val jvmMain by getting {
-                dependencies {
-                    implementation(libs.bundles.loggingJvm)
-                }
+            jvmMain.dependencies {
+                implementation(libs.bundles.loggingJvm)
             }
         }
     }
@@ -55,16 +51,12 @@ fun Project.kotest() {
         }
 
         sourceSets {
-            val commonTest by getting {
-                dependencies {
-                    implementation(libs.bundles.kotest)
-                }
+            commonTest.dependencies {
+                implementation(libs.bundles.kotest)
             }
 
-            val jvmTest by getting {
-                dependencies {
-                    implementation(libs.bundles.kotestJunit)
-                }
+            jvmTest.dependencies {
+                implementation(libs.bundles.kotestJunit)
             }
         }
     }
@@ -80,7 +72,7 @@ fun Project.nativeTarget() {
     configure<KotlinMultiplatformExtension> {
         applyDefaultHierarchyTemplate()
 
-        jvmToolchain(21)
+        jvmToolchain(25)
         jvm()
 //        linuxX64()
 //        macosX64()
