@@ -18,6 +18,7 @@ kotlin {
         }
 
         jvmMain.dependencies {
+            implementation(libs.arrowKtCore)
             implementation("com.github.mpe85:grampa:1.7.0")
         }
 

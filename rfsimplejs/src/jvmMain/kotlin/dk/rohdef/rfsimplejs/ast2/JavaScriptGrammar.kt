@@ -13,37 +13,36 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     override fun start() = program() + eoi()
 
     open fun program() = sequence(
-        ignorable(),
-        zeroOrMore(
-            topLevel()
-        ),
+        zeroOrMore(ignorable()),
+        topLevel(),
         push {
-            Program(it.stack.toList())
+            val body = it.stack.toList()
+            it.stack.clear()
+            Program(body)
         }
     )
 
-    open fun topLevel() = statement()
-//    open fun topLevel() = choice(
-//        statement(),
-//        expression(),
-//    )
-
-    open fun statement() = choice(
-        declarationGrammar.declaration(),
-        expressionStatement(),
+    open fun topLevel() = sequence(
+        optional(statement()),
+        zeroOrMore(
+            sequence(
+                codeSeparator(),
+                zeroOrMore(ignorable()),
+                statement(),
+            )
+        ),
     )
 
-    open fun lvalue() = identifierGrammar.identifier()
-//    open fun lvalue() = choice(
-//        identifier(),
-//        destructureTarget(),
-//    )
-
-
-    open fun expressionStatement() = sequence(
-        expression(),
-        optional(semiColon()),
+    open fun statement() = sequence(
+        choice(
+            declarationGrammar.declaration(),
+            expressionStatement(),
+        ),
+        zeroOrMore(sameLineWhitespace()),
     )
+
+
+    open fun expressionStatement() = expression()
 
     open fun expression() = primaryExpression()
 //    open fun expression() = sequence(
@@ -58,21 +57,29 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         identifierGrammar.identifier(),
     )
 
-    open fun ignorable() = whitespaces()
+    open fun ignorable() = choice(
+        semiColon(),
+        whitespace(),
+    )
 
-    open fun unaryMinus() = sequence(char('-'), whitespaces())
+    open fun sameLineWhitespace() = sequence(
+        testNot(cr()),
+        testNot(lf()),
+        whitespace(),
+    )
 
-    open fun parenthesisLeft() = sequence(char('('), whitespaces())
-    open fun parenthesisRight() = sequence(char(')'), whitespaces())
-    open fun curlyBracketLeft() = sequence(char('{'), whitespaces())
-    open fun curlyBracketRight() = sequence(char('}'), whitespaces())
-    open fun squareBracketLeft() = sequence(char('['), whitespaces())
-    open fun squareBracketRight() = sequence(char(']'), whitespaces())
+    open fun codeSeparator() = choice(
+        semiColon(),
+        lf(),
+        cr(),
+        crlf(),
+    )
 
-    open fun colon() = sequence(char(':'), whitespaces())
-    open fun semiColon() = sequence(char(';'), whitespaces())
-    open fun period() = sequence(char('.'), whitespaces())
-    open fun comma() = sequence(char(','), whitespaces())
+    open fun semiColon() = char(';')
 
-    open fun whitespaces() = zeroOrMore(whitespace())
+    open fun unaryMinus() = char('-')
+
+
+    open fun period() = char('.')
+
 }

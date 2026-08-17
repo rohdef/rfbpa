@@ -43,29 +43,26 @@ class DeclarationTests : FunSpec({
                 val result = parser.run("var ${it.lvalue.toCode()}=${it.expression.toCode()}")
 
                 result.stackTop shouldBe wrapping(
-                    Declaration.Variable(it.lvalue, it.expression)
+                    Declaration.Variable(
+                        mapOf(
+                            it.lvalue to it.expression
+                        ),
+                    ),
                 )
             }
 
             withTests(
                 nameFn = { "var ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
-                testSamples
+                testSamples,
             ) {
                 val result = parser.run("var ${it.lvalue.toCode()} = ${it.expression.toCode()}")
 
                 result.stackTop shouldBe wrapping(
-                    Declaration.Variable(it.lvalue, it.expression)
-                )
-            }
-
-            withTests(
-                nameFn = { "var\n${it.lvalue.toCode()} = ${it.expression.toCode()}" },
-                testSamples,
-            ) {
-                val result = parser.run("var\n${it.lvalue.toCode()} = ${it.expression.toCode()}")
-
-                result.stackTop shouldBe wrapping(
-                    Declaration.Variable(it.lvalue, it.expression)
+                    Declaration.Variable(
+                        mapOf(
+                            it.lvalue to it.expression
+                        ),
+                    ),
                 )
             }
 
@@ -76,7 +73,11 @@ class DeclarationTests : FunSpec({
                 val result = parser.run("var ${it.lvalue.toCode()} =\n ${it.expression.toCode()}")
 
                 result.stackTop shouldBe wrapping(
-                    Declaration.Variable(it.lvalue, it.expression)
+                    Declaration.Variable(
+                        mapOf(
+                            it.lvalue to it.expression,
+                        ),
+                    ),
                 )
             }
 
@@ -93,12 +94,96 @@ class DeclarationTests : FunSpec({
         context("lets") {
             withTests(
                 nameFn = { "let ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
-                testSamples
+                testSamples,
             ) {
                 val result = parser.run("let ${it.lvalue.toCode()} = ${it.expression.toCode()}")
 
                 result.stackTop shouldBe wrapping(
-                    Declaration.Let(it.lvalue, it.expression)
+                    Declaration.Let(
+                        mapOf(
+                            it.lvalue to it.expression
+                        ),
+                    ),
+                )
+            }
+
+            test("simple multiple definition") {
+                val expression = "let a=42,b=true,c=a,d=\"hey\""
+
+                val result = parser.run(expression)
+
+                result.stackTop shouldBe wrapping(
+                    Declaration.Let(
+                        mapOf(
+                            Identifier("a") to Number.SimpleNumber.IntegerNumber(42.toBigInteger()),
+                            Identifier("b") to Boolean.True,
+                            Identifier("c") to Identifier("a"),
+                            Identifier("d") to StringLiteral("hey"),
+                        ),
+                    ),
+                )
+            }
+
+            val testSamples = listOf(
+                // TODO find out what to do with just a lvalue
+//        "a",
+                DeclarationData(Identifier("foo"), Number.SimpleNumber.IntegerNumber(42.toBigInteger())),
+                DeclarationData(Identifier("_b4r"), Boolean.True),
+                DeclarationData(Identifier("\$yay"), StringLiteral("\\\"hello\\\"")),
+                DeclarationData(Identifier("dInKy"), Identifier("_pinky4")),
+                DeclarationData(Identifier("sad"), Null),
+            )
+
+            test("random probing of space rules") {
+                val separators = listOf(
+                    "",
+                    "\n",
+                    " ",
+                    "\t",
+                    "\t\t",
+                    "   ",
+                    " \n\t ",
+                )
+
+                val assignments = testSamples
+                    .repeat(4)
+                    .map {
+                        "${it.lvalue.toCode()} =${separators.random()}${it.expression.toCode()}"
+                    }
+                    .joinToString(",${separators.random()}")
+                val expression = "let $assignments"
+
+                println(expression)
+                val result = parser.run(expression)
+
+                result.stackTop shouldBe wrapping(
+                    Declaration.Let(
+                        mapOf(
+                            Identifier("foo") to Number.SimpleNumber.IntegerNumber(42.toBigInteger()),
+                            Identifier("_b4r") to Boolean.True,
+                            Identifier("\$yay") to StringLiteral("\\\"hello\\\""),
+                            Identifier("dInKy") to Identifier("_pinky4"),
+                            Identifier("sad") to Null,
+
+                            Identifier("foo") to Number.SimpleNumber.IntegerNumber(42.toBigInteger()),
+                            Identifier("_b4r") to Boolean.True,
+                            Identifier("\$yay") to StringLiteral("\\\"hello\\\""),
+                            Identifier("dInKy") to Identifier("_pinky4"),
+                            Identifier("sad") to Null,
+
+                            Identifier("foo") to Number.SimpleNumber.IntegerNumber(42.toBigInteger()),
+                            Identifier("_b4r") to Boolean.True,
+                            Identifier("\$yay") to StringLiteral("\\\"hello\\\""),
+                            Identifier("dInKy") to Identifier("_pinky4"),
+                            Identifier("sad") to Null,
+
+                            Identifier("foo") to Number.SimpleNumber.IntegerNumber(42.toBigInteger()),
+                            Identifier("_b4r") to Boolean.True,
+                            Identifier("\$yay") to StringLiteral("\\\"hello\\\""),
+                            Identifier("dInKy") to Identifier("_pinky4"),
+                            Identifier("sad") to Null,
+                        ),
+                    ),
                 )
             }
         }
@@ -106,14 +191,27 @@ class DeclarationTests : FunSpec({
         context("constants") {
             withTests(
                 nameFn = { "const ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
-                testSamples
+                testSamples,
             ) {
                 val result = parser.run("const ${it.lvalue.toCode()} = ${it.expression.toCode()}")
 
                 result.stackTop shouldBe wrapping(
-                    Declaration.Constant(it.lvalue, it.expression)
+                    Declaration.Constant(
+                        mapOf(
+                            it.lvalue to it.expression
+                        ),
+                    ),
                 )
             }
         }
     }
 })
+
+fun <T> List<T>.repeat(times: Int): List<T> {
+    require(times >= 0) { "times must be non-negative" }
+    return buildList(size * times) {
+        repeat(times) {
+            addAll(this@repeat)
+        }
+    }
+}

@@ -1,6 +1,6 @@
 package dk.rohdef.rfsimplejs.ast2.statement.literals
 
-sealed interface Boolean : Literal {
+sealed interface Boolean : LexicalLiteral {
     object True: Boolean {
         override fun toCode() = "true"
 

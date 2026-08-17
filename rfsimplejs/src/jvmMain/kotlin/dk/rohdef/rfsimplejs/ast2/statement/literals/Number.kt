@@ -3,7 +3,7 @@ package dk.rohdef.rfsimplejs.ast2.statement.literals
 import java.math.BigDecimal
 import java.math.BigInteger
 
-sealed interface Number : Literal {
+sealed interface Number : LexicalLiteral {
     sealed interface SimpleNumber : Number {
         val number: kotlin.Number
 

@@ -24,46 +24,57 @@ open class DeclarationGrammar(
     open fun variable() = sequence(
         sequence(
             string("var"),
-            lvalueExpression(),
+            oneOrMore(sameLineWhitespace()),
+            push { Declaration.Variable() },
+            lvalueExpressions(),
         ),
-        push {
-            val expression = pop(it) as Expression
-            val lvalue = pop(it) as Identifier
-            Declaration.Variable(lvalue, expression)
-        }
     )
 
     open fun constant() = sequence(
         sequence(
             string("const"),
-            lvalueExpression(),
+            oneOrMore(sameLineWhitespace()),
+            push { Declaration.Constant() },
+            lvalueExpressions(),
         ),
-        push {
-            val expression = pop(it) as Expression
-            val lvalue = pop(it) as Identifier
-            Declaration.Constant(lvalue, expression)
-        }
     )
 
     open fun let() = sequence(
         sequence(
             string("let"),
-            lvalueExpression(),
+            oneOrMore(sameLineWhitespace()),
+            push { Declaration.Let() },
+            lvalueExpressions(),
+        ),
+    )
+
+    open fun lvalueExpressions() = sequence(
+        lvalueExpression(),
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                char(','),
+                zeroOrMore(whitespace()),
+                lvalueExpression(),
+            )
+        ),
+    )
+
+    open fun lvalueExpression() = sequence(
+        sequence(
+            identifierGrammar.identifier(),
+            zeroOrMore(sameLineWhitespace()),
+            char('='),
+            zeroOrMore(whitespace()),
+            javaScriptGrammar.expression(),
+            zeroOrMore(sameLineWhitespace()),
         ),
         push {
             val expression = pop(it) as Expression
             val lvalue = pop(it) as Identifier
-            Declaration.Let(lvalue, expression)
-        }
-    )
-
-    open fun lvalueExpression() = sequence(
-        oneOrMore(whitespace()),
-        identifierGrammar.identifier(),
-        zeroOrMore(sameLineWhitespace()),
-        char('='),
-        zeroOrMore(whitespace()),
-        javaScriptGrammar.expression(),
+            val declaration = pop(it) as Declaration<*>
+            declaration.withDeclarion(lvalue, expression)
+        },
     )
 
     open fun sameLineWhitespace() = sequence(

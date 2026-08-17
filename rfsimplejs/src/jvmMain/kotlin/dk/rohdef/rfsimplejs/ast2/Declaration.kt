@@ -3,28 +3,38 @@ package dk.rohdef.rfsimplejs.ast2
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 
-sealed interface Declaration : Expression {
-    val lvalue: Identifier
-    val expression: Expression
+sealed interface Declaration<T : Declaration<T>> : Expression {
+    val declarations: Map<Identifier, Expression>
+
+    fun declarationsAsCode(): String {
+        return declarations
+            .map { "${it.key.toCode()} = ${it.value.toCode()}" }
+            .joinToString(",\n    ")
+    }
+
+    fun withDeclarion(identifier: Identifier, expression: Expression): T
 
     data class Variable(
-        override val lvalue: Identifier,
-        override val expression: Expression
-    ) : Declaration {
-        override fun toCode() = "var ${lvalue.toCode()} = ${expression.toCode()};"
+        override val declarations: Map<Identifier, Expression> = emptyMap(),
+    ) : Declaration<Variable> {
+        override fun toCode() = "var ${declarationsAsCode()};"
+
+        override fun withDeclarion(identifier: Identifier, expression: Expression) = copy(declarations = declarations + (identifier to expression))
     }
 
     data class Let(
-        override val lvalue: Identifier,
-        override val expression: Expression
-    ) : Declaration {
-        override fun toCode() = "let ${lvalue.toCode()} = ${expression.toCode()};"
+        override val declarations: Map<Identifier, Expression> = emptyMap(),
+    ) : Declaration<Let> {
+        override fun toCode() = "let ${declarationsAsCode()};"
+
+        override fun withDeclarion(identifier: Identifier, expression: Expression) = copy(declarations = declarations + (identifier to expression))
     }
 
     data class Constant(
-        override val lvalue: Identifier,
-        override val expression: Expression
-    ) : Declaration {
-        override fun toCode() = "const ${lvalue.toCode()} = ${expression.toCode()};"
+        override val declarations: Map<Identifier, Expression> = emptyMap(),
+    ) : Declaration<Constant> {
+        override fun toCode() = "const ${declarationsAsCode()};"
+
+        override fun withDeclarion(identifier: Identifier, expression: Expression) = copy(declarations = declarations + (identifier to expression))
     }
 }
