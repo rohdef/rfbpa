@@ -22,9 +22,7 @@ class DeclarationTests : FunSpec({
     )
 
     val testSamples = listOf(
-        // TODO find out what to do with just a lvalue
-//        "a",
-        DeclarationData(Identifier("foo"), Number.SimpleNumber.IntegerNumber("42".toBigInteger())),
+        DeclarationData(Identifier("foo"), Number.SimpleNumber.IntegerNumber(42.toBigInteger())),
         DeclarationData(Identifier("_b4r"), Boolean.True),
         DeclarationData(Identifier("\$yay"), StringLiteral("\\\"hello\\\"")),
         DeclarationData(Identifier("dInKy"), Identifier("_pinky4")),
@@ -67,7 +65,7 @@ class DeclarationTests : FunSpec({
             }
 
             withTests(
-                nameFn = { "var\n${it.lvalue.toCode()} =\n ${it.expression.toCode()}" },
+                nameFn = { "var\n${it.lvalue.toCode()} =\\n ${it.expression.toCode()}" },
                 testSamples,
             ) {
                 val result = parser.run("var ${it.lvalue.toCode()} =\n ${it.expression.toCode()}")
@@ -82,7 +80,7 @@ class DeclarationTests : FunSpec({
             }
 
             withTests(
-                nameFn = { "var ${it.lvalue.toCode()} \n= ${it.expression.toCode()}" },
+                nameFn = { "var ${it.lvalue.toCode()} \\n= ${it.expression.toCode()}" },
                 testSamples,
             ) {
                 val result = parser.run("var${it.lvalue.toCode()} \n= ${it.expression.toCode()}")
@@ -153,7 +151,6 @@ class DeclarationTests : FunSpec({
                     .joinToString(",${separators.random()}")
                 val expression = "let $assignments"
 
-                println(expression)
                 val result = parser.run(expression)
 
                 result.stackTop shouldBe wrapping(

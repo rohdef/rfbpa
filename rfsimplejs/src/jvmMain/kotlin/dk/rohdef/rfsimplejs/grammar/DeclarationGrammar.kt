@@ -9,10 +9,9 @@ import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 
 open class DeclarationGrammar(
-     private val javaScriptGrammar: JavaScriptGrammar = JavaScriptGrammar()
+    private val javaScriptGrammar: JavaScriptGrammar = JavaScriptGrammar(),
+    private val identifierGrammar: IdentifierGrammar = IdentifierGrammar(),
 ) : AbstractGrammar<Statement>() {
-    private val identifierGrammar = IdentifierGrammar()
-
     override fun start() = declaration()
 
     open fun declaration() = choice(

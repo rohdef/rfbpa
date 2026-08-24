@@ -8,6 +8,8 @@ sealed interface Number : LexicalLiteral {
         val number: kotlin.Number
 
         data class IntegerNumber(override val number: BigInteger) : SimpleNumber {
+            constructor(number: Int) : this(number.toBigInteger())
+
             override fun toCode() = number.toString()
         }
 
