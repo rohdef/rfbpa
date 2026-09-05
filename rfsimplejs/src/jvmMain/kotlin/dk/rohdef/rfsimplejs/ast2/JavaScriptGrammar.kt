@@ -6,7 +6,7 @@ import com.github.mpe85.grampa.rule.Rule
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
-import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.Addition
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
@@ -59,15 +59,23 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun expression() = choice(
         binaryExpression(),
-        primaryExpression(),
+        expressionWithoutBinary(),
     )
+
+    open fun expressionWithoutBinary() = primaryExpression()
 
     open fun binaryExpression() = arithmetic()
 
-    open fun arithmetic() = addition()
+    open fun arithmetic() = choice(
+        addition(),
+        subtraction(),
+        multiplication(),
+        division(),
+        modulo(),
+    )
 
     open fun addition(): Rule<Statement> = sequence(
-        primaryExpression(),
+        expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
         char('+'),
         zeroOrMore(whitespace()),
@@ -76,7 +84,63 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         push {
             val right = pop(it) as Expression
             val left = pop(it) as Expression
-            Addition(left, right)
+            ArithmeticExpression.Addition(left, right)
+        }
+    )
+
+    open fun subtraction(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        char('-'),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ArithmeticExpression.Subtraction(left, right)
+        }
+    )
+
+    open fun multiplication(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        char('*'),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ArithmeticExpression.Multiplication(left, right)
+        }
+    )
+
+    open fun division(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        char('/'),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ArithmeticExpression.Division(left, right)
+        }
+    )
+
+    open fun modulo(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        char('%'),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ArithmeticExpression.Modulo(left, right)
         }
     )
 
