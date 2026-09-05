@@ -17,6 +17,8 @@ sealed interface Declaration<T : Declaration<T>> : Expression {
     data class Variable(
         override val declarations: Map<Identifier, Expression> = emptyMap(),
     ) : Declaration<Variable> {
+        constructor(vararg declarations: Pair<Identifier, Expression>) : this(declarations.toMap())
+
         override fun toCode() = "var ${declarationsAsCode()};"
 
         override fun withDeclarion(identifier: Identifier, expression: Expression) = copy(declarations = declarations + (identifier to expression))

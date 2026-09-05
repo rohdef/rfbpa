@@ -6,6 +6,7 @@ import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
+import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
 import dk.rohdef.rfsimplejs.parserContexts
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests
@@ -15,6 +16,7 @@ class NumberTests : FunSpec({
     parserContexts(
         ParserSpec(JavaScriptGrammar::class.createGrammar(), { Program(it) }, "Full JavaScript"),
         ParserSpec(LiteralGrammar::class.createGrammar(), { it }, "Literal parser"),
+        ParserSpec(NumberGrammar::class.createGrammar(), { it }, "Number parser"),
     ) { parser, wrapping ->
         context("numbers") {
             context("integer s") {

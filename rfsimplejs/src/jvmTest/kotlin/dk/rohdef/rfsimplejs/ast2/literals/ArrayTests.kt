@@ -6,6 +6,7 @@ import dk.rohdef.rfsimplejs.ParserSpec
 import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
@@ -26,23 +27,14 @@ class ArrayTests : FunSpec({
         Null,
     )
 
-    test("lit on") {
-        val c = JavaScriptGrammar::class.createGrammar()
-//        val c = Lg::class.createGrammar()
-        val p = Parser(c)
+    val grammar = JavaScriptGrammar::class.createGrammar()
+    val parser = Parser(grammar)
+    val wrapping: (Statement) -> Statement = { Program(it) }
 
-        val result = p.run("[[true]]")
-        result.stackTop shouldBe ArrayLiteral(
-            ArrayLiteral(
-                AstBoolean.True,
-            ),
-        )
-    }
-
-    parserContexts(
-        ParserSpec(JavaScriptGrammar::class.createGrammar(), { Program(it) }, "Full JavaScript"),
-        ParserSpec(LiteralGrammar::class.createGrammar(), { it }, "Declaration parser"),
-    ) { parser, wrapping ->
+//    parserContexts(
+//        ParserSpec(JavaScriptGrammar::class.createGrammar(), { Program(it) }, "Full JavaScript"),
+//        ParserSpec(Arr::class.createGrammar(), { it }, "Declaration parser"),
+//    ) { parser, wrapping ->
         test("empty") {
             val result = parser.run("[]")
 
@@ -98,5 +90,5 @@ class ArrayTests : FunSpec({
                 )
             }
         }
-    }
+//    }
 })

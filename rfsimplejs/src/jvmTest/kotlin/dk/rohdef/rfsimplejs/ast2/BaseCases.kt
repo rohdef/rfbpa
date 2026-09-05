@@ -10,7 +10,7 @@ class BaseCases : FunSpec({
     val parser = Parser(grammar)
 
     context("whitespace programs") {
-        test("empty string") {
+        test("empty code") {
             val text = ""
 
             val result = parser.run(text)
