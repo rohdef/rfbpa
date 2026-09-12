@@ -10,6 +10,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
@@ -67,9 +68,48 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun expressionWithoutBinary() = primaryExpression()
 
-    open fun binaryExpression() = arithmetic()
+    open fun binaryExpression(): Rule<Statement> = choice(
+        arithmetic(),
+        logicExpression(),
+    )
 
-    open fun arithmetic() = choice(
+    open fun logicExpression(): Rule<Statement> = choice(
+        logicEquals(),
+        logicNonCoercingEquals(),
+    )
+
+    open fun logicEquals(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        equalChar,
+        equalChar,
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            LogicExpression.Equals(left, right)
+        },
+    )
+
+    open fun logicNonCoercingEquals(): Rule<Statement> = sequence(
+        expressionWithoutBinary(),
+        zeroOrMore(sameLineWhitespace()),
+        equalChar,
+        equalChar,
+        equalChar,
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            LogicExpression.NonCoercingEquals(left, right)
+        },
+    )
+
+    open fun arithmetic(): Rule<Statement> = choice(
         addition(),
         subtraction(),
         multiplication(),
@@ -80,7 +120,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun addition(): Rule<Statement> = sequence(
         expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
-        char('+'),
+        plus,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -88,13 +128,13 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             val right = pop(it) as Expression
             val left = pop(it) as Expression
             ArithmeticExpression.Addition(left, right)
-        }
+        },
     )
 
     open fun subtraction(): Rule<Statement> = sequence(
         expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
-        char('-'),
+        minus,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -108,7 +148,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun multiplication(): Rule<Statement> = sequence(
         expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
-        char('*'),
+        star,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -122,7 +162,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun division(): Rule<Statement> = sequence(
         expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
-        char('/'),
+        slash,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -136,7 +176,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun modulo(): Rule<Statement> = sequence(
         expressionWithoutBinary(),
         zeroOrMore(sameLineWhitespace()),
-        char('%'),
+        percent,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -166,7 +206,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asChainedCall(): Rule<Statement> = sequence(
-        period(),
+        period,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(sameLineWhitespace()),
@@ -179,11 +219,11 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asArrayReference(): Rule<Statement> = sequence(
-        leftSquareBracket(),
+        leftSquareBracket,
         zeroOrMore(whitespace()),
         expression(),
         zeroOrMore(whitespace()),
-        rightSquareBracket(),
+        rightSquareBracket,
         push {
             val reference = pop(it) as Expression
             val array = pop(it) as Expression
@@ -193,7 +233,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asFunctionCall(): Rule<Statement> = sequence(
-        leftParenthesis(),
+        leftParenthesis,
         zeroOrMore(whitespace()),
         push {
             val expression = pop(it) as Expression
@@ -210,7 +250,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 },
                 zeroOrMore(
                     sequence(
-                        comma(),
+                        comma,
                         zeroOrMore(whitespace()),
                         expression(),
                         zeroOrMore(sameLineWhitespace()),
@@ -223,7 +263,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 ),
             ),
         ),
-        rightParenthesis(),
+        rightParenthesis,
         optional(continuation()),
     )
 
@@ -233,7 +273,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun objectLiteral() = sequence(
-        leftCurlyBracket(),
+        leftCurlyBracket,
         push { ObjectLiteral() },
         optional(
             sequence(
@@ -241,27 +281,27 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 zeroOrMore(
                     sequence(
                         zeroOrMore(whitespace()),
-                        comma(),
+                        comma,
                         objectProperty(),
                     ),
                 ),
                 zeroOrMore(whitespace()),
                 optional(
                     sequence(
-                        comma(),
+                        comma,
                         zeroOrMore(whitespace()),
                     ),
                 ),
             )
         ),
-        rightCurlyBracket()
+        rightCurlyBracket,
     )
 
     open fun objectProperty() = sequence(
         zeroOrMore(whitespace()),
         identifierGrammar.start(),
         zeroOrMore(whitespace()),
-        colon(),
+        colon,
         zeroOrMore(whitespace()),
         primaryExpression(),
         push {
@@ -273,7 +313,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun array() = sequence(
-        leftSquareBracket(),
+        leftSquareBracket,
         push { ArrayLiteral() },
         optional(
             sequence(
@@ -287,7 +327,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 zeroOrMore(
                     sequence(
                         zeroOrMore(whitespace()),
-                        comma(),
+                        comma,
                         zeroOrMore(whitespace()),
                         primaryExpression(),
                         push {
@@ -300,14 +340,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 optional(
                     sequence(
                         zeroOrMore(whitespace()),
-                        comma(),
+                        comma,
                     ),
                 ),
             ),
         ),
 
         zeroOrMore(whitespace()),
-        rightSquareBracket(),
+        rightSquareBracket,
     )
 
     open fun declaration() = choice(
@@ -372,9 +412,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
-
     open fun ignorable() = choice(
-        semiColon(),
+        semiColon,
         whitespace(),
     )
 
@@ -385,22 +424,29 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun codeSeparator() = choice(
-        semiColon(),
+        semiColon,
         lf(),
         cr(),
         crlf(),
     )
 
-    open fun colon() = char(':')
-    open fun semiColon() = char(';')
-    open fun period() = char('.')
-    open fun comma() = char(',')
-    open fun leftParenthesis() = char('(')
-    open fun rightParenthesis() = char(')')
-    open fun leftSquareBracket() = char('[')
-    open fun rightSquareBracket() = char(']')
-    open fun leftCurlyBracket() = char('{')
-    open fun rightCurlyBracket() = char('}')
+    val colon = char(':')
+    val semiColon = char(';')
+    val period = char('.')
+    val comma = char(',')
 
-    open fun unaryMinus() = char('-')
+    val leftParenthesis = char('(')
+    val rightParenthesis = char(')')
+    val leftSquareBracket = char('[')
+    val rightSquareBracket = char(']')
+    val leftCurlyBracket = char('{')
+    val rightCurlyBracket = char('}')
+
+    val plus = char('+')
+    val minus = char('-')
+    val star = char('*')
+    val slash = char('/')
+    val percent = char('%')
+    val pipe = char('|')
+    val equalChar = char('=')
 }
