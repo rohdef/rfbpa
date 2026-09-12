@@ -4,6 +4,7 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
+import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
@@ -144,10 +145,51 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         }
     )
 
-    open fun primaryExpression() = choice(
-        literalGrammar.start(),
-        identifierGrammar.start(),
-        syntaticLiteral(),
+    open fun primaryExpression(): Rule<Statement> = sequence(
+        choice(
+            literalGrammar.start(),
+            identifierGrammar.start(),
+            syntaticLiteral(),
+        ),
+        optional(continuation()),
+    )
+
+    open fun continuation() = asFunctionCall()
+
+    open fun asFunctionCall(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        leftParenthesis(),
+        zeroOrMore(whitespace()),
+        push {
+            val expression = pop(it) as Expression
+            FunctionCall(expression)
+        },
+        optional(
+            sequence(
+                expression(),
+                zeroOrMore(sameLineWhitespace()),
+                push {
+                    val parameter = pop(it) as Expression
+                    val functionCall = pop(it) as FunctionCall
+                    functionCall.withParameters(parameter)
+                },
+                zeroOrMore(
+                    sequence(
+                        comma(),
+                        zeroOrMore(whitespace()),
+                        expression(),
+                        zeroOrMore(sameLineWhitespace()),
+                        push {
+                            val parameter = pop(it) as Expression
+                            val functionCall = pop(it) as FunctionCall
+                            functionCall.withParameters(parameter)
+                        },
+                    ),
+                ),
+            ),
+        ),
+        rightParenthesis(),
+        optional(continuation()),
     )
 
     open fun syntaticLiteral(): Rule<Statement> = choice(
@@ -315,6 +357,9 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun semiColon() = char(';')
+    open fun comma() = char(',')
+    open fun leftParenthesis() = char('(')
+    open fun rightParenthesis() = char(')')
 
     open fun unaryMinus() = char('-')
 }

@@ -7,7 +7,6 @@ import dk.rohdef.axpclient.helper.AxpIllnessBooking
 import dk.rohdef.axpclient.helper.HelperNumber
 import dk.rohdef.axpclient.shift.AxpIllnessShift
 import dk.rohdef.axpclient.shift.AxpShift
-import dk.rohdef.rfsimplejs.JavaScriptParser
 import dk.rohdef.rfsimplejs.ast.*
 import io.ktor.http.*
 import kotlinx.datetime.LocalDateTime

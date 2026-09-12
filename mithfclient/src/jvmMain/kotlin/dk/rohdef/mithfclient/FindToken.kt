@@ -1,7 +1,6 @@
 package dk.rohdef.mithfclient
 
 import com.fleeksoft.ksoup.Ksoup
-import dk.rohdef.rfsimplejs.JavaScriptParser
 
 private val jsParser = JavaScriptParser()
 
