@@ -1,6 +1,4 @@
-package dk.rohdef.rfsimplejs.ast2
-
-import dk.rohdef.rfsimplejs.ast2.statement.Expression
+package dk.rohdef.rfsimplejs.ast2.statement
 
 sealed interface PrefixExpression : Expression {
     data class Not(val expression: Expression) : PrefixExpression {

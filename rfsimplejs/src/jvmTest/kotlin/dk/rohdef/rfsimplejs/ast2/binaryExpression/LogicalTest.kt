@@ -3,6 +3,7 @@ package dk.rohdef.rfsimplejs.ast2.binaryExpression
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
@@ -169,9 +170,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NotEquals(
-                    Number.SimpleNumber.IntegerNumber(1),
-                    Number.SimpleNumber.IntegerNumber(2),
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        Number.SimpleNumber.IntegerNumber(1),
+                        Number.SimpleNumber.IntegerNumber(2),
+                    )
                 )
             )
         }
@@ -183,9 +186,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NotEquals(
-                    Boolean.True,
-                    StringLiteral("false"),
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        Boolean.True,
+                        StringLiteral("false"),
+                    )
                 )
             )
         }
@@ -197,9 +202,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NotEquals(
-                    ArrayLiteral(),
-                    ObjectLiteral(),
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        ArrayLiteral(),
+                        ObjectLiteral(),
+                    )
                 )
             )
         }
@@ -211,9 +218,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NotEquals(
-                    Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        Number.SimpleNumber.IntegerNumber(3),
+                        Number.SimpleNumber.IntegerNumber(-9),
+                    )
                 )
             )
         }
@@ -225,9 +234,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NotEquals(
-                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
-                    Number.SimpleNumber.IntegerNumber(19),
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                        Number.SimpleNumber.IntegerNumber(19),
+                    )
                 )
             )
         }
@@ -241,9 +252,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NonCoercingNotEquals(
-                    Number.SimpleNumber.IntegerNumber(1),
-                    Number.SimpleNumber.IntegerNumber(2),
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        Number.SimpleNumber.IntegerNumber(1),
+                        Number.SimpleNumber.IntegerNumber(2),
+                    )
                 )
             )
         }
@@ -255,9 +268,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NonCoercingNotEquals(
-                    Boolean.True,
-                    StringLiteral("false"),
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        Boolean.True,
+                        StringLiteral("false"),
+                    )
                 )
             )
         }
@@ -269,9 +284,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NonCoercingNotEquals(
-                    ArrayLiteral(),
-                    ObjectLiteral(),
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        ArrayLiteral(),
+                        ObjectLiteral(),
+                    )
                 )
             )
         }
@@ -283,9 +300,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NonCoercingNotEquals(
-                    Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        Number.SimpleNumber.IntegerNumber(3),
+                        Number.SimpleNumber.IntegerNumber(-9),
+                    )
                 )
             )
         }
@@ -297,9 +316,11 @@ class LogicalTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                LogicExpression.NonCoercingNotEquals(
-                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
-                    Number.SimpleNumber.IntegerNumber(19),
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                        Number.SimpleNumber.IntegerNumber(19),
+                    )
                 )
             )
         }

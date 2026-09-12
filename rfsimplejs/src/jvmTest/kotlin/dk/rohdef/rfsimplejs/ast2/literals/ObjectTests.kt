@@ -57,22 +57,4 @@ class ObjectTests : FunSpec({
             )
         )
     }
-
-    xtest("3") {
-        val code = """
-            { 
-                "day": "Tag",
-                "bar": 19
-            }
-        """.trimIndent()
-
-        val result = parser.run(code)
-
-        result.stackTop shouldBe Program(
-            ObjectLiteral(
-                Identifier("day") to StringLiteral("Tag"),
-                Identifier("bar") to Number.SimpleNumber.IntegerNumber(19),
-            )
-        )
-    }
 })
