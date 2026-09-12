@@ -4,6 +4,7 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
 import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
+import dk.rohdef.rfsimplejs.ast2.statement.ChainedCall
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
@@ -155,13 +156,29 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         optional(continuation()),
     )
 
-    open fun continuation(): Rule<Statement> = choice(
-        asFunctionCall(),
-        asArrayReference(),
+    open fun continuation(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        choice(
+            asFunctionCall(),
+            asArrayReference(),
+            asChainedCall(),
+        ),
+    )
+
+    open fun asChainedCall(): Rule<Statement> = sequence(
+        period(),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ChainedCall(left, right)
+        },
+        optional(continuation()),
     )
 
     open fun asArrayReference(): Rule<Statement> = sequence(
-        zeroOrMore(sameLineWhitespace()),
         leftSquareBracket(),
         zeroOrMore(whitespace()),
         expression(),
@@ -176,7 +193,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asFunctionCall(): Rule<Statement> = sequence(
-        zeroOrMore(sameLineWhitespace()),
         leftParenthesis(),
         zeroOrMore(whitespace()),
         push {
@@ -377,6 +393,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun colon() = char(':')
     open fun semiColon() = char(';')
+    open fun period() = char('.')
     open fun comma() = char(',')
     open fun leftParenthesis() = char('(')
     open fun rightParenthesis() = char(')')
