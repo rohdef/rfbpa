@@ -3,6 +3,7 @@ package dk.rohdef.rfsimplejs.ast2
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
+import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
@@ -154,7 +155,25 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         optional(continuation()),
     )
 
-    open fun continuation() = asFunctionCall()
+    open fun continuation(): Rule<Statement> = choice(
+        asFunctionCall(),
+        asArrayReference(),
+    )
+
+    open fun asArrayReference(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        leftSquareBracket(),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(whitespace()),
+        rightSquareBracket(),
+        push {
+            val reference = pop(it) as Expression
+            val array = pop(it) as Expression
+            ArrayReference(array, reference)
+        },
+        optional(continuation()),
+    )
 
     open fun asFunctionCall(): Rule<Statement> = sequence(
         zeroOrMore(sameLineWhitespace()),
@@ -198,7 +217,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun objectLiteral() = sequence(
-        char('{'),
+        leftCurlyBracket(),
         push { ObjectLiteral() },
         optional(
             sequence(
@@ -206,27 +225,27 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 zeroOrMore(
                     sequence(
                         zeroOrMore(whitespace()),
-                        char(','),
+                        comma(),
                         objectProperty(),
                     ),
                 ),
                 zeroOrMore(whitespace()),
                 optional(
                     sequence(
-                        char(','),
+                        comma(),
                         zeroOrMore(whitespace()),
                     ),
                 ),
             )
         ),
-        char('}'),
+        rightCurlyBracket()
     )
 
     open fun objectProperty() = sequence(
         zeroOrMore(whitespace()),
         identifierGrammar.start(),
         zeroOrMore(whitespace()),
-        char(':'),
+        colon(),
         zeroOrMore(whitespace()),
         primaryExpression(),
         push {
@@ -238,7 +257,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun array() = sequence(
-        char('['),
+        leftSquareBracket(),
         push { ArrayLiteral() },
         optional(
             sequence(
@@ -252,7 +271,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 zeroOrMore(
                     sequence(
                         zeroOrMore(whitespace()),
-                        char(','),
+                        comma(),
                         zeroOrMore(whitespace()),
                         primaryExpression(),
                         push {
@@ -265,14 +284,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 optional(
                     sequence(
                         zeroOrMore(whitespace()),
-                        char(','),
+                        comma(),
                     ),
                 ),
             ),
         ),
 
         zeroOrMore(whitespace()),
-        char(']'),
+        rightSquareBracket(),
     )
 
     open fun declaration() = choice(
@@ -356,10 +375,15 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         crlf(),
     )
 
+    open fun colon() = char(':')
     open fun semiColon() = char(';')
     open fun comma() = char(',')
     open fun leftParenthesis() = char('(')
     open fun rightParenthesis() = char(')')
+    open fun leftSquareBracket() = char('[')
+    open fun rightSquareBracket() = char(']')
+    open fun leftCurlyBracket() = char('{')
+    open fun rightCurlyBracket() = char('}')
 
     open fun unaryMinus() = char('-')
 }
