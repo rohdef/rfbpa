@@ -53,15 +53,37 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(sameLineWhitespace()),
     )
 
-
     open fun expressionStatement() = expression()
 
-    open fun expression() = choice(
+    open fun expression(): Rule<Statement> = choice(
         binaryExpression(),
-        expressionWithoutBinary(),
+        primaryExpression(),
     )
 
-    open fun expressionWithoutBinary() = primaryExpression()
+    open fun prefixExpression(): Rule<Statement> = choice(
+        prefixFactory(string("typeof ")) { expression -> PrefixExpression.TypeOf(expression) },
+        prefixFactory(string("delete ")) { expression -> PrefixExpression.Delete(expression) },
+        prefixFactory(string("new ")) { expression -> PrefixExpression.New(expression) },
+        prefixFactory(string("void ")) { expression -> PrefixExpression.Void(expression) },
+        prefixFactory(string("await ")) { expression -> PrefixExpression.Await(expression) },
+        prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
+        prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
+        prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
+        prefixFactory(plus) { expression -> PrefixExpression.Plus(expression) },
+        prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
+    )
+
+    open fun prefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> = sequence(
+        matcher,
+        zeroOrMore(whitespace()),
+        expression(),
+        push {
+            val expression = pop(it) as Expression
+            prefixExpression(expression)
+        }
+    )
+
+    open fun expressionWithoutBinary(): Rule<Statement> = primaryExpression()
 
     open fun binaryExpression(): Rule<Statement> = choice(
         arithmetic(),
@@ -105,6 +127,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun primaryExpression(): Rule<Statement> = sequence(
         choice(
             literalGrammar.start(),
+            prefixExpression(),
             identifierGrammar.start(),
             syntaticLiteral(),
         ),
@@ -357,6 +380,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     val leftCurlyBracket = char('{')
     val rightCurlyBracket = char('}')
 
+    val exclamation = char('!')
     val plus = char('+')
     val minus = char('-')
     val star = char('*')
