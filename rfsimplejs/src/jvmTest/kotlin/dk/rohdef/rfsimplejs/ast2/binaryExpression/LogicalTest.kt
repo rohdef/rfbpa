@@ -70,7 +70,9 @@ class LogicalTest : FunSpec({
             program shouldBe Program(
                 LogicExpression.Equals(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }

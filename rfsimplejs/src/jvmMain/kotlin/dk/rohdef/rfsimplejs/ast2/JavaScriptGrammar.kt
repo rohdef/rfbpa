@@ -126,8 +126,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun primaryExpression(): Rule<Statement> = sequence(
         choice(
-            literalGrammar.start(),
             prefixExpression(),
+            literalGrammar.start(),
             identifierGrammar.start(),
             syntaticLiteral(),
         ),

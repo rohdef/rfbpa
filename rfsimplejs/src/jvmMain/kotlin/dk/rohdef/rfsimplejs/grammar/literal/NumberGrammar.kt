@@ -17,28 +17,22 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun integerLiteral() = sequence(
-        sequence(
-            numberSign(),
-            oneOrMore(digit()),
-        ),
+        oneOrMore(digit()),
         push {
             Number.SimpleNumber.IntegerNumber(it.previousMatch.toString().toBigInteger())
         },
     )
 
     open fun decimalLiteral() = sequence(
-        sequence(
-            optional(numberSign()),
-            choice(
-                sequence(
-                    oneOrMore(digit()),
-                    char('.'),
-                    zeroOrMore(digit()),
-                ),
-                sequence(
-                    char('.'),
-                    oneOrMore(digit()),
-                ),
+        choice(
+            sequence(
+                oneOrMore(digit()),
+                char('.'),
+                zeroOrMore(digit()),
+            ),
+            sequence(
+                char('.'),
+                oneOrMore(digit()),
             ),
         ),
         push {
@@ -48,7 +42,6 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
 
     open fun binaryLiteral() = sequence(
         sequence(
-            numberSign(),
             string("0b"),
             regex("^[01]+$"),
         ),
@@ -59,12 +52,21 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
 
     open fun hexLiteral() = sequence(
         sequence(
-            numberSign(),
             string("0x"),
             regex("^[0-9a-fA-F]+$"),
         ),
         push {
             Number.HexadecimalNumber(it.previousMatch.toString())
+        },
+    )
+
+    open fun signedIntegerLiteral() = sequence(
+        sequence(
+            numberSign(),
+            oneOrMore(digit()),
+        ),
+        push {
+            Number.SimpleNumber.IntegerNumber(it.previousMatch.toString().toBigInteger())
         },
     )
 
@@ -75,7 +77,7 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
                 integerLiteral(),
             ),
             char('e'),
-            integerLiteral(),
+            signedIntegerLiteral(),
         ),
         push {
             val exponent = pop(it) as Number.SimpleNumber.IntegerNumber
