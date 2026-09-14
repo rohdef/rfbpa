@@ -4,6 +4,7 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -69,7 +70,9 @@ class ArithmeticTest : FunSpec({
             program shouldBe Program(
                 ArithmeticExpression.Addition(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -141,7 +144,9 @@ class ArithmeticTest : FunSpec({
             program shouldBe Program(
                 ArithmeticExpression.Subtraction(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -213,7 +218,9 @@ class ArithmeticTest : FunSpec({
             program shouldBe Program(
                 ArithmeticExpression.Multiplication(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -285,7 +292,9 @@ class ArithmeticTest : FunSpec({
             program shouldBe Program(
                 ArithmeticExpression.Division(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -357,7 +366,9 @@ class ArithmeticTest : FunSpec({
             program shouldBe Program(
                 ArithmeticExpression.Modulo(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }

@@ -144,7 +144,9 @@ class LogicalTest : FunSpec({
             program shouldBe Program(
                 LogicExpression.NonCoercingEquals(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -223,7 +225,9 @@ class LogicalTest : FunSpec({
                 PrefixExpression.Not(
                     LogicExpression.Equals(
                         Number.SimpleNumber.IntegerNumber(3),
-                        Number.SimpleNumber.IntegerNumber(-9),
+                        PrefixExpression.Minus(
+                            Number.SimpleNumber.IntegerNumber(9),
+                        ),
                     )
                 )
             )
@@ -305,7 +309,9 @@ class LogicalTest : FunSpec({
                 PrefixExpression.Not(
                     LogicExpression.NonCoercingEquals(
                         Number.SimpleNumber.IntegerNumber(3),
-                        Number.SimpleNumber.IntegerNumber(-9),
+                        PrefixExpression.Minus(
+                            Number.SimpleNumber.IntegerNumber(9),
+                        ),
                     )
                 )
             )
@@ -380,7 +386,9 @@ class LogicalTest : FunSpec({
             program shouldBe Program(
                 LogicExpression.LogicalOr(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
@@ -452,7 +460,9 @@ class LogicalTest : FunSpec({
             program shouldBe Program(
                 LogicExpression.LogicalAnd(
                     Number.SimpleNumber.IntegerNumber(3),
-                    Number.SimpleNumber.IntegerNumber(-9),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
                 )
             )
         }
