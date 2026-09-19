@@ -2,13 +2,15 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.*
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
-import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 
 class ALittleMoreTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
@@ -118,6 +120,63 @@ class ALittleMoreTest : FunSpec({
                     Identifier("syge") to StringLiteral("Sygevagt"),
                 ),
             )
+        )
+    }
+
+    test("fra iso function body") {
+//        val code = """
+//            function iso(d){var m=d.getMonth()+1,g=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(g<10?'0':'')+g;}
+//            function fraIso(s){var d=String(s).split('-');return new Date(+d[0],+d[1]-1,+d[2]);}
+//        """.trimIndent()
+        val code = """
+            function fraIso(s){var d=String(s).split('-');return new Date(+d[0],+d[1]-1,+d[2]);}
+        """.trimIndent()
+
+        val result = parser.run(code)
+        val program = result.stackTop
+
+        program shouldBe Program(
+            Declaration.Variable(
+                Identifier("d") to
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("String"),
+                                Identifier("s"),
+                            ),
+                            FunctionCall(
+                                Identifier("split"),
+                                StringLiteral("-"),
+                            )
+                        )
+            ),
+            PrefixExpression.Return(
+                PrefixExpression.New(
+                    FunctionCall(
+                        Identifier("Date"),
+                        PrefixExpression.Plus(
+                            ArrayReference(
+                                Identifier("d"),
+                                Number.SimpleNumber.IntegerNumber(0)
+                            ),
+                        ),
+                        ArithmeticExpression.Subtraction(
+                            PrefixExpression.Plus(
+                                ArrayReference(
+                                    Identifier("d"),
+                                    Number.SimpleNumber.IntegerNumber(1)
+                                ),
+                            ),
+                            Number.SimpleNumber.IntegerNumber(1),
+                        ),
+                        PrefixExpression.Plus(
+                            ArrayReference(
+                                Identifier("d"),
+                                Number.SimpleNumber.IntegerNumber(2),
+                            )
+                        ),
+                    ),
+                ),
+            ),
         )
     }
 })

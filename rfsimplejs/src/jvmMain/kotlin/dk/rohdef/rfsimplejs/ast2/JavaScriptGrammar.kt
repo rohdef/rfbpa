@@ -57,7 +57,19 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun expression(): Rule<Statement> = choice(
         binaryExpression(),
-        primaryExpression(),
+        expressionWithoutBinary(),
+    )
+
+    open fun expressionWithoutBinary(): Rule<Statement> = primaryExpression()
+
+    open fun primaryExpression(): Rule<Statement> = sequence(
+        choice(
+            prefixExpression(),
+            literalGrammar.start(),
+            identifierGrammar.start(),
+            syntaticLiteral(),
+        ),
+        optional(continuation()),
     )
 
     open fun prefixExpression(): Rule<Statement> = choice(
@@ -66,6 +78,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         prefixFactory(string("new ")) { expression -> PrefixExpression.New(expression) },
         prefixFactory(string("void ")) { expression -> PrefixExpression.Void(expression) },
         prefixFactory(string("await ")) { expression -> PrefixExpression.Await(expression) },
+        prefixFactory(string("return ")) { expression -> PrefixExpression.Return(expression) },
         prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
         prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
         prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
@@ -76,14 +89,12 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun prefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> = sequence(
         matcher,
         zeroOrMore(whitespace()),
-        expression(),
+        expressionWithoutBinary(),
         push {
             val expression = pop(it) as Expression
             prefixExpression(expression)
         }
     )
-
-    open fun expressionWithoutBinary(): Rule<Statement> = primaryExpression()
 
     open fun binaryExpression(): Rule<Statement> = choice(
         arithmetic(),
@@ -122,16 +133,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             val left = pop(it) as Expression
             binaryExpression(left, right)
         },
-    )
-
-    open fun primaryExpression(): Rule<Statement> = sequence(
-        choice(
-            prefixExpression(),
-            literalGrammar.start(),
-            identifierGrammar.start(),
-            syntaticLiteral(),
-        ),
-        optional(continuation()),
     )
 
     open fun continuation(): Rule<Statement> = sequence(

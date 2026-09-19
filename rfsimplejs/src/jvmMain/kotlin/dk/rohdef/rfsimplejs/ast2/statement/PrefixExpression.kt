@@ -40,4 +40,8 @@ sealed interface PrefixExpression : Expression {
     data class Await(val expression: Expression) : PrefixExpression {
         override fun toCode() = "await ${expression.toCode()}"
     }
+
+    data class Return(val expression: Expression) : PrefixExpression {
+        override fun toCode() = "return ${expression.toCode()}"
+    }
 }

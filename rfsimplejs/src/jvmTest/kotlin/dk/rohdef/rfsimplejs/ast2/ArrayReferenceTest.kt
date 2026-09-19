@@ -5,6 +5,7 @@ import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
@@ -96,6 +97,25 @@ class ArrayReferenceTest : FunSpec({
                     AstBoolean.False,
                 ),
             ),
+        )
+    }
+
+    test("Funky array references") {
+        val code = "+d[1]-1"
+
+        val result = parser.run(code)
+        val program = result.stackTop
+
+        program shouldBe Program(
+            ArithmeticExpression.Subtraction(
+                PrefixExpression.Plus(
+                    ArrayReference(
+                        Identifier("d"),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+                AstNumber.SimpleNumber.IntegerNumber(1),
+            )
         )
     }
 })

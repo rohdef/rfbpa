@@ -2,7 +2,7 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.ast2.statement.CallExpression
+import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionExpression
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
@@ -22,7 +22,7 @@ class Lambdas {
                 .stackTop
 
             result shouldBe Program(
-                CallExpression(
+                FunctionCall(
                     FunctionExpression(
                         listOf(),
                         listOf(),
