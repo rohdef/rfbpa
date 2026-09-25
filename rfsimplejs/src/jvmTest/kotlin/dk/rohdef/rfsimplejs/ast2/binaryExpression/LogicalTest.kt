@@ -481,4 +481,300 @@ class LogicalTest : FunSpec({
             )
         }
     }
+
+    context("LessThan (<)") {
+        test("should less than two numbers") {
+            val code = "1 < 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    Number.SimpleNumber.IntegerNumber(1),
+                    Number.SimpleNumber.IntegerNumber(2),
+                )
+            )
+        }
+
+        test("should less than boolean and string") {
+            val code = "true < \"false\";"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    Boolean.True,
+                    StringLiteral("false"),
+                )
+            )
+        }
+
+        test("should less than array and object") {
+            val code = "[]<{}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    ArrayLiteral(),
+                    ObjectLiteral(),
+                )
+            )
+        }
+
+        test("should less than with negative number") {
+            val code = "3<-9"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    Number.SimpleNumber.IntegerNumber(3),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
+                )
+            )
+        }
+
+        test("should less than with odd whitespaces") {
+            val code = "29.5   \t<   \n19;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                    Number.SimpleNumber.IntegerNumber(19),
+                )
+            )
+        }
+    }
+
+    context("GreaterThan (>)") {
+        test("should greater than two numbers") {
+            val code = "1 > 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    Number.SimpleNumber.IntegerNumber(1),
+                    Number.SimpleNumber.IntegerNumber(2),
+                )
+            )
+        }
+
+        test("should greater than boolean and string") {
+            val code = "true > \"false\";"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    Boolean.True,
+                    StringLiteral("false"),
+                )
+            )
+        }
+
+        test("should greater than array and object") {
+            val code = "[]>{}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    ArrayLiteral(),
+                    ObjectLiteral(),
+                )
+            )
+        }
+
+        test("should greater than with negative number") {
+            val code = "3>-9"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    Number.SimpleNumber.IntegerNumber(3),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
+                )
+            )
+        }
+
+        test("should greater than with odd whitespaces") {
+            val code = "29.5   \t>   \n19;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                    Number.SimpleNumber.IntegerNumber(19),
+                )
+            )
+        }
+    }
+
+    context("LessThanOrEqual (<=)") {
+        test("should less than or equal two numbers") {
+            val code = "1 <= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThanOrEqual(
+                    Number.SimpleNumber.IntegerNumber(1),
+                    Number.SimpleNumber.IntegerNumber(2),
+                )
+            )
+        }
+
+        test("should less than or equal boolean and string") {
+            val code = "true <= \"false\";"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThanOrEqual(
+                    Boolean.True,
+                    StringLiteral("false"),
+                )
+            )
+        }
+
+        test("should less than or equal array and object") {
+            val code = "[]<={}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThanOrEqual(
+                    ArrayLiteral(),
+                    ObjectLiteral(),
+                )
+            )
+        }
+
+        test("should less than or equal with negative number") {
+            val code = "3<=-9"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThanOrEqual(
+                    Number.SimpleNumber.IntegerNumber(3),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
+                )
+            )
+        }
+
+        test("should less than or equal with odd whitespaces") {
+            val code = "29.5   \t<=   \n19;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThanOrEqual(
+                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                    Number.SimpleNumber.IntegerNumber(19),
+                )
+            )
+        }
+    }
+
+    context("GreaterThanOrEqual (>=)") {
+        test("should greater than or equal two numbers") {
+            val code = "1 >= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThanOrEqual(
+                    Number.SimpleNumber.IntegerNumber(1),
+                    Number.SimpleNumber.IntegerNumber(2),
+                )
+            )
+        }
+
+        test("should greater than or equal boolean and string") {
+            val code = "true >= \"false\";"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThanOrEqual(
+                    Boolean.True,
+                    StringLiteral("false"),
+                )
+            )
+        }
+
+        test("should greater than or equal array and object") {
+            val code = "[]>={}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThanOrEqual(
+                    ArrayLiteral(),
+                    ObjectLiteral(),
+                )
+            )
+        }
+
+        test("should greater than or equal with negative number") {
+            val code = "3>=-9"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThanOrEqual(
+                    Number.SimpleNumber.IntegerNumber(3),
+                    PrefixExpression.Minus(
+                        Number.SimpleNumber.IntegerNumber(9),
+                    ),
+                )
+            )
+        }
+
+        test("should greater than or equal with odd whitespaces") {
+            val code = "29.5   \t>=   \n19;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThanOrEqual(
+                    Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
+                    Number.SimpleNumber.IntegerNumber(19),
+                )
+            )
+        }
+    }
 })

@@ -229,6 +229,10 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         binaryFactory(string("==")) { left, right -> LogicExpression.Equals(left, right) },
         binaryFactory(string("!=")) { left, right -> PrefixExpression.Not(LogicExpression.Equals(left, right)) },
         binaryFactory(string("===")) { left, right -> LogicExpression.NonCoercingEquals(left, right) },
+        binaryFactory(string("<")) { left, right -> LogicExpression.LessThan(left, right) },
+        binaryFactory(string("<=")) { left, right -> LogicExpression.LessThanOrEqual(left, right) },
+        binaryFactory(string(">")) { left, right -> LogicExpression.GreaterThan(left, right) },
+        binaryFactory(string(">=")) { left, right -> LogicExpression.GreaterThanOrEqual(left, right) },
         binaryFactory(string("!==")) { left, right ->
             PrefixExpression.Not(
                 LogicExpression.NonCoercingEquals(
