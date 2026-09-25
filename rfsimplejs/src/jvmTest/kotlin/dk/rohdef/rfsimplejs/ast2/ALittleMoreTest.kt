@@ -149,7 +149,7 @@ class ALittleMoreTest : FunSpec({
                             )
                         )
             ),
-            PrefixExpression.Return(
+            Return.Expression(
                 PrefixExpression.New(
                     FunctionCall(
                         Identifier("Date"),

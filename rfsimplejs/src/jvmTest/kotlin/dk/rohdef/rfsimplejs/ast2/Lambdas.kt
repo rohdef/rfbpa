@@ -2,6 +2,7 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
+import dk.rohdef.rfsimplejs.ast2.statement.BlockStatement
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionExpression
 import io.kotest.matchers.shouldBe
@@ -24,8 +25,8 @@ class Lambdas {
             result shouldBe Program(
                 FunctionCall(
                     FunctionExpression(
-                        listOf(),
-                        listOf(),
+                        FunctionExpression.Parameters(),
+                        BlockStatement(),
                     ),
                 ),
             )

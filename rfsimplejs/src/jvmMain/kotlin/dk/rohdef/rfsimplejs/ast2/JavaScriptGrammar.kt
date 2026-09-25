@@ -21,31 +21,51 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         stringGrammar,
     )
 
-    override fun start() = program() + eoi()
+    override fun start(): Rule<Statement> = program() + eoi()
 
-    open fun program() = sequence(
+    open fun program(): Rule<Statement> = sequence(
         zeroOrMore(ignorable()),
+        push { BlockStatement() },
         topLevel(),
         push {
-            val body = it.stack.toList().reversed()
-            it.stack.clear()
-            Program(body)
+            val stack = it.stack.toList()
+            require(stack.size == 1)
+            val blockStatement = stack.first() as BlockStatement
+            Program(blockStatement.statements)
         }
     )
 
-    open fun topLevel() = sequence(
-        optional(statement()),
-        zeroOrMore(
+    open fun topLevel(): Rule<Statement> = sequence(
+        optional(
             sequence(
-                codeSeparator(),
-                zeroOrMore(ignorable()),
-                statement(),
+                topLevelItem(),
+                zeroOrMore(
+                    sequence(
+                        codeSeparator(),
+                        zeroOrMore(ignorable()),
+                        topLevelItem(),
+                    ),
+                ),
+                optional(semiColon),
             ),
         ),
-        optional(codeSeparator()),
+        optional(sequence(ignorable())),
     )
 
-    open fun statement() = sequence(
+    open fun topLevelItem(): Rule<Statement> = sequence(
+        choice(
+            functionDeclaration(),
+            statement(),
+        ),
+
+        push {
+            val statement = pop(it)
+            val blockStatment = pop(it) as BlockStatement
+
+            blockStatment.withStatement(statement)
+        },
+    )
+    open fun statement(): Rule<Statement> = sequence(
         choice(
             declaration(),
             expressionStatement(),
@@ -53,9 +73,113 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(sameLineWhitespace()),
     )
 
+    open fun functionDeclaration(): Rule<Statement> = sequence(
+        string("function"),
+        oneOrMore(whitespace()),
+        identifierGrammar.start(),
+        zeroOrMore(whitespace()),
+
+        functionParameters(),
+        blockStatement(),
+
+        push {
+            val blockStatement = pop(it) as BlockStatement
+            val parameters = pop(it) as FunctionExpression.Parameters
+            val identifier = pop(it) as Identifier
+
+            Declaration.Variable(
+                identifier to FunctionExpression(
+                    parameters,
+                    blockStatement,
+                )
+            )
+        }
+    )
+
+    open fun functionExpression(): Rule<Statement> = sequence(
+        string("function"),
+        oneOrMore(whitespace()),
+
+        functionParameters(),
+        blockStatement(),
+
+        push {
+            val blockStatement = pop(it) as BlockStatement
+            val parameters = pop(it) as FunctionExpression.Parameters
+
+            FunctionExpression(
+                parameters,
+                blockStatement,
+            )
+        }
+    )
+
+    open fun functionParameters(): Rule<Statement> = sequence(
+        leftParenthesis,
+        push { FunctionExpression.Parameters() },
+        zeroOrMore(whitespace()),
+        optional(
+            sequence(
+                functionParameter(),
+
+                zeroOrMore(
+                    sequence(
+                        comma,
+                        zeroOrMore(whitespace()),
+                        functionParameter(),
+                    )
+                ),
+            )
+        ),
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+    )
+
+    open fun functionParameter(): Rule<Statement> = sequence(
+        identifierGrammar.start(),
+        zeroOrMore(whitespace()),
+        choice(
+            sequence(
+                equalChar,
+                zeroOrMore(whitespace()),
+                expression(),
+                zeroOrMore(whitespace()),
+
+                push {
+                    val expression = pop(it) as Expression
+                    val identifier = pop(it) as Identifier
+                    val parameters = pop(it) as FunctionExpression.Parameters
+
+                    parameters.withParameter(identifier, expression)
+                },
+            ),
+
+            push {
+                val identifier = pop(it) as Identifier
+                val parameters = pop(it) as FunctionExpression.Parameters
+
+                parameters.withParameter(identifier)
+            },
+        ),
+    )
+
+    open fun blockStatement(): Rule<Statement> = sequence(
+        push { BlockStatement() },
+        leftCurlyBracket,
+        zeroOrMore(ignorable()),
+        topLevel(),
+        rightCurlyBracket,
+    )
+
     open fun expressionStatement() = expression()
 
     open fun expression(): Rule<Statement> = choice(
+        prefixFactory(string("return ")) { expression -> Return.Expression(expression) },
+        sequence(
+            string("return"),
+            push { Return.Void },
+        ),
+        functionExpression(),
         binaryExpression(),
         expressionWithoutBinary(),
     )
@@ -78,7 +202,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         prefixFactory(string("new ")) { expression -> PrefixExpression.New(expression) },
         prefixFactory(string("void ")) { expression -> PrefixExpression.Void(expression) },
         prefixFactory(string("await ")) { expression -> PrefixExpression.Await(expression) },
-        prefixFactory(string("return ")) { expression -> PrefixExpression.Return(expression) },
         prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
         prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
         prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
@@ -86,15 +209,16 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
     )
 
-    open fun prefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> = sequence(
-        matcher,
-        zeroOrMore(whitespace()),
-        expressionWithoutBinary(),
-        push {
-            val expression = pop(it) as Expression
-            prefixExpression(expression)
-        }
-    )
+    open fun prefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> =
+        sequence(
+            matcher,
+            zeroOrMore(whitespace()),
+            expression(),
+            push {
+                val expression = pop(it) as Expression
+                prefixExpression(expression)
+            }
+        )
 
     open fun binaryExpression(): Rule<Statement> = choice(
         arithmetic(),
@@ -105,7 +229,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         binaryFactory(string("==")) { left, right -> LogicExpression.Equals(left, right) },
         binaryFactory(string("!=")) { left, right -> PrefixExpression.Not(LogicExpression.Equals(left, right)) },
         binaryFactory(string("===")) { left, right -> LogicExpression.NonCoercingEquals(left, right) },
-        binaryFactory(string("!==")) { left, right -> PrefixExpression.Not(LogicExpression.NonCoercingEquals(left, right)) },
+        binaryFactory(string("!==")) { left, right ->
+            PrefixExpression.Not(
+                LogicExpression.NonCoercingEquals(
+                    left,
+                    right
+                )
+            )
+        },
         binaryFactory(string("||")) { left, right -> LogicExpression.LogicalOr(left, right) },
         binaryFactory(string("&&")) { left, right -> LogicExpression.LogicalAnd(left, right) },
     )
