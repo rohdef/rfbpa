@@ -4,6 +4,7 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
+import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
@@ -19,7 +20,7 @@ class ArithmeticTest : FunSpec({
     val parser = Parser(grammar)
 
     context("Addition") {
-        test("should add two numbers") {
+        test("of two numbers") {
             val code = "1 + 2"
 
             val result = parser.run(code)
@@ -33,7 +34,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should add boolean and string") {
+        test("of boolean and string") {
             val code = "true + \"false\";"
 
             val result = parser.run(code)
@@ -47,7 +48,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should add array and object") {
+        test("of array and object") {
             val code = "[]+{}"
 
             val result = parser.run(code)
@@ -61,7 +62,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should add with negative number") {
+        test("with negative number") {
             val code = "3+-9"
 
             val result = parser.run(code)
@@ -77,7 +78,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should add with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t+   \n19;"
 
             val result = parser.run(code)
@@ -87,13 +88,30 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Addition(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
+            )
+        }
+
+        test("associates to the left") {
+            val code = "2 + 3 + 4;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Addition(
+                    ArithmeticExpression.Addition(
+                        Number.SimpleNumber.IntegerNumber(2),
+                        Number.SimpleNumber.IntegerNumber(3),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(4),
+                ),
             )
         }
     }
 
     context("Subtraction") {
-        test("should subtract two numbers") {
+        test("of two numbers") {
             val code = "1 - 2"
 
             val result = parser.run(code)
@@ -107,7 +125,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should subtract boolean and string") {
+        test("of boolean and string") {
             val code = "true - \"false\";"
 
             val result = parser.run(code)
@@ -121,7 +139,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should subtract array and object") {
+        test("of array and object") {
             val code = "[]-{}"
 
             val result = parser.run(code)
@@ -135,7 +153,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should subtract with negative number") {
+        test("with negative number") {
             val code = "3--9"
 
             val result = parser.run(code)
@@ -151,7 +169,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should subtract with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t-   \n19;"
 
             val result = parser.run(code)
@@ -162,6 +180,23 @@ class ArithmeticTest : FunSpec({
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
                 )
+            )
+        }
+
+        test("associates to the left") {
+            val code = "2 - 3 - 4;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Subtraction(
+                    ArithmeticExpression.Subtraction(
+                        Number.SimpleNumber.IntegerNumber(2),
+                        Number.SimpleNumber.IntegerNumber(3),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(4),
+                ),
             )
         }
     }
@@ -225,7 +260,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should multiply with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t*   \n19;"
 
             val result = parser.run(code)
@@ -238,10 +273,27 @@ class ArithmeticTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "2 * 3 * 4;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Multiplication(
+                    ArithmeticExpression.Multiplication(
+                        Number.SimpleNumber.IntegerNumber(2),
+                        Number.SimpleNumber.IntegerNumber(3),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(4),
+                ),
+            )
+        }
     }
 
     context("Division") {
-        test("should divide two numbers") {
+        test("of two numbers") {
             val code = "1 / 2"
 
             val result = parser.run(code)
@@ -255,7 +307,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should divide boolean and string") {
+        test("of boolean and string") {
             val code = "true / \"false\";"
 
             val result = parser.run(code)
@@ -269,7 +321,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should divide array and object") {
+        test("of array and object") {
             val code = "[]/{}"
 
             val result = parser.run(code)
@@ -283,7 +335,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should divide with negative number") {
+        test("of negative number") {
             val code = "3/-9"
 
             val result = parser.run(code)
@@ -299,7 +351,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should divide with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t/   \n19;"
 
             val result = parser.run(code)
@@ -312,10 +364,27 @@ class ArithmeticTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "8/4/2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Division(
+                    ArithmeticExpression.Division(
+                        Number.SimpleNumber.IntegerNumber(8),
+                        Number.SimpleNumber.IntegerNumber(4),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(2),
+                ),
+            )
+        }
     }
 
     context("Modulo") {
-        test("should modulo two numbers") {
+        test("of two numbers") {
             val code = "1 % 2"
 
             val result = parser.run(code)
@@ -329,7 +398,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should modulo boolean and string") {
+        test("of boolean and string") {
             val code = "true % \"false\";"
 
             val result = parser.run(code)
@@ -343,7 +412,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should modulo array and object") {
+        test("of array and object") {
             val code = "[]%{}"
 
             val result = parser.run(code)
@@ -357,7 +426,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should modulo with negative number") {
+        test("of with negative number") {
             val code = "3%-9"
 
             val result = parser.run(code)
@@ -373,7 +442,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("should modulo with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t%   \n19;"
 
             val result = parser.run(code)
@@ -386,7 +455,39 @@ class ArithmeticTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "8%3%2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Modulo(
+                    ArithmeticExpression.Modulo(
+                        Number.SimpleNumber.IntegerNumber(8),
+                        Number.SimpleNumber.IntegerNumber(3),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(2),
+                ),
+            )
+        }
     }
 
-    xtest("Combination") {}
+    context("Combination") {
+        test("Order in the middle") {
+            val code = "1 + 2 * 3 + 4"
+
+            ArithmeticExpression.Addition(
+                Number.SimpleNumber.IntegerNumber(1),
+                ArithmeticExpression.Addition(
+                    ArithmeticExpression.Multiplication(
+                        Number.SimpleNumber.IntegerNumber(2),
+                        Number.SimpleNumber.IntegerNumber(3),
+                    ),
+                    Number.SimpleNumber.IntegerNumber(4),
+                ),
+            )
+        }
+    }
 })

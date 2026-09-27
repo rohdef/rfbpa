@@ -8,6 +8,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpressio
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.StringGrammar
@@ -28,9 +29,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         push { BlockStatement() },
         topLevel(),
         push {
-            val stack = it.stack.toList()
-            require(stack.size == 1)
-            val blockStatement = stack.first() as BlockStatement
+            require(it.stack.size == 1)
+            val blockStatement = pop(it) as BlockStatement
             Program(blockStatement.statements)
         }
     )
@@ -46,7 +46,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                         topLevelItem(),
                     ),
                 ),
-                optional(semiColon),
+                optional(semiColon()),
             ),
         ),
         optional(sequence(ignorable())),
@@ -140,7 +140,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(whitespace()),
         choice(
             sequence(
-                equalChar,
+                equalChar(),
                 zeroOrMore(whitespace()),
                 expression(),
                 zeroOrMore(whitespace()),
@@ -174,46 +174,64 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun expressionStatement() = expression()
 
     open fun expression(): Rule<Statement> = choice(
-        prefixFactory(string("return ")) { expression -> Return.Expression(expression) },
+        keywordPrefixFactory(string("return ")) { expression -> Return.Expression(expression) },
         sequence(
             string("return"),
             push { Return.Void },
         ),
         functionExpression(),
         binaryExpression(),
-        expressionWithoutBinary(),
+        ternaryExpression(),
+        primaryExpression(),
     )
-
-    open fun expressionWithoutBinary(): Rule<Statement> = primaryExpression()
 
     open fun primaryExpression(): Rule<Statement> = sequence(
         choice(
+            keywordPrefixExpression(),
+            literal(),
             prefixExpression(),
-            literalGrammar.start(),
-            identifierGrammar.start(),
-            syntaticLiteral(),
         ),
         optional(continuation()),
     )
 
+    open fun literal() = choice(
+        literalGrammar.start(),
+        identifierGrammar.start(),
+        syntaticLiteral(),
+    )
+
+    open fun keywordPrefixExpression(): Rule<Statement> = choice(
+        keywordPrefixFactory(string("typeof ")) { expression -> PrefixExpression.TypeOf(expression) },
+        keywordPrefixFactory(string("delete ")) { expression -> PrefixExpression.Delete(expression) },
+        keywordPrefixFactory(string("new ")) { expression -> PrefixExpression.New(expression) },
+        keywordPrefixFactory(string("void ")) { expression -> PrefixExpression.Void(expression) },
+        keywordPrefixFactory(string("await ")) { expression -> PrefixExpression.Await(expression) },
+    )
+
     open fun prefixExpression(): Rule<Statement> = choice(
-        prefixFactory(string("typeof ")) { expression -> PrefixExpression.TypeOf(expression) },
-        prefixFactory(string("delete ")) { expression -> PrefixExpression.Delete(expression) },
-        prefixFactory(string("new ")) { expression -> PrefixExpression.New(expression) },
-        prefixFactory(string("void ")) { expression -> PrefixExpression.Void(expression) },
-        prefixFactory(string("await ")) { expression -> PrefixExpression.Await(expression) },
         prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
         prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
-        prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
-        prefixFactory(plus) { expression -> PrefixExpression.Plus(expression) },
-        prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
+        prefixFactory(exclamation()) { expression -> PrefixExpression.Not(expression) },
+        prefixFactory(plus()) { expression -> PrefixExpression.Plus(expression) },
+        prefixFactory(minus()) { expression -> PrefixExpression.Minus(expression) },
     )
+
+    open fun keywordPrefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> =
+        sequence(
+            matcher,
+            zeroOrMore(whitespace()),
+            expression(),
+            push {
+                val expression = pop(it) as Expression
+                prefixExpression(expression)
+            }
+        )
 
     open fun prefixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> =
         sequence(
             matcher,
             zeroOrMore(whitespace()),
-            expression(),
+            primaryExpression(),
             push {
                 val expression = pop(it) as Expression
                 prefixExpression(expression)
@@ -246,18 +264,18 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun arithmetic(): Rule<Statement> = choice(
-        binaryFactory(plus) { left, right -> ArithmeticExpression.Addition(left, right) },
-        binaryFactory(minus) { left, right -> ArithmeticExpression.Subtraction(left, right) },
-        binaryFactory(star) { left, right -> ArithmeticExpression.Multiplication(left, right) },
-        binaryFactory(slash) { left, right -> ArithmeticExpression.Division(left, right) },
-        binaryFactory(percent) { left, right -> ArithmeticExpression.Modulo(left, right) },
+        binaryFactory(plus()) { left, right -> ArithmeticExpression.Addition(left, right) },
+        binaryFactory(minus()) { left, right -> ArithmeticExpression.Subtraction(left, right) },
+        binaryFactory(star()) { left, right -> ArithmeticExpression.Multiplication(left, right) },
+        binaryFactory(slash()) { left, right -> ArithmeticExpression.Division(left, right) },
+        binaryFactory(percent()) { left, right -> ArithmeticExpression.Modulo(left, right) },
     )
 
     open fun binaryFactory(
         matcher: Rule<Statement>,
         binaryExpression: (Expression, Expression) -> Statement,
     ): Rule<Statement> = sequence(
-        expressionWithoutBinary(),
+        primaryExpression(),
         zeroOrMore(sameLineWhitespace()),
         matcher,
         zeroOrMore(whitespace()),
@@ -457,7 +475,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         ),
     )
 
-    open fun lvalueExpressions() = sequence(
+    open fun lvalueExpressions(): Rule<Statement> = sequence(
         lvalueExpression(),
         zeroOrMore(
             sequence(
@@ -469,7 +487,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         ),
     )
 
-    open fun lvalueExpression() = sequence(
+    open fun lvalueExpression(): Rule<Statement> = sequence(
         sequence(
             identifierGrammar.start(),
             zeroOrMore(sameLineWhitespace()),
@@ -486,26 +504,45 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
+    open fun ternaryExpression(): Rule<Statement> = sequence(
+        primaryExpression(),
+        zeroOrMore(sameLineWhitespace()),
+        char('?'),
+        zeroOrMore(whitespace()),
+        primaryExpression(),
+        zeroOrMore(whitespace()),
+        char(':'),
+        zeroOrMore(whitespace()),
+        primaryExpression(),
+
+        push {
+            val expression = pop(it) as Expression
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            TernaryExpression(left, right, expression)
+        }
+    )
+
     open fun ignorable() = choice(
-        semiColon,
+        semiColon(),
         whitespace(),
     )
 
-    open fun sameLineWhitespace() = sequence(
+    open fun sameLineWhitespace(): Rule<Statement> = sequence(
         testNot(cr()),
         testNot(lf()),
         whitespace(),
     )
 
     open fun codeSeparator() = choice(
-        semiColon,
+        semiColon(),
         lf(),
         cr(),
         crlf(),
     )
 
     val colon = char(':')
-    val semiColon = char(';')
+    open fun semiColon() = char(';')
     val period = char('.')
     val comma = char(',')
 
@@ -516,12 +553,12 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     val leftCurlyBracket = char('{')
     val rightCurlyBracket = char('}')
 
-    val exclamation = char('!')
-    val plus = char('+')
-    val minus = char('-')
-    val star = char('*')
-    val slash = char('/')
-    val percent = char('%')
-    val pipe = char('|')
-    val equalChar = char('=')
+    open fun exclamation() = char('!')
+    open fun plus() = char('+')
+    open fun minus() = char('-')
+    open fun star() = char('*')
+    open fun slash() = char('/')
+    open fun percent() = char('%')
+    open fun pipe() = char('|')
+    open fun equalChar() = char('=')
 }
