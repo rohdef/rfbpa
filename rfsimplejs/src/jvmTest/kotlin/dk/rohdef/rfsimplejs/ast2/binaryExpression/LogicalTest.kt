@@ -5,6 +5,7 @@ import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.Program
+import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -18,8 +19,8 @@ class LogicalTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    context("Equals (==)") {
-        test("should compare two numbers") {
+    context("Equals `==`") {
+        test("comparing two numbers") {
             val code = "1 == 2"
 
             val result = parser.run(code)
@@ -33,7 +34,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare boolean and string") {
+        test("comparing boolean and string") {
             val code = "true == \"false\";"
 
             val result = parser.run(code)
@@ -47,7 +48,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare array and object") {
+        test("comparing array and object") {
             val code = "[]=={}"
 
             val result = parser.run(code)
@@ -61,7 +62,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare with negative number") {
+        test("comparing with negative number") {
             val code = "3==-9"
 
             val result = parser.run(code)
@@ -77,7 +78,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t==   \n19;"
 
             val result = parser.run(code)
@@ -90,10 +91,27 @@ class LogicalTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "a == b == c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.Equals(
+                    LogicExpression.Equals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                )
+            )
+        }
     }
 
-    context("NonCoercingEquals (===)") {
-        test("should strictly compare two numbers") {
+    context("NonCoercingEquals `===`") {
+        test("comparing two numbers") {
             val code = "1 === 2"
 
             val result = parser.run(code)
@@ -107,7 +125,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare boolean and string") {
+        test("comparing boolean and string") {
             val code = "true === \"false\";"
 
             val result = parser.run(code)
@@ -121,7 +139,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare array and object") {
+        test("comparing array and object") {
             val code = "[]==={}"
 
             val result = parser.run(code)
@@ -135,7 +153,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare with negative number") {
+        test("comparing with negative number") {
             val code = "3===-9"
 
             val result = parser.run(code)
@@ -151,7 +169,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t===   \n19;"
 
             val result = parser.run(code)
@@ -164,10 +182,27 @@ class LogicalTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "a === b === c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.NonCoercingEquals(
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                )
+            )
+        }
     }
 
-    context("NotEquals (!=)") {
-        test("should compare inequality of two numbers") {
+    context("NotEquals `!=`") {
+        test("comparing two numbers") {
             val code = "1 != 2"
 
             val result = parser.run(code)
@@ -183,7 +218,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare inequality of boolean and string") {
+        test("comparing boolean and string") {
             val code = "true != \"false\";"
 
             val result = parser.run(code)
@@ -199,7 +234,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare inequality of array and object") {
+        test("comparing array and object") {
             val code = "[]!={}"
 
             val result = parser.run(code)
@@ -215,7 +250,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare inequality with negative number") {
+        test("comparing with negative number") {
             val code = "3!=-9"
 
             val result = parser.run(code)
@@ -233,7 +268,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should compare inequality with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t!=   \n19;"
 
             val result = parser.run(code)
@@ -244,14 +279,35 @@ class LogicalTest : FunSpec({
                     LogicExpression.Equals(
                         Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                         Number.SimpleNumber.IntegerNumber(19),
-                    )
-                )
+                    ),
+                ),
+            )
+        }
+
+        test("associates to the left") {
+            val code = "a != b != c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                PrefixExpression.Not(
+                    LogicExpression.Equals(
+                        PrefixExpression.Not(
+                            LogicExpression.Equals(
+                                Identifier("a"),
+                                Identifier("b"),
+                            ),
+                        ),
+                        Identifier("c"),
+                    ),
+                ),
             )
         }
     }
 
-    context("NonCoercingNotEquals (!==)") {
-        test("should strictly compare inequality of two numbers") {
+    context("NonCoercingNotEquals `!==`") {
+        test("comparing two numbers") {
             val code = "1 !== 2"
 
             val result = parser.run(code)
@@ -267,7 +323,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare inequality of boolean and string") {
+        test("comparing boolean and string") {
             val code = "true !== \"false\";"
 
             val result = parser.run(code)
@@ -283,7 +339,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare inequality of array and object") {
+        test("comparing array and object") {
             val code = "[]!=={}"
 
             val result = parser.run(code)
@@ -299,7 +355,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare inequality with negative number") {
+        test("comparing negative number") {
             val code = "3!== -9"
 
             val result = parser.run(code)
@@ -317,7 +373,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should strictly compare inequality with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t!==   \n19;"
 
             val result = parser.run(code)
@@ -332,10 +388,31 @@ class LogicalTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "a !== b !== c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                PrefixExpression.Not(
+                    LogicExpression.NonCoercingEquals(
+                        PrefixExpression.Not(
+                            LogicExpression.NonCoercingEquals(
+                                Identifier("a"),
+                                Identifier("b"),
+                            ),
+                        ),
+                        Identifier("c"),
+                    ),
+                ),
+            )
+        }
     }
 
     context("LogicalOr (||)") {
-        test("should logical or two numbers") {
+        test("comparing two numbers") {
             val code = "1 || 2"
 
             val result = parser.run(code)
@@ -349,7 +426,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical or boolean and string") {
+        test("comparing boolean and string") {
             val code = "true || \"false\";"
 
             val result = parser.run(code)
@@ -363,7 +440,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical or array and object") {
+        test("comparing array and object") {
             val code = "[]||{}"
 
             val result = parser.run(code)
@@ -377,7 +454,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical or with negative number") {
+        test("comparing negative number") {
             val code = "3||-9"
 
             val result = parser.run(code)
@@ -393,7 +470,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical or with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t||   \n19;"
 
             val result = parser.run(code)
@@ -406,10 +483,27 @@ class LogicalTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "a || b || c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LogicalOr(
+                    LogicExpression.LogicalOr(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                ),
+            )
+        }
     }
 
     context("LogicalAnd (&&)") {
-        test("should logical and two numbers") {
+        test("comparing two numbers") {
             val code = "1 && 2"
 
             val result = parser.run(code)
@@ -423,7 +517,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical and boolean and string") {
+        test("comparing boolean and string") {
             val code = "true && \"false\";"
 
             val result = parser.run(code)
@@ -437,7 +531,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical and array and object") {
+        test("comparing array and object") {
             val code = "[]&&{}"
 
             val result = parser.run(code)
@@ -451,7 +545,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical and with negative number") {
+        test("comparing negative number") {
             val code = "3&&-9"
 
             val result = parser.run(code)
@@ -467,7 +561,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should logical and with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t&&   \n19;"
 
             val result = parser.run(code)
@@ -480,10 +574,27 @@ class LogicalTest : FunSpec({
                 )
             )
         }
+
+        test("associates to the left") {
+            val code = "a && b && c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LogicalAnd(
+                    LogicExpression.LogicalAnd(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                ),
+            )
+        }
     }
 
     context("LessThan (<)") {
-        test("should less than two numbers") {
+        test("comparing two numbers") {
             val code = "1 < 2"
 
             val result = parser.run(code)
@@ -497,7 +608,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than boolean and string") {
+        test("comparing boolean and string") {
             val code = "true < \"false\";"
 
             val result = parser.run(code)
@@ -511,7 +622,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than array and object") {
+        test("comparing array and object") {
             val code = "[]<{}"
 
             val result = parser.run(code)
@@ -525,7 +636,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than with negative number") {
+        test("comparing with negative number") {
             val code = "3<-9"
 
             val result = parser.run(code)
@@ -541,7 +652,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t<   \n19;"
 
             val result = parser.run(code)
@@ -557,7 +668,7 @@ class LogicalTest : FunSpec({
     }
 
     context("GreaterThan (>)") {
-        test("should greater than two numbers") {
+        test("comparing two numbers") {
             val code = "1 > 2"
 
             val result = parser.run(code)
@@ -571,7 +682,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than boolean and string") {
+        test("comparing boolean and string") {
             val code = "true > \"false\";"
 
             val result = parser.run(code)
@@ -585,7 +696,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than array and object") {
+        test("comparing array and object") {
             val code = "[]>{}"
 
             val result = parser.run(code)
@@ -599,7 +710,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than with negative number") {
+        test("comparing negative number") {
             val code = "3>-9"
 
             val result = parser.run(code)
@@ -615,7 +726,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t>   \n19;"
 
             val result = parser.run(code)
@@ -631,7 +742,7 @@ class LogicalTest : FunSpec({
     }
 
     context("LessThanOrEqual (<=)") {
-        test("should less than or equal two numbers") {
+        test("comparing two numbers") {
             val code = "1 <= 2"
 
             val result = parser.run(code)
@@ -645,7 +756,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than or equal boolean and string") {
+        test("comparing boolean and string") {
             val code = "true <= \"false\";"
 
             val result = parser.run(code)
@@ -659,7 +770,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than or equal array and object") {
+        test("comparing array and object") {
             val code = "[]<={}"
 
             val result = parser.run(code)
@@ -673,7 +784,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than or equal with negative number") {
+        test("comparing negative number") {
             val code = "3<=-9"
 
             val result = parser.run(code)
@@ -689,7 +800,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should less than or equal with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t<=   \n19;"
 
             val result = parser.run(code)
@@ -705,7 +816,7 @@ class LogicalTest : FunSpec({
     }
 
     context("GreaterThanOrEqual (>=)") {
-        test("should greater than or equal two numbers") {
+        test("comparing two numbers") {
             val code = "1 >= 2"
 
             val result = parser.run(code)
@@ -719,7 +830,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than or equal boolean and string") {
+        test("comparing boolean and string") {
             val code = "true >= \"false\";"
 
             val result = parser.run(code)
@@ -733,7 +844,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than or equal array and object") {
+        test("comparing array and object") {
             val code = "[]>={}"
 
             val result = parser.run(code)
@@ -747,7 +858,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than or equal with negative number") {
+        test("comparing negative number") {
             val code = "3>=-9"
 
             val result = parser.run(code)
@@ -763,7 +874,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("should greater than or equal with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "29.5   \t>=   \n19;"
 
             val result = parser.run(code)

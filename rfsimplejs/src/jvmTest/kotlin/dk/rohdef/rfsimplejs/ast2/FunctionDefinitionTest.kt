@@ -177,11 +177,11 @@ class FunctionDefinitionTest : FunSpec({
                     BlockStatement(
                         Return.Expression(
                             ArithmeticExpression.Addition(
-                                Identifier("j"),
                                 ArithmeticExpression.Addition(
                                     Identifier("j"),
                                     Identifier("j"),
                                 ),
+                                Identifier("j"),
                             ),
                         ),
                     ),

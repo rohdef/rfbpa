@@ -1,6 +1,6 @@
 package dk.rohdef.rfsimplejs.ast2.statement
 
-sealed interface PrefixExpression : Expression {
+sealed interface PrefixExpression : Expression.PrimaryExpression {
     data class Not(val expression: Expression) : PrefixExpression {
         override fun toCode() = "!${expression.toCode()}"
     }
