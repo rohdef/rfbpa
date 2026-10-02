@@ -9,7 +9,11 @@ data class ObjectLiteral(
 ) : SyntaticLiteral {
     constructor(vararg properties: Pair<Identifier, Expression>) : this(properties.toMap())
 
-    override fun toCode() = TODO("Not yet implemented")
+    override fun toCode() = """
+        {
+            ${properties.entries.joinToString(",\n") { (identifier, expression) -> "${identifier.toCode()}: ${expression.toCode()}" }}
+        }
+    """.trimIndent()
 
     fun withProperty(identifier: Identifier, expression: Expression) = this.copy(properties = properties + (identifier to expression))
 }

@@ -3,6 +3,7 @@ package dk.rohdef.rfsimplejs.ast2
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
+import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -59,26 +60,30 @@ class LogicTest : FunSpec({
             program shouldBe Program(
                 TernaryExpression(
                     LogicExpression.GreaterThan(
-                        TernaryExpression(
-                            LogicExpression.NonCoercingEquals(
-                                Identifier("a"),
-                                Identifier("b"),
-                            ),
-                            ArrayReference(
-                                Identifier("list"),
-                                Number.SimpleNumber.IntegerNumber(1),
-                            ),
-                            ArrayReference(
-                                Identifier("list"),
-                                Number.SimpleNumber.IntegerNumber(0),
+                        EnclosedExpression(
+                            TernaryExpression(
+                                LogicExpression.NonCoercingEquals(
+                                    Identifier("a"),
+                                    Identifier("b"),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(1),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(0),
+                                ),
                             ),
                         ),
                         Number.SimpleNumber.IntegerNumber(42),
                     ),
-                    TernaryExpression(
-                        Identifier("foo"),
-                        Identifier("a"),
-                        StringLiteral("3"),
+                    EnclosedExpression(
+                        TernaryExpression(
+                            Identifier("foo"),
+                            Identifier("a"),
+                            StringLiteral("3"),
+                        ),
                     ),
                     StringLiteral("2"),
                 ),

@@ -534,7 +534,7 @@ class ArithmeticTest : FunSpec({
         }
 
         test("Parenthesis enclosed") {
-            val code = "(1 + 2 * 9) * (3 + 4 - 5)"
+            val code = "( 1 + 2 * 9 ) * ( 3 + 4 - 5 )"
 
             val result = parser.run(code)
             val program = result.stackTop

@@ -192,12 +192,26 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun primaryExpression(): Rule<Statement> = sequence(
         choice(
+            enclosedExpression(),
             keywordPrefixExpression(),
             literal(),
             prefixExpression(),
         ),
         optional(continuation()),
         zeroOrMore(precedenceArithmetic()),
+    )
+
+    open fun enclosedExpression(): Rule<Statement> = sequence(
+        leftParenthesis,
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(whitespace()),
+        rightParenthesis,
+
+        push {
+            val expression = pop(it) as Expression
+            EnclosedExpression(expression)
+        }
     )
 
     open fun literal() = choice(

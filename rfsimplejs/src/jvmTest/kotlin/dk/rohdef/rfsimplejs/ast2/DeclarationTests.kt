@@ -122,8 +122,6 @@ class DeclarationTests : FunSpec({
         }
 
         val testSamples = listOf(
-            // TODO find out what to do with just a lvalue
-//        "a",
             DeclarationData(Identifier("foo"), Number.SimpleNumber.IntegerNumber(42.toBigInteger())),
             DeclarationData(Identifier("_b4r"), Boolean.True),
             DeclarationData(Identifier("\$yay"), StringLiteral("\\\"hello\\\"")),

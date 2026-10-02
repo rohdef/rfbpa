@@ -4,6 +4,7 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import io.kotest.core.spec.style.FunSpec
@@ -135,23 +136,22 @@ class FunctionDefinitionTest : FunSpec({
                 Identifier("fun") to FunctionExpression(
                     FunctionExpression.Parameters()
                         .withParameter(TODO("destructure not yet supported")),
-                    // TODO when/if operator precedence is implemented this needs rework
                     BlockStatement(
-                        ArithmeticExpression.Multiplication(
-                            ArithmeticExpression.Subtraction(
+                        ArithmeticExpression.Subtraction(
+                            ArithmeticExpression.Addition(
                                 ArithmeticExpression.Multiplication(
-                                    ArithmeticExpression.Addition(
-                                        ArithmeticExpression.Multiplication(
-                                            Identifier("a"),
-                                            Identifier("a"),
-                                        ),
-                                        Identifier("b"),
-                                    ),
+                                    Identifier("a"),
+                                    Identifier("a"),
+                                ),
+                                ArithmeticExpression.Multiplication(
+                                    Identifier("b"),
                                     Identifier("b"),
                                 ),
+                            ),
+                            ArithmeticExpression.Multiplication(
+                                Identifier("c"),
                                 Identifier("c"),
                             ),
-                            Identifier("c"),
                         ),
                     ),
                 ),
@@ -336,12 +336,26 @@ class FunctionDefinitionTest : FunSpec({
                         .withParameter(Identifier("x")),
                     BlockStatement(
                         Declaration.Variable(
-                            Identifier("x") to ChainedCall(
-                                Identifier("Math"),
-                                FunctionCall(
-                                    Identifier("round"),
-                                    listOf(TODO("Grouping by parenthesis not yet supported")),
+                            Identifier("n") to ArithmeticExpression.Division(
+                                ChainedCall(
+                                    Identifier("Math"),
+                                    FunctionCall(
+                                        Identifier("round"),
+                                        ArithmeticExpression.Multiplication(
+                                            EnclosedExpression(
+                                                LogicExpression.LogicalOr(
+                                                    FunctionCall(
+                                                        Identifier("Number"),
+                                                        Identifier("x"),
+                                                    ),
+                                                    Number.SimpleNumber.IntegerNumber(0),
+                                                )
+                                            ),
+                                            Number.SimpleNumber.IntegerNumber(100),
+                                        )
+                                    ),
                                 ),
+                                Number.SimpleNumber.IntegerNumber(100),
                             ),
                         ),
                         Declaration.Variable(
