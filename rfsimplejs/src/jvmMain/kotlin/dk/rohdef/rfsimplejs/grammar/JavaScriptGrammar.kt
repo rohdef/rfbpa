@@ -51,7 +51,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 optional(semiColon),
             ),
         ),
-        optional(sequence(ignorable())),
+        zeroOrMore(ignorable()),
     )
 
     open fun topLevelItem(): Rule<Statement> = sequence(
@@ -517,6 +517,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 ),
             ),
         ),
+        zeroOrMore(whitespace()),
         rightParenthesis,
     )
 
@@ -683,17 +684,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         }
     )
 
-    open fun whitespaces(): Rule<Statement> = zeroOrMore(
-        choice(
-            whitespace(),
-            comment()
-        ),
+    override fun whitespace(): Rule<Statement> = choice(
+        super.whitespace(),
+        comment(),
     )
 
     open fun ignorable() = choice(
         semiColon,
         whitespace(),
-//        comment(),
     )
 
     open fun comment(): Rule<Statement> = blockComment() or lineComment()
