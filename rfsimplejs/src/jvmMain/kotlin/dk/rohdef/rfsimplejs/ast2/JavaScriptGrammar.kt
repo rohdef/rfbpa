@@ -338,7 +338,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             literal(),
             prefixExpression(),
         ),
-        optional(continuation()),
+        zeroOrMore(continuation()),
         zeroOrMore(precedenceArithmetic()),
     )
 
@@ -466,14 +466,13 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun asChainedCall(): Rule<Statement> = sequence(
         period,
         zeroOrMore(whitespace()),
-        expression(),
+        primaryExpression(),
         zeroOrMore(sameLineWhitespace()),
         push {
             val right = pop(it) as Expression
             val left = pop(it) as Expression
             ChainedCall(left, right)
         },
-        optional(continuation()),
     )
 
     open fun asArrayReference(): Rule<Statement> = sequence(
@@ -487,7 +486,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             val array = pop(it) as Expression
             ArrayReference(array, reference)
         },
-        optional(continuation()),
     )
 
     open fun asFunctionCall(): Rule<Statement> = sequence(
@@ -522,7 +520,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             ),
         ),
         rightParenthesis,
-        optional(continuation()),
     )
 
     open fun syntaticLiteral(): Rule<Statement> = choice(

@@ -9,11 +9,13 @@ import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number as AstNumber
 
+@DisplayName("Chained call")
 class ChainedCallTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
@@ -79,6 +81,36 @@ class ChainedCallTest : FunSpec({
                     Identifier("bar"),
                 ),
             ),
+        )
+    }
+
+    test("takes precedence") {
+        val code = "foo['hey'].bar() + baz().boo[4]"
+
+        val result = parser.run(code)
+        val program = result.stackTop
+
+        program shouldBe Program(
+            ArithmeticExpression.Addition(
+                ChainedCall(
+                    ArrayReference(
+                        Identifier("foo"),
+                        StringLiteral("hey"),
+                    ),
+                    FunctionCall(
+                        Identifier("bar"),
+                    ),
+                ),
+                ChainedCall(
+                    FunctionCall(
+                        Identifier("baz"),
+                    ),
+                    ArrayReference(
+                        Identifier("boo"),
+                        AstNumber.SimpleNumber.IntegerNumber(4),
+                    ),
+                ),
+            )
         )
     }
 
