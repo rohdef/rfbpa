@@ -2,7 +2,7 @@ package dk.rohdef.rfsimplejs.ast2.binaryExpression
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier

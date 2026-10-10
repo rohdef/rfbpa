@@ -1,7 +1,7 @@
 package dk.rohdef.rfsimplejs.ast2.literals
 
 import com.github.mpe85.grampa.createGrammar
-import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ParserSpec
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar

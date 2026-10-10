@@ -1,8 +1,10 @@
-package dk.rohdef.rfsimplejs.ast2
+package dk.rohdef.rfsimplejs.grammar
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
+import dk.rohdef.rfsimplejs.ast2.Declaration
+import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
@@ -170,7 +172,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         ),
     )
 
-    // TODO candidate for separate class
     open fun functionArrayDestructureParameter(): Rule<Statement> = sequence(
         functionArrayDestructureParameter2(),
 
@@ -182,7 +183,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
-    // TODO candidate for separate class
     open fun functionArrayDestructureParameter2(): Rule<Statement> = sequence(
         leftSquareBracket,
 
@@ -238,7 +238,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         ),
     )
 
-    // TODO candidate for separate class
     open fun functionObjectDestructureParameter(): Rule<Statement> = sequence(
         functionObjectDestructureParameter2(),
 
@@ -250,7 +249,6 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
-    // TODO candidate for separate class
     open fun functionObjectDestructureParameter2(): Rule<Statement> = sequence(
         leftCurlyBracket,
 

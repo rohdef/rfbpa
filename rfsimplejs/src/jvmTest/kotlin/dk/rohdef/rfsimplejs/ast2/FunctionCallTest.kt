@@ -7,6 +7,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean

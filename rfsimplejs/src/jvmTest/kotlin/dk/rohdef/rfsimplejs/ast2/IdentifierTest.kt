@@ -3,6 +3,8 @@ package dk.rohdef.rfsimplejs.ast2
 import com.github.mpe85.grampa.createGrammar
 import dk.rohdef.rfsimplejs.ParserSpec
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.grammar.IdentifierGrammar
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.parserContexts
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests

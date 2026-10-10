@@ -9,6 +9,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests
 import io.kotest.matchers.nulls.shouldBeNull

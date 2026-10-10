@@ -2,8 +2,7 @@ package dk.rohdef.rfsimplejs.ast2.literals
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.ParserSpec
-import dk.rohdef.rfsimplejs.ast2.JavaScriptGrammar
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
@@ -11,8 +10,6 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
-import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
-import dk.rohdef.rfsimplejs.parserContexts
 import io.kotest.assertions.asClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

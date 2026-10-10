@@ -5,6 +5,7 @@ import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.BlockStatement
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionExpression
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 

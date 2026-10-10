@@ -1,4 +1,4 @@
-package dk.rohdef.rfsimplejs.ast2
+package dk.rohdef.rfsimplejs.grammar
 
 import com.github.mpe85.grampa.grammar.AbstractGrammar
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
