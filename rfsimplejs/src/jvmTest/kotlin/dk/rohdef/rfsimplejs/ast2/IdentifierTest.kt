@@ -6,10 +6,12 @@ import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.grammar.IdentifierGrammar
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.parserContexts
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Identifiers")
 class IdentifierTest : FunSpec({
     parserContexts(
         ParserSpec(JavaScriptGrammar::class.createGrammar(), { Program(it) }, "Full JavaScript"),

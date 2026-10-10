@@ -8,10 +8,12 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.StringGrammar
 import dk.rohdef.rfsimplejs.parserContexts
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests
 import io.kotest.matchers.shouldBe
 
+@DisplayName("String literals")
 class StringTest : FunSpec({
     parserContexts(
         ParserSpec(JavaScriptGrammar::class.createGrammar(), { Program(it) }, "Full JavaScript"),

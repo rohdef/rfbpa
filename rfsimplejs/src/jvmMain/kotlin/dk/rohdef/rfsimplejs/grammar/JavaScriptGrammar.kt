@@ -48,7 +48,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                         topLevelItem(),
                     ),
                 ),
-                optional(semiColon()),
+                optional(semiColon),
             ),
         ),
         optional(sequence(ignorable())),
@@ -101,7 +101,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun functionExpression(): Rule<Statement> = sequence(
         string("function"),
-        oneOrMore(whitespace()),
+        zeroOrMore(whitespace()),
 
         functionParameters(),
         blockStatement(),
@@ -149,7 +149,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(whitespace()),
         choice(
             sequence(
-                equalChar(),
+                equalChar,
                 zeroOrMore(whitespace()),
                 expression(),
                 zeroOrMore(whitespace()),
@@ -211,7 +211,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
         choice(
             sequence(
-                equalChar(),
+                equalChar,
                 zeroOrMore(whitespace()),
                 choice(
                     functionArrayDestructureParameter2(),
@@ -276,7 +276,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(whitespace()),
         choice(
             sequence(
-                equalChar(),
+                equalChar,
                 zeroOrMore(whitespace()),
                 choice(
                     functionArrayDestructureParameter2(),
@@ -370,9 +370,9 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun prefixExpression(): Rule<Statement> = choice(
         prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
         prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
-        prefixFactory(exclamation()) { expression -> PrefixExpression.Not(expression) },
-        prefixFactory(plus()) { expression -> PrefixExpression.Plus(expression) },
-        prefixFactory(minus()) { expression -> PrefixExpression.Minus(expression) },
+        prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
+        prefixFactory(plus) { expression -> PrefixExpression.Plus(expression) },
+        prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
     )
 
     open fun keywordPrefixFactory(
@@ -426,14 +426,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun arithmetic(): Rule<Statement> = choice(
-        binaryFactory(plus()) { left, right -> ArithmeticExpression.Addition(left, right) },
-        binaryFactory(minus()) { left, right -> ArithmeticExpression.Subtraction(left, right) },
+        binaryFactory(plus) { left, right -> ArithmeticExpression.Addition(left, right) },
+        binaryFactory(minus) { left, right -> ArithmeticExpression.Subtraction(left, right) },
     )
 
     open fun precedenceArithmetic(): Rule<Statement> = choice(
-        binaryFactory(star()) { left, right -> ArithmeticExpression.Multiplication(left, right) },
-        binaryFactory(slash()) { left, right -> ArithmeticExpression.Division(left, right) },
-        binaryFactory(percent()) { left, right -> ArithmeticExpression.Modulo(left, right) },
+        binaryFactory(star) { left, right -> ArithmeticExpression.Multiplication(left, right) },
+        binaryFactory(slash) { left, right -> ArithmeticExpression.Division(left, right) },
+        binaryFactory(percent) { left, right -> ArithmeticExpression.Modulo(left, right) },
     )
 
     open fun binaryFactory(
@@ -683,10 +683,26 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         }
     )
 
-    open fun ignorable() = choice(
-        semiColon(),
-        whitespace(),
+    open fun whitespaces(): Rule<Statement> = zeroOrMore(
+        choice(
+            whitespace(),
+            comment()
+        ),
     )
+
+    open fun ignorable() = choice(
+        semiColon,
+        whitespace(),
+//        comment(),
+    )
+
+    open fun comment(): Rule<Statement> = blockComment() or lineComment()
+
+    open fun lineComment(): Rule<Statement> =
+        string("//") + zeroOrMore(noneOfChars("\n\r"))
+
+    open fun blockComment(): Rule<Statement> =
+        string("/*") + zeroOrMore(testNot(string("*/")) + anyChar()) + string("*/")
 
     open fun sameLineWhitespace(): Rule<Statement> = sequence(
         testNot(cr()),
@@ -695,14 +711,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun codeSeparator() = choice(
-        semiColon(),
+        semiColon,
         lf(),
         cr(),
         crlf(),
     )
 
     val colon = char(':')
-    open fun semiColon() = char(';')
+    val semiColon = char(';')
     val period = char('.')
     val comma = char(',')
 
@@ -713,11 +729,11 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     val leftCurlyBracket = char('{')
     val rightCurlyBracket = char('}')
 
-    open fun exclamation() = char('!')
-    open fun plus() = char('+')
-    open fun minus() = char('-')
-    open fun star() = char('*')
-    open fun slash() = char('/')
-    open fun percent() = char('%')
-    open fun equalChar() = char('=')
+    val equalChar = char('=')
+    val plus = char('+')
+    val exclamation = char('!')
+    val minus = char('-')
+    val star = char('*')
+    val slash = char('/')
+    val percent = char('%')
 }

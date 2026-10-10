@@ -14,15 +14,17 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Prefix expression")
 class PrefixTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    context("Not (!)") {
-        test("should negate boolean") {
+    context("not (!)") {
+        test("negates boolean") {
             val code = "!true"
 
             val result = parser.run(code)
@@ -35,7 +37,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should negate number") {
+        test("negates numbers") {
             val code = "!1"
 
             val result = parser.run(code)
@@ -48,7 +50,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should negate string") {
+        test("negates string") {
             val code = "!\"false\";"
 
             val result = parser.run(code)
@@ -61,7 +63,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should negate identifier") {
+        test("negates identifier") {
             val code = "!foo"
 
             val result = parser.run(code)
@@ -74,7 +76,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should negate array and object") {
+        test("negates array and object") {
             val code = "![]"
 
             val result = parser.run(code)
@@ -87,7 +89,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should negate with odd whitespaces") {
+        test("negates with odd whitespaces") {
             val code = "!   \t \n42;"
 
             val result = parser.run(code)
@@ -101,8 +103,8 @@ class PrefixTest : FunSpec({
         }
     }
 
-    context("Plus (+)") {
-        test("should unary plus boolean") {
+    context("plus (+)") {
+        test("unary pluses boolean") {
             val code = "+true;"
 
             val result = parser.run(code)
@@ -115,7 +117,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should unary plus string") {
+        test("unary pluses string") {
             val code = "+\"42\""
 
             val result = parser.run(code)
@@ -128,7 +130,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should unary plus identifier") {
+        test("unary pluses identifier") {
             val code = "+foo"
 
             val result = parser.run(code)
@@ -141,7 +143,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should unary plus with odd whitespaces") {
+        test("unary pluses with odd whitespaces") {
             val code = "+   \t \n29.5;"
 
             val result = parser.run(code)
@@ -155,8 +157,8 @@ class PrefixTest : FunSpec({
         }
     }
 
-    context("Minus (-)") {
-        test("should unary minus boolean") {
+    context("minus (-)") {
+        test("unary minuses boolean") {
             val code = "-true;"
 
             val result = parser.run(code)
@@ -165,11 +167,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Minus(
                     Boolean.True,
-                )
+                ),
             )
         }
 
-        test("should unary minus string") {
+        test("unary minuses string") {
             val code = "-\"42\""
 
             val result = parser.run(code)
@@ -178,11 +180,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Minus(
                     StringLiteral("42"),
-                )
+                ),
             )
         }
 
-        test("should unary minus identifier") {
+        test("unary minuses identifier") {
             val code = "-foo"
 
             val result = parser.run(code)
@@ -191,11 +193,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Minus(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should unary minus with odd whitespaces") {
+        test("unary minuses with odd whitespaces") {
             val code = "-   \t \n29.5;"
 
             val result = parser.run(code)
@@ -204,13 +206,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Minus(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
-                )
+                ),
             )
         }
     }
 
-    context("Increment (++)") {
-        test("should increment identifier") {
+    context("increment (++)") {
+        test("identifier") {
             val code = "++foo"
 
             val result = parser.run(code)
@@ -219,11 +221,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Increment(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should increment number") {
+        test("number") {
             val code = "++1"
 
             val result = parser.run(code)
@@ -232,11 +234,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Increment(
                     Number.SimpleNumber.IntegerNumber(1),
-                )
+                ),
             )
         }
 
-        test("should increment chained call") {
+        test("chained call") {
             val code = "++foo.bar;"
 
             val result = parser.run(code)
@@ -247,12 +249,12 @@ class PrefixTest : FunSpec({
                     ChainedCall(
                         Identifier("foo"),
                         Identifier("bar"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should increment array reference") {
+        test("array reference") {
             val code = "++foo[0]"
 
             val result = parser.run(code)
@@ -263,12 +265,12 @@ class PrefixTest : FunSpec({
                     ArrayReference(
                         Identifier("foo"),
                         Number.SimpleNumber.IntegerNumber(0),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should increment with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "++   \t \ncount;"
 
             val result = parser.run(code)
@@ -277,13 +279,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Increment(
                     Identifier("count"),
-                )
+                ),
             )
         }
     }
 
-    context("Decrement (--)") {
-        test("should decrement identifier") {
+    context("decrement (--)") {
+        test("identifier") {
             val code = "--foo"
 
             val result = parser.run(code)
@@ -292,11 +294,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Decrement(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should decrement number") {
+        test("number") {
             val code = "--1"
 
             val result = parser.run(code)
@@ -305,11 +307,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Decrement(
                     Number.SimpleNumber.IntegerNumber(1),
-                )
+                ),
             )
         }
 
-        test("should decrement chained call") {
+        test("chained call") {
             val code = "--foo.bar;"
 
             val result = parser.run(code)
@@ -320,12 +322,12 @@ class PrefixTest : FunSpec({
                     ChainedCall(
                         Identifier("foo"),
                         Identifier("bar"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should decrement array reference") {
+        test("array reference") {
             val code = "--foo[0]"
 
             val result = parser.run(code)
@@ -336,12 +338,12 @@ class PrefixTest : FunSpec({
                     ArrayReference(
                         Identifier("foo"),
                         Number.SimpleNumber.IntegerNumber(0),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should decrement with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "--   \t \ncount;"
 
             val result = parser.run(code)
@@ -350,13 +352,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Decrement(
                     Identifier("count"),
-                )
+                ),
             )
         }
     }
 
-    context("TypeOf (typeof)") {
-        test("should typeof number") {
+    context("typeof (typeof)") {
+        test("number") {
             val code = "typeof 1"
 
             val result = parser.run(code)
@@ -365,11 +367,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     Number.SimpleNumber.IntegerNumber(1),
-                )
+                ),
             )
         }
 
-        test("should typeof boolean") {
+        test("boolean") {
             val code = "typeof true;"
 
             val result = parser.run(code)
@@ -378,11 +380,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     Boolean.True,
-                )
+                ),
             )
         }
 
-        test("should typeof string") {
+        test("string") {
             val code = "typeof \"hello\""
 
             val result = parser.run(code)
@@ -391,11 +393,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     StringLiteral("hello"),
-                )
+                ),
             )
         }
 
-        test("should typeof identifier") {
+        test("identifier") {
             val code = "typeof foo"
 
             val result = parser.run(code)
@@ -404,11 +406,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should typeof object") {
+        test("object") {
             val code = "typeof {}"
 
             val result = parser.run(code)
@@ -417,11 +419,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("should typeof with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "typeof   \t \nfoo;"
 
             val result = parser.run(code)
@@ -430,13 +432,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.TypeOf(
                     Identifier("foo"),
-                )
+                ),
             )
         }
     }
 
-    context("Delete (delete)") {
-        test("should delete identifier") {
+    context("delete (delete)") {
+        test("identifier") {
             val code = "delete foo"
 
             val result = parser.run(code)
@@ -445,11 +447,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Delete(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should delete chained call") {
+        test("chained call") {
             val code = "delete foo.bar;"
 
             val result = parser.run(code)
@@ -460,12 +462,12 @@ class PrefixTest : FunSpec({
                     ChainedCall(
                         Identifier("foo"),
                         Identifier("bar"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should delete array reference") {
+        test("array reference") {
             val code = "delete foo[0]"
 
             val result = parser.run(code)
@@ -476,12 +478,12 @@ class PrefixTest : FunSpec({
                     ArrayReference(
                         Identifier("foo"),
                         Number.SimpleNumber.IntegerNumber(0),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should delete string literal") {
+        test("string literal") {
             val code = "delete \"test\""
 
             val result = parser.run(code)
@@ -490,11 +492,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Delete(
                     StringLiteral("test"),
-                )
+                ),
             )
         }
 
-        test("should delete with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "delete   \t \nfoo;"
 
             val result = parser.run(code)
@@ -503,13 +505,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Delete(
                     Identifier("foo"),
-                )
+                ),
             )
         }
     }
 
-    context("New (new)") {
-        test("should new function call without arguments") {
+    context("new (new)") {
+        test("function call without arguments") {
             val code = "new Foo()"
 
             val result = parser.run(code)
@@ -519,12 +521,12 @@ class PrefixTest : FunSpec({
                 PrefixExpression.New(
                     FunctionCall(
                         Identifier("Foo"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should new function call with arguments") {
+        test("function call with arguments") {
             val code = "new Foo(\"bar\", 1);"
 
             val result = parser.run(code)
@@ -536,12 +538,12 @@ class PrefixTest : FunSpec({
                         Identifier("Foo"),
                         StringLiteral("bar"),
                         Number.SimpleNumber.IntegerNumber(1),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should new identifier") {
+        test("identifier") {
             val code = "new Foo"
 
             val result = parser.run(code)
@@ -550,11 +552,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.New(
                     Identifier("Foo"),
-                )
+                ),
             )
         }
 
-        test("should new chained call") {
+        test("chained call") {
             val code = "new foo.Bar()"
 
             val result = parser.run(code)
@@ -566,13 +568,13 @@ class PrefixTest : FunSpec({
                         Identifier("foo"),
                         FunctionCall(
                             Identifier("Bar"),
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
             )
         }
 
-        test("should new with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "new   \t \nFoo();"
 
             val result = parser.run(code)
@@ -582,14 +584,14 @@ class PrefixTest : FunSpec({
                 PrefixExpression.New(
                     FunctionCall(
                         Identifier("Foo"),
-                    )
-                )
+                    ),
+                ),
             )
         }
     }
 
-    context("Void (void)") {
-        test("should void number") {
+    context("void (void)") {
+        test("number") {
             val code = "void 0"
 
             val result = parser.run(code)
@@ -598,11 +600,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Void(
                     Number.SimpleNumber.IntegerNumber(0),
-                )
+                ),
             )
         }
 
-        test("should void function call") {
+        test("function call") {
             val code = "void foo();"
 
             val result = parser.run(code)
@@ -612,12 +614,12 @@ class PrefixTest : FunSpec({
                 PrefixExpression.Void(
                     FunctionCall(
                         Identifier("foo"),
-                    )
+                    ),
                 )
             )
         }
 
-        test("should void identifier") {
+        test("identifier") {
             val code = "void foo"
 
             val result = parser.run(code)
@@ -626,11 +628,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Void(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should void boolean") {
+        test("boolean") {
             val code = "void true"
 
             val result = parser.run(code)
@@ -639,11 +641,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Void(
                     Boolean.True,
-                )
+                ),
             )
         }
 
-        test("should void with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "void   \t \n0;"
 
             val result = parser.run(code)
@@ -652,13 +654,13 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Void(
                     Number.SimpleNumber.IntegerNumber(0),
-                )
+                ),
             )
         }
     }
 
-    context("Await (await)") {
-        test("should await identifier") {
+    context("await (await)") {
+        test("identifier") {
             val code = "await foo"
 
             val result = parser.run(code)
@@ -667,11 +669,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Await(
                     Identifier("foo"),
-                )
+                ),
             )
         }
 
-        test("should await function call") {
+        test("function call") {
             val code = "await foo();"
 
             val result = parser.run(code)
@@ -681,12 +683,12 @@ class PrefixTest : FunSpec({
                 PrefixExpression.Await(
                     FunctionCall(
                         Identifier("foo"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("should await chained call") {
+        test("chained call") {
             val code = "await foo.bar()"
 
             val result = parser.run(code)
@@ -704,7 +706,7 @@ class PrefixTest : FunSpec({
             )
         }
 
-        test("should await string literal") {
+        test("string literal") {
             val code = "await \"result\""
 
             val result = parser.run(code)
@@ -713,11 +715,11 @@ class PrefixTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Await(
                     StringLiteral("result"),
-                )
+                ),
             )
         }
 
-        test("should await with odd whitespaces") {
+        test("with odd whitespaces") {
             val code = "await   \t \nfetch();"
 
             val result = parser.run(code)
@@ -727,8 +729,8 @@ class PrefixTest : FunSpec({
                 PrefixExpression.Await(
                     FunctionCall(
                         Identifier("fetch"),
-                    )
-                )
+                    ),
+                ),
             )
         }
     }

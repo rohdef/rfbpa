@@ -10,11 +10,13 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withTests
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Declarations")
 class DeclarationTests : FunSpec({
     data class DeclarationData(
         val lvalue: Identifier,
@@ -33,7 +35,7 @@ class DeclarationTests : FunSpec({
     val parser = Parser(grammar)
     val wrapping: (Statement) -> Statement = { Program(it) }
 
-    context("variables") {
+    context("variable") {
         withTests(
             nameFn = { "var ${it.lvalue.toCode()}=${it.expression.toCode()}" },
             testSamples
@@ -89,7 +91,7 @@ class DeclarationTests : FunSpec({
         }
     }
 
-    context("lets") {
+    context("let") {
         withTests(
             nameFn = { "let ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
             testSamples,
@@ -183,7 +185,7 @@ class DeclarationTests : FunSpec({
         }
     }
 
-    context("constants") {
+    context("constant") {
         withTests(
             nameFn = { "const ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
             testSamples,

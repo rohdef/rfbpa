@@ -7,9 +7,11 @@ import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Number literals")
 class NumberTests : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
@@ -17,7 +19,7 @@ class NumberTests : FunSpec({
 
     context("numbers") {
             context("integers") {
-                test("simple number") {
+                test("positive") {
                     val result = parser.run("57005")
 
                     result.stackTop shouldBe wrapping(
@@ -25,7 +27,7 @@ class NumberTests : FunSpec({
                     )
                 }
 
-                test("negative number") {
+                test("negative") {
                     val result = parser.run("-8")
 
                     result.stackTop shouldBe wrapping(
@@ -35,7 +37,7 @@ class NumberTests : FunSpec({
                     )
                 }
 
-                test("positive number with plus") {
+                test("positive with prefix plus") {
                     val result = parser.run("+19")
 
                     result.stackTop shouldBe wrapping(
@@ -47,8 +49,8 @@ class NumberTests : FunSpec({
             }
         }
 
-        context("floating point") {
-            test("simple number") {
+        context("floating points") {
+            test("positive") {
                 val result = parser.run("318.445")
 
                 result.stackTop shouldBe wrapping(
@@ -56,7 +58,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("simple number starting with dot") {
+            test("positive starting with a dot") {
                 val result = parser.run(".43")
 
                 result.stackTop shouldBe wrapping(
@@ -64,7 +66,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number") {
+            test("negative") {
                 val result = parser.run("-29.543")
 
                 result.stackTop shouldBe wrapping(
@@ -74,7 +76,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number starting with dot") {
+            test("negative starting with a dot") {
                 val result = parser.run("-.621")
 
                 result.stackTop shouldBe wrapping(
@@ -84,7 +86,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number with plus") {
+            test("positive with prefix plus") {
                 val result = parser.run("+3.1415")
 
                 result.stackTop shouldBe wrapping(
@@ -94,7 +96,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number starting with dot with plus") {
+            test("positive starting with a dot and a prefix plus") {
                 val result = parser.run("+.69")
 
                 result.stackTop shouldBe wrapping(
@@ -106,7 +108,7 @@ class NumberTests : FunSpec({
         }
 
         context("hexadecimal") {
-            test("simple number") {
+            test("positive") {
                 val result = parser.run("0xFF342500000000")
 
                 result.stackTop shouldBe wrapping(
@@ -114,7 +116,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number") {
+            test("negative") {
                 val result = parser.run("-0x41DEad")
 
                 result.stackTop shouldBe wrapping(
@@ -124,7 +126,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number with plus") {
+            test("positive with a prefix plus") {
                 val result = parser.run("+0xCafeBabe")
 
                 result.stackTop shouldBe wrapping(
@@ -136,7 +138,7 @@ class NumberTests : FunSpec({
         }
 
         context("binary") {
-            test("simple number") {
+            test("positive") {
                 val result = parser.run("0b1001")
 
                 result.stackTop shouldBe wrapping(
@@ -144,7 +146,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number") {
+            test("negative") {
                 val result = parser.run("-0b0")
 
                 result.stackTop shouldBe wrapping(
@@ -154,7 +156,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number with plus") {
+            test("positive with a prefix plus") {
                 val result = parser.run("+0b1111000010100101")
 
                 result.stackTop shouldBe wrapping(
@@ -166,7 +168,7 @@ class NumberTests : FunSpec({
         }
 
         context("scientific notation") {
-            test("simple number") {
+            test("positive") {
                 val result = parser.run("3e0")
 
                 result.stackTop shouldBe wrapping(
@@ -210,7 +212,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number with plus") {
+            test("positive with prefix plus") {
                 val result = parser.run("+9.1e44")
 
                 result.stackTop shouldBe wrapping(
@@ -223,7 +225,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive number with plus and negative exponent") {
+            test("positive with a prefix plus and negative exponent") {
                 val result = parser.run("+52e-5")
 
                 result.stackTop shouldBe wrapping(
@@ -236,7 +238,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("positive decimal starting with dot with plus and negative exponent") {
+            test("positive decimal starting with a dot with plus and negative exponent") {
                 val result = parser.run("+.79e-5")
 
                 result.stackTop shouldBe wrapping(
@@ -249,7 +251,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number") {
+            test("negative") {
                 val result = parser.run("-66e27")
 
                 result.stackTop shouldBe wrapping(
@@ -262,7 +264,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative decimal starting with dot") {
+            test("negative decimal starting with a dot") {
                 val result = parser.run("-.31e3")
 
                 result.stackTop shouldBe wrapping(
@@ -275,7 +277,7 @@ class NumberTests : FunSpec({
                 )
             }
 
-            test("negative number with negative exponent") {
+            test("negative with a negative exponent") {
                 val result = parser.run("-52e-5")
 
                 result.stackTop shouldBe wrapping(

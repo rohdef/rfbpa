@@ -6,11 +6,13 @@ import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Null literals")
 class NullTest : FunSpec({
-    test("literal parser null") {
+    test("literal parser") {
         val grammar = LiteralGrammar::class.createGrammar()
         val parser = Parser(grammar)
 

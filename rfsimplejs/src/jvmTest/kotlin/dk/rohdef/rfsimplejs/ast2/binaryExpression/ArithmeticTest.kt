@@ -10,14 +10,16 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpressio
 import dk.rohdef.rfsimplejs.ast2.statement.literals.*
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Arithmetic")
 class ArithmeticTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    context("Addition") {
+    context("addition") {
         test("of two numbers") {
             val code = "1 + 2"
 
@@ -28,7 +30,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Addition(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
@@ -42,7 +44,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Addition(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
@@ -56,7 +58,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Addition(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
@@ -72,7 +74,7 @@ class ArithmeticTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -108,7 +110,7 @@ class ArithmeticTest : FunSpec({
         }
     }
 
-    context("Subtraction") {
+    context("subtraction") {
         test("of two numbers") {
             val code = "1 - 2"
 
@@ -119,7 +121,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Subtraction(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
@@ -133,7 +135,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Subtraction(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
@@ -147,7 +149,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Subtraction(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
@@ -163,7 +165,7 @@ class ArithmeticTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -177,7 +179,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Subtraction(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
@@ -199,8 +201,8 @@ class ArithmeticTest : FunSpec({
         }
     }
 
-    context("Multiplication") {
-        test("should multiply two numbers") {
+    context("multiplication") {
+        test("of two numbers") {
             val code = "1 * 2"
 
             val result = parser.run(code)
@@ -210,11 +212,11 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Multiplication(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("should multiply boolean and string") {
+        test("of boolean and string") {
             val code = "true * \"false\";"
 
             val result = parser.run(code)
@@ -224,11 +226,11 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Multiplication(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("should multiply array and object") {
+        test("of array and object") {
             val code = "[]*{}"
 
             val result = parser.run(code)
@@ -238,11 +240,11 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Multiplication(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("should multiply with negative number") {
+        test("of with negative number") {
             val code = "3*-9"
 
             val result = parser.run(code)
@@ -254,7 +256,7 @@ class ArithmeticTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -268,7 +270,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Multiplication(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
@@ -290,7 +292,7 @@ class ArithmeticTest : FunSpec({
         }
     }
 
-    context("Division") {
+    context("division") {
         test("of two numbers") {
             val code = "1 / 2"
 
@@ -301,7 +303,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Division(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
@@ -315,7 +317,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Division(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
@@ -329,7 +331,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Division(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
@@ -345,7 +347,7 @@ class ArithmeticTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -359,11 +361,11 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Division(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
-        xtest("associates to the left") {
+        test("associates to the right") {
             val code = "8/4/2"
 
             val result = parser.run(code)
@@ -371,17 +373,17 @@ class ArithmeticTest : FunSpec({
 
             program shouldBe Program(
                 ArithmeticExpression.Division(
+                    Number.SimpleNumber.IntegerNumber(8),
                     ArithmeticExpression.Division(
-                        Number.SimpleNumber.IntegerNumber(8),
                         Number.SimpleNumber.IntegerNumber(4),
+                        Number.SimpleNumber.IntegerNumber(2),
                     ),
-                    Number.SimpleNumber.IntegerNumber(2),
                 ),
             )
         }
     }
 
-    context("Modulo") {
+    context("modulo") {
         test("of two numbers") {
             val code = "1 % 2"
 
@@ -392,7 +394,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Modulo(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
@@ -406,7 +408,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Modulo(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
@@ -420,7 +422,7 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Modulo(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
@@ -436,7 +438,7 @@ class ArithmeticTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -450,11 +452,11 @@ class ArithmeticTest : FunSpec({
                 ArithmeticExpression.Modulo(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
-        xtest("associates to the left") {
+        test("associates to the right") {
             val code = "8%3%2"
 
             val result = parser.run(code)
@@ -462,18 +464,18 @@ class ArithmeticTest : FunSpec({
 
             program shouldBe Program(
                 ArithmeticExpression.Modulo(
+                    Number.SimpleNumber.IntegerNumber(8),
                     ArithmeticExpression.Modulo(
-                        Number.SimpleNumber.IntegerNumber(8),
                         Number.SimpleNumber.IntegerNumber(3),
+                        Number.SimpleNumber.IntegerNumber(2),
                     ),
-                    Number.SimpleNumber.IntegerNumber(2),
                 ),
             )
         }
     }
 
-    context("Combination") {
-        test("Operator precedence in the middle") {
+    context("combinations") {
+        test("operator precedence in the middle") {
             val code = "1 + 2 * 3 + 4"
 
             val result = parser.run(code)
@@ -493,7 +495,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("Order to the left") {
+        test("operator precedence to the left") {
             val code = "1/3+4+5"
 
             val result = parser.run(code)
@@ -513,7 +515,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("Order to the right") {
+        test("operator precedence to the right") {
             val code = "3+4+13%7"
 
             val result = parser.run(code)
@@ -533,7 +535,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("Parenthesis enclosed") {
+        test("parenthesis enclosed and precedence") {
             val code = "( 1 + 2 * 9 ) * ( 3 + 4 - 5 )"
 
             val result = parser.run(code)

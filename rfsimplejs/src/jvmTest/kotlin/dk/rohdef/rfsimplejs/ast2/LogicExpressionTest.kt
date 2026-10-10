@@ -11,14 +11,16 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class LogicTest : FunSpec({
+@DisplayName("Logic expressions")
+class LogicExpressionTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    context("Ternary expressions") {
+    context("ternary") {
         test("simple") {
             val code = "true ? 1 : 2"
 
@@ -92,6 +94,15 @@ class LogicTest : FunSpec({
         }
     }
 
-    context("If statements") {
+    context("if") {
+    }
+
+    context("for") {
+    }
+
+    context("while") {
+    }
+
+    context("switch") {
     }
 })

@@ -12,15 +12,17 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class LogicalTest : FunSpec({
+@DisplayName("Boolean logic")
+class BooleanLogicTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    context("Equals `==`") {
-        test("comparing two numbers") {
+    context("equals `==`") {
+        test("compares two numbers") {
             val code = "1 == 2"
 
             val result = parser.run(code)
@@ -30,11 +32,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.Equals(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true == \"false\";"
 
             val result = parser.run(code)
@@ -44,11 +46,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.Equals(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]=={}"
 
             val result = parser.run(code)
@@ -58,11 +60,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.Equals(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("comparing with negative number") {
+        test("compares with negative number") {
             val code = "3==-9"
 
             val result = parser.run(code)
@@ -74,7 +76,7 @@ class LogicalTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -88,7 +90,7 @@ class LogicalTest : FunSpec({
                 LogicExpression.Equals(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
@@ -105,13 +107,13 @@ class LogicalTest : FunSpec({
                         Identifier("b"),
                     ),
                     Identifier("c"),
-                )
+                ),
             )
         }
     }
 
-    context("NonCoercingEquals `===`") {
-        test("comparing two numbers") {
+    context("non-coercing equals `===`") {
+        test("compares two numbers") {
             val code = "1 === 2"
 
             val result = parser.run(code)
@@ -121,11 +123,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.NonCoercingEquals(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true === \"false\";"
 
             val result = parser.run(code)
@@ -135,11 +137,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.NonCoercingEquals(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]==={}"
 
             val result = parser.run(code)
@@ -149,11 +151,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.NonCoercingEquals(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("comparing with negative number") {
+        test("compares with negative number") {
             val code = "3===-9"
 
             val result = parser.run(code)
@@ -165,7 +167,7 @@ class LogicalTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -179,7 +181,7 @@ class LogicalTest : FunSpec({
                 LogicExpression.NonCoercingEquals(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
@@ -196,13 +198,13 @@ class LogicalTest : FunSpec({
                         Identifier("b"),
                     ),
                     Identifier("c"),
-                )
+                ),
             )
         }
     }
 
-    context("NotEquals `!=`") {
-        test("comparing two numbers") {
+    context("not equals `!=`") {
+        test("compares two numbers") {
             val code = "1 != 2"
 
             val result = parser.run(code)
@@ -213,12 +215,12 @@ class LogicalTest : FunSpec({
                     LogicExpression.Equals(
                         Number.SimpleNumber.IntegerNumber(1),
                         Number.SimpleNumber.IntegerNumber(2),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true != \"false\";"
 
             val result = parser.run(code)
@@ -229,12 +231,12 @@ class LogicalTest : FunSpec({
                     LogicExpression.Equals(
                         Boolean.True,
                         StringLiteral("false"),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]!={}"
 
             val result = parser.run(code)
@@ -245,12 +247,12 @@ class LogicalTest : FunSpec({
                     LogicExpression.Equals(
                         ArrayLiteral(),
                         ObjectLiteral(),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
-        test("comparing with negative number") {
+        test("compares with negative number") {
             val code = "3!=-9"
 
             val result = parser.run(code)
@@ -263,8 +265,8 @@ class LogicalTest : FunSpec({
                         PrefixExpression.Minus(
                             Number.SimpleNumber.IntegerNumber(9),
                         ),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -306,8 +308,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("NonCoercingNotEquals `!==`") {
-        test("comparing two numbers") {
+    context("non-coercing not equals `!==`") {
+        test("compares two numbers") {
             val code = "1 !== 2"
 
             val result = parser.run(code)
@@ -323,7 +325,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true !== \"false\";"
 
             val result = parser.run(code)
@@ -339,7 +341,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]!=={}"
 
             val result = parser.run(code)
@@ -355,7 +357,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3!== -9"
 
             val result = parser.run(code)
@@ -411,8 +413,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("LogicalOr (||)") {
-        test("comparing two numbers") {
+    context("or (||)") {
+        test("compares two numbers") {
             val code = "1 || 2"
 
             val result = parser.run(code)
@@ -426,7 +428,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true || \"false\";"
 
             val result = parser.run(code)
@@ -440,7 +442,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]||{}"
 
             val result = parser.run(code)
@@ -454,7 +456,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3||-9"
 
             val result = parser.run(code)
@@ -502,8 +504,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("LogicalAnd (&&)") {
-        test("comparing two numbers") {
+    context("and (&&)") {
+        test("compares two numbers") {
             val code = "1 && 2"
 
             val result = parser.run(code)
@@ -513,11 +515,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LogicalAnd(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true && \"false\";"
 
             val result = parser.run(code)
@@ -527,11 +529,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LogicalAnd(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]&&{}"
 
             val result = parser.run(code)
@@ -541,11 +543,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LogicalAnd(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3&&-9"
 
             val result = parser.run(code)
@@ -557,7 +559,7 @@ class LogicalTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -571,7 +573,7 @@ class LogicalTest : FunSpec({
                 LogicExpression.LogicalAnd(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
 
@@ -593,8 +595,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("LessThan (<)") {
-        test("comparing two numbers") {
+    context("less than (<)") {
+        test("compares two numbers") {
             val code = "1 < 2"
 
             val result = parser.run(code)
@@ -604,11 +606,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LessThan(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true < \"false\";"
 
             val result = parser.run(code)
@@ -618,11 +620,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LessThan(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]<{}"
 
             val result = parser.run(code)
@@ -632,11 +634,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.LessThan(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("comparing with negative number") {
+        test("compares with negative number") {
             val code = "3<-9"
 
             val result = parser.run(code)
@@ -648,7 +650,7 @@ class LogicalTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -662,13 +664,13 @@ class LogicalTest : FunSpec({
                 LogicExpression.LessThan(
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
-                )
+                ),
             )
         }
     }
 
-    context("GreaterThan (>)") {
-        test("comparing two numbers") {
+    context("greater than (>)") {
+        test("compares two numbers") {
             val code = "1 > 2"
 
             val result = parser.run(code)
@@ -678,11 +680,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.GreaterThan(
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
-                )
+                ),
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true > \"false\";"
 
             val result = parser.run(code)
@@ -692,11 +694,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.GreaterThan(
                     Boolean.True,
                     StringLiteral("false"),
-                )
+                ),
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]>{}"
 
             val result = parser.run(code)
@@ -706,11 +708,11 @@ class LogicalTest : FunSpec({
                 LogicExpression.GreaterThan(
                     ArrayLiteral(),
                     ObjectLiteral(),
-                )
+                ),
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3>-9"
 
             val result = parser.run(code)
@@ -722,7 +724,7 @@ class LogicalTest : FunSpec({
                     PrefixExpression.Minus(
                         Number.SimpleNumber.IntegerNumber(9),
                     ),
-                )
+                ),
             )
         }
 
@@ -741,8 +743,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("LessThanOrEqual (<=)") {
-        test("comparing two numbers") {
+    context("less than or equal (<=)") {
+        test("compares two numbers") {
             val code = "1 <= 2"
 
             val result = parser.run(code)
@@ -756,7 +758,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true <= \"false\";"
 
             val result = parser.run(code)
@@ -770,7 +772,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]<={}"
 
             val result = parser.run(code)
@@ -784,7 +786,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3<=-9"
 
             val result = parser.run(code)
@@ -815,8 +817,8 @@ class LogicalTest : FunSpec({
         }
     }
 
-    context("GreaterThanOrEqual (>=)") {
-        test("comparing two numbers") {
+    context("greater than or equal (>=)") {
+        test("compares two numbers") {
             val code = "1 >= 2"
 
             val result = parser.run(code)
@@ -830,7 +832,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing boolean and string") {
+        test("compares boolean and string") {
             val code = "true >= \"false\";"
 
             val result = parser.run(code)
@@ -844,7 +846,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing array and object") {
+        test("compares array and object") {
             val code = "[]>={}"
 
             val result = parser.run(code)
@@ -858,7 +860,7 @@ class LogicalTest : FunSpec({
             )
         }
 
-        test("comparing negative number") {
+        test("compares negative number") {
             val code = "3>=-9"
 
             val result = parser.run(code)

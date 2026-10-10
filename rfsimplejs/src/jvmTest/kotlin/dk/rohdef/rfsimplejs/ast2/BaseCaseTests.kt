@@ -3,10 +3,12 @@ package dk.rohdef.rfsimplejs.ast2
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class BaseCases : FunSpec({
+@DisplayName("Base cases")
+class BaseCaseTests : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 

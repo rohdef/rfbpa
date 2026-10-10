@@ -16,7 +16,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 
-@DisplayName("A little more testing")
+@DisplayName("Combinations of code")
 class ALittleMoreTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
@@ -34,7 +34,7 @@ class ALittleMoreTest : FunSpec({
         )
     }
 
-    test("let's stretch") {
+    test("using various variables") {
         val code = """
             "use strict";
             var TOK="id-10-t", ERFV=false;
@@ -128,7 +128,7 @@ class ALittleMoreTest : FunSpec({
         )
     }
 
-    test("some function bodies") {
+    test("defining functions") {
         val code = """
             function iso(d){var m=d.getMonth()+1,g=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(g<10?'0':'')+g;}
             function fraIso(s){var d=String(s).split('-');return new Date(+d[0],+d[1]-1,+d[2]);}

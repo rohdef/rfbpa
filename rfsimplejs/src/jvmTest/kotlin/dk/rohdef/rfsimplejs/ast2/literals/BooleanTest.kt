@@ -6,10 +6,12 @@ import dk.rohdef.rfsimplejs.ParserSpec
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
+import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withContexts
 import io.kotest.matchers.shouldBe
 
+@DisplayName("Boolean literals")
 class BooleanTest : FunSpec({
     withContexts(
         nameFn = { it.name },

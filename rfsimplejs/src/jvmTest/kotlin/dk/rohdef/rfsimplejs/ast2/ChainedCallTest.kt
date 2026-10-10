@@ -21,7 +21,7 @@ class ChainedCallTest : FunSpec({
     val grammar = JavaScriptGrammar::class.createGrammar()
     val parser = Parser(grammar)
 
-    test("Simple chained property access") {
+    test("simple property access") {
         val code = "foo.bar"
 
         val result = parser.run(code)
@@ -35,7 +35,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with function call and property") {
+    test("on a function call and property") {
         val code = "foo().bar"
 
         val result = parser.run(code)
@@ -51,7 +51,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with property and function call") {
+    test("on a property and function call") {
         val code = "foo.bar()"
 
         val result = parser.run(code)
@@ -67,7 +67,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with function call and function call") {
+    test("on a function call and function call") {
         val code = "foo().bar()"
 
         val result = parser.run(code)
@@ -115,7 +115,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Multiple chained calls") {
+    test("continuously") {
         val code = "a.b.c.d"
 
         val result = parser.run(code)
@@ -135,7 +135,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with function call parameters") {
+    test("on a function call with parameters") {
         val code = "ada.compute('1', 2, true, identifier).result"
 
         val result = parser.run(code)
@@ -158,7 +158,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with array reference") {
+    test("on an array reference") {
         val code = "items[0].name"
 
         val result = parser.run(code)
@@ -175,7 +175,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with array reference in property") {
+    test("on an array reference in property") {
         val code = "user.roles[1].permissions"
 
         val result = parser.run(code)
@@ -195,7 +195,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call mixing function call and array reference") {
+    test("mixing function call and array reference") {
         val code = "getData().items[2].getValue()"
 
         val result = parser.run(code)
@@ -219,7 +219,7 @@ class ChainedCallTest : FunSpec({
         )
     }
 
-    test("Chained call with funky parameters") {
+    test("with funky parameters") {
         val code = "turing.calculate(anotherFunction(2, 3 - true), 5 + 3, [ true, true, false ]).output"
 
         val result = parser.run(code)
