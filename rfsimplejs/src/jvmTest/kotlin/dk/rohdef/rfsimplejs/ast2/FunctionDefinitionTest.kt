@@ -8,6 +8,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
@@ -574,7 +575,6 @@ class FunctionDefinitionTest : FunSpec({
         val result = parser.run(code)
         val program = result.stackTop
 
-        println(program)
         program shouldBe Program(
             Declaration.Variable(
                 Identifier("tTal") to FunctionExpression(
@@ -613,8 +613,86 @@ class FunctionDefinitionTest : FunSpec({
                                 ),
                             ),
                         ),
-                        TODO("If not yet supported"),
-                        TODO("If not yet supported"),
+                        IfStatement(
+                            LogicExpression.NonCoercingEquals(
+                                ChainedCall(
+                                    Identifier("s"),
+                                    FunctionCall(
+                                        Identifier("charAt"),
+                                        ArithmeticExpression.Subtraction(
+                                            ChainedCall(
+                                                Identifier("s"),
+                                                Identifier("length"),
+                                            ),
+                                            Number.SimpleNumber.IntegerNumber(1)
+                                        ),
+                                    ),
+                                ),
+                                StringLiteral("0"),
+                            ),
+                            Assignment(
+                                Identifier("s"),
+                                ChainedCall(
+                                    Identifier("s"),
+                                    FunctionCall(
+                                        Identifier("slice"),
+                                        Number.SimpleNumber.IntegerNumber(0),
+                                        PrefixExpression.Minus(
+                                            Number.SimpleNumber.IntegerNumber(1),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        IfStatement(
+                            LogicExpression.LogicalAnd(
+                                LogicExpression.NonCoercingEquals(
+                                    ChainedCall(
+                                        Identifier("s"),
+                                        FunctionCall(
+                                            Identifier("charAt"),
+                                            ArithmeticExpression.Subtraction(
+                                                ChainedCall(
+                                                    Identifier("s"),
+                                                    Identifier("length"),
+                                                ),
+                                                Number.SimpleNumber.IntegerNumber(1)
+                                            ),
+                                        ),
+                                    ),
+                                    StringLiteral("0"),
+                                ),
+                                LogicExpression.NonCoercingEquals(
+                                    ChainedCall(
+                                        Identifier("s"),
+                                        FunctionCall(
+                                            Identifier("charAt"),
+                                            ArithmeticExpression.Subtraction(
+                                                ChainedCall(
+                                                    Identifier("s"),
+                                                    Identifier("length"),
+                                                ),
+                                                Number.SimpleNumber.IntegerNumber(2)
+                                            ),
+                                        ),
+                                    ),
+                                    StringLiteral("."),
+                                ),
+                            ),
+                            Assignment(
+                                Identifier("s"),
+                                ChainedCall(
+                                    Identifier("s"),
+                                    FunctionCall(
+                                        Identifier("slice"),
+                                        Number.SimpleNumber.IntegerNumber(0),
+                                        PrefixExpression.Minus(
+                                            Number.SimpleNumber.IntegerNumber(2),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
                         Return.Expression(
                             ChainedCall(
                                 Identifier("s"),

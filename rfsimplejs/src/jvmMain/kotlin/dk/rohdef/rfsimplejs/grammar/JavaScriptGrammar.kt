@@ -10,6 +10,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpressio
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
@@ -70,10 +71,56 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun statement(): Rule<Statement> = sequence(
         choice(
+            ifStatement(),
             declaration(),
             expression(),
+            blockStatement(),
         ),
         zeroOrMore(sameLineWhitespace()),
+    )
+
+    open fun ifStatement(): Rule<Statement> = sequence(
+        string("if"),
+        zeroOrMore(whitespace()),
+
+        leftParenthesis,
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(whitespace()),
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+
+        choice(
+            blockStatement(),
+            statement(),
+        ),
+        zeroOrMore(whitespace()),
+
+        choice(
+            sequence(
+                string("else"),
+                zeroOrMore(whitespace()),
+                choice(
+                    blockStatement(),
+                    statement(),
+                ),
+                zeroOrMore(whitespace()),
+                push {
+                    val elseAction = pop(it) as Statement
+                    val thenAction = pop(it) as Statement
+                    val condition = pop(it) as Expression
+
+                    IfStatement(condition, thenAction, elseAction)
+                },
+            ),
+
+            push {
+                val then = pop(it) as Statement
+                val condition = pop(it) as Expression
+
+                IfStatement(condition, then)
+            },
+        ),
     )
 
     open fun functionDeclaration(): Rule<Statement> = sequence(
@@ -304,9 +351,9 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun blockStatement(): Rule<Statement> = sequence(
-        push { BlockStatement() },
         leftCurlyBracket,
         zeroOrMore(ignorable()),
+        push { BlockStatement() },
         topLevel(),
         rightCurlyBracket,
     )
