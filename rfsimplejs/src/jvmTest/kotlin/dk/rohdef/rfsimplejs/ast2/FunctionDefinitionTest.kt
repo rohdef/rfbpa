@@ -5,6 +5,7 @@ import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import io.kotest.core.spec.style.FunSpec
@@ -90,73 +91,334 @@ class FunctionDefinitionTest : FunSpec({
         )
     }
 
-    test("Function object destructure paramter") {
-        val code = """
-            function total({x, y, z}) {
-                return x + y + z;
+    context("parameter destructuring") {
+        context("objects") {
+            test("empty") {
+                val code = """
+                    function sayHi({ }) {
+                        return "Hello " + "world!";
+                    }
+                """.trimIndent()
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Variable(
+                        Identifier("sayHi") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ObjectDestructure(),
+                                ),
+                            BlockStatement(
+                                Return.Expression(
+                                    ArithmeticExpression.Addition(
+                                        StringLiteral("Hello "),
+                                        StringLiteral("world!"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    )
+                )
             }
-        """.trimIndent()
 
-        val result = parser.run(code)
-        val program = result.stackTop
+            test("single parameter") {
+                val code = """
+                    function sayHi({x}) {
+                        return "Hello " + x;
+                    }
+                """.trimIndent()
 
-        program shouldBe Program(
-            Declaration.Variable(
-                Identifier("total") to FunctionExpression(
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Variable(
+                        Identifier("sayHi") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ObjectDestructure(
+                                        FunctionExpression.Parameter.IdentifierParameter("x"),
+                                    ),
+                                ),
+                            BlockStatement(
+                                Return.Expression(
+                                    ArithmeticExpression.Addition(
+                                        StringLiteral("Hello "),
+                                        Identifier("x"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    )
+                )
+            }
+
+            test("multiple parameters") {
+                val code = """
+                    function total({x, y , z }) {
+                        return x + y + z;
+                    }
+                """.trimIndent()
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Variable(
+                        Identifier("total") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ObjectDestructure(
+                                        FunctionExpression.Parameter.IdentifierParameter("x"),
+                                        FunctionExpression.Parameter.IdentifierParameter("y"),
+                                        FunctionExpression.Parameter.IdentifierParameter("z"),
+                                    ),
+                                ),
+                            BlockStatement(
+                                Return.Expression(
+                                    ArithmeticExpression.Addition(
+                                        ArithmeticExpression.Addition(
+                                            Identifier("x"),
+                                            Identifier("y"),
+                                        ),
+                                        Identifier("z"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    )
+                )
+            }
+        }
+
+        context("arrays") {
+            test("empty") {
+                val code = """
+                    const fun = function ([]) {}
+                """.trimIndent()
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Constant(
+                        Identifier("fun") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ArrayDestructure(),
+                                ),
+                            BlockStatement(),
+                        ),
+                    ),
+                )
+            }
+
+            test("single element") {
+                val code = """
+                    const fun = function ([a]) {
+                        return a * a;
+                    }
+                """.trimIndent()
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Constant(
+                        Identifier("fun") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ArrayDestructure(
+                                        FunctionExpression.Parameter.IdentifierParameter("a"),
+                                    )
+                                ),
+                            BlockStatement(
+                                Return.Expression(
+                                    ArithmeticExpression.Multiplication(
+                                        Identifier("a"),
+                                        Identifier("a"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("multiple elements") {
+                val code = """
+                    const fun = function ([a, b , c  ]) {
+                        return a * a + b * b - c * c;
+                    }
+                """.trimIndent()
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    Declaration.Constant(
+                        Identifier("fun") to FunctionExpression(
+                            FunctionExpression.Parameters()
+                                .withParameter(
+                                    FunctionExpression.Parameter.ArrayDestructure(
+                                        FunctionExpression.Parameter.IdentifierParameter("a"),
+                                        FunctionExpression.Parameter.IdentifierParameter("b"),
+                                        FunctionExpression.Parameter.IdentifierParameter("c"),
+                                    )
+                                ),
+                            BlockStatement(
+                                Return.Expression(
+                                    ArithmeticExpression.Subtraction(
+                                        ArithmeticExpression.Addition(
+                                            ArithmeticExpression.Multiplication(
+                                                Identifier("a"),
+                                                Identifier("a"),
+                                            ),
+                                            ArithmeticExpression.Multiplication(
+                                                Identifier("b"),
+                                                Identifier("b"),
+                                            ),
+                                        ),
+                                        ArithmeticExpression.Multiplication(
+                                            Identifier("c"),
+                                            Identifier("c"),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            }
+        }
+
+        test("mix of array and object") {
+            val code = """
+                function ({a, b, c}, [x, y, z]) {
+                    return j + j + j;
+                }
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                FunctionExpression(
                     FunctionExpression.Parameters()
-                        .withParameter(TODO("destructure not yet supported")),
+                        .withParameter(
+                            FunctionExpression.Parameter.ObjectDestructure(
+                                FunctionExpression.Parameter.IdentifierParameter("a"),
+                                FunctionExpression.Parameter.IdentifierParameter("b"),
+                                FunctionExpression.Parameter.IdentifierParameter("c"),
+                            )
+                        )
+                        .withParameter(
+                            FunctionExpression.Parameter.ArrayDestructure(
+                                FunctionExpression.Parameter.IdentifierParameter("x"),
+                                FunctionExpression.Parameter.IdentifierParameter("y"),
+                                FunctionExpression.Parameter.IdentifierParameter("z"),
+                            )
+                        ),
                     BlockStatement(
                         Return.Expression(
                             ArithmeticExpression.Addition(
-                                Identifier("x"),
                                 ArithmeticExpression.Addition(
-                                    Identifier("y"),
-                                    Identifier("z"),
+                                    Identifier("j"),
+                                    Identifier("j"),
+                                ),
+                                Identifier("j"),
+                            ),
+                        ),
+                    ),
+                )
+            )
+        }
+
+        test("with default values") {
+            val code = """
+                function ({a, b=32, c}, [x=true, y, z="hey"]) {}
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                FunctionExpression(
+                    FunctionExpression.Parameters()
+                        .withParameter(
+                            FunctionExpression.Parameter.ObjectDestructure(
+                                FunctionExpression.Parameter.IdentifierParameter("a"),
+                                FunctionExpression.Parameter.IdentifierParameter(
+                                    "b", Number.SimpleNumber.IntegerNumber(32),
+                                ),
+                                FunctionExpression.Parameter.IdentifierParameter("c"),
+                            ),
+                        )
+                        .withParameter(
+                            FunctionExpression.Parameter.ArrayDestructure(
+                                FunctionExpression.Parameter.IdentifierParameter(
+                                    Identifier("x"), Boolean.True,
+                                ),
+                                FunctionExpression.Parameter.IdentifierParameter(Identifier("y")),
+                                FunctionExpression.Parameter.IdentifierParameter(
+                                    Identifier("z"), StringLiteral("hey"),
                                 ),
                             ),
                         ),
+                    BlockStatement(),
+                )
+            )
+        }
+
+        test("nested array and object") {
+            val code = """
+                function bah({a, b=32, c=[x=true, y, z="hey"]}, [w={n, m}, e, r=[l, k]]) {}
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Declaration.Variable(
+                    Identifier("bah") to FunctionExpression(
+                        FunctionExpression.Parameters()
+                            .withParameter(
+                                FunctionExpression.Parameter.ObjectDestructure(
+                                    FunctionExpression.Parameter.IdentifierParameter("a"),
+                                    FunctionExpression.Parameter.IdentifierParameter("b", Number.SimpleNumber.IntegerNumber(32)),
+                                    FunctionExpression.Parameter.IdentifierParameter(
+                                        "c", FunctionExpression.Parameter.ArrayDestructure(
+                                            FunctionExpression.Parameter.IdentifierParameter("x", Boolean.True),
+                                            FunctionExpression.Parameter.IdentifierParameter("y"),
+                                            FunctionExpression.Parameter.IdentifierParameter("z", StringLiteral("hey")),
+                                        ),
+                                    ),
+                                ),
+                            )
+                            .withParameter(
+                                FunctionExpression.Parameter.ArrayDestructure(
+                                    FunctionExpression.Parameter.IdentifierParameter(
+                                        "w", FunctionExpression.Parameter.ObjectDestructure(
+                                            FunctionExpression.Parameter.IdentifierParameter("n"),
+                                            FunctionExpression.Parameter.IdentifierParameter("m"),
+                                        ),
+                                    ),
+                                    FunctionExpression.Parameter.IdentifierParameter("e"),
+                                    FunctionExpression.Parameter.IdentifierParameter(
+                                        "r", FunctionExpression.Parameter.ArrayDestructure(
+                                            FunctionExpression.Parameter.IdentifierParameter("l"),
+                                            FunctionExpression.Parameter.IdentifierParameter("k"),
+                                        )
+                                    ),
+                                ),
+                            ),
+                        BlockStatement(),
                     ),
                 ),
             )
-        )
-    }
-
-    test("Function array destructure paramter") {
-        val code = """
-            const fun = function ([a, b, c]) {
-                return a * a + b * b - c * c;
-            }
-        """.trimIndent()
-
-        val result = parser.run(code)
-        val program = result.stackTop
-
-        program shouldBe Program(
-            Declaration.Variable(
-                Identifier("fun") to FunctionExpression(
-                    FunctionExpression.Parameters()
-                        .withParameter(TODO("destructure not yet supported")),
-                    BlockStatement(
-                        ArithmeticExpression.Subtraction(
-                            ArithmeticExpression.Addition(
-                                ArithmeticExpression.Multiplication(
-                                    Identifier("a"),
-                                    Identifier("a"),
-                                ),
-                                ArithmeticExpression.Multiplication(
-                                    Identifier("b"),
-                                    Identifier("b"),
-                                ),
-                            ),
-                            ArithmeticExpression.Multiplication(
-                                Identifier("c"),
-                                Identifier("c"),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        )
+        }
     }
 
     test("Function with default value") {
@@ -190,36 +452,6 @@ class FunctionDefinitionTest : FunSpec({
         )
     }
 
-    test("Function mix of destructures and identifiers") {
-        val code = """
-            function ({a, b, c}, [x, y, z]) {
-                return j + j + j;
-            }
-        """.trimIndent()
-
-        val result = parser.run(code)
-        val program = result.stackTop
-
-        program shouldBe Program(
-            FunctionExpression(
-                FunctionExpression.Parameters()
-                    .withParameter(TODO("Destructuring not yet supported")),
-                BlockStatement(
-                    Return.Expression(
-                        ArithmeticExpression.Addition(
-                            ArithmeticExpression.Addition(
-                                Identifier("j"),
-                                Identifier("j"),
-                            ),
-                            Identifier("j"),
-                        ),
-                    ),
-                ),
-            )
-        )
-    }
-
-
     test("Function mixed parameters with default values") {
         val code = """
             function (j = "BeeJay", f) {
@@ -238,11 +470,11 @@ class FunctionDefinitionTest : FunSpec({
                 BlockStatement(
                     Return.Expression(
                         ArithmeticExpression.Addition(
-                            Identifier("j"),
                             ArithmeticExpression.Addition(
-                                Identifier("f"),
                                 Identifier("j"),
+                                Identifier("f"),
                             ),
+                            Identifier("j"),
                         )
                     ),
                 ),

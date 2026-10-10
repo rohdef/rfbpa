@@ -136,7 +136,13 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(whitespace()),
     )
 
-    open fun functionParameter(): Rule<Statement> = sequence(
+    open fun functionParameter(): Rule<Statement> = choice(
+        functionArrayDestructureParameter(),
+        functionObjectDestructureParameter(),
+        functionIdentifierParameter(),
+    )
+
+    open fun functionIdentifierParameter(): Rule<Statement> = sequence(
         identifierGrammar.start(),
         zeroOrMore(whitespace()),
         choice(
@@ -160,6 +166,141 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 val parameters = pop(it) as FunctionExpression.Parameters
 
                 parameters.withParameter(identifier)
+            },
+        ),
+    )
+
+    // TODO candidate for separate class
+    open fun functionArrayDestructureParameter(): Rule<Statement> = sequence(
+        functionArrayDestructureParameter2(),
+
+        push {
+            val parameter = pop(it) as FunctionExpression.Parameter.ArrayDestructure
+            val parameters = pop(it) as FunctionExpression.Parameters
+
+            parameters.withParameter(parameter)
+        },
+    )
+
+    // TODO candidate for separate class
+    open fun functionArrayDestructureParameter2(): Rule<Statement> = sequence(
+        leftSquareBracket,
+
+        push { FunctionExpression.Parameter.ArrayDestructure() },
+
+        zeroOrMore(whitespace()),
+        optional(arrayDestructureElements()),
+
+        rightSquareBracket,
+    )
+
+    open fun arrayDestructureElements(): Rule<Statement> = sequence(
+        arrayDestructureElement(),
+        zeroOrMore(
+            sequence(
+                comma,
+                zeroOrMore(whitespace()),
+                arrayDestructureElement()
+            ),
+        ),
+    )
+
+    open fun arrayDestructureElement(): Rule<Statement> = sequence(
+        identifierGrammar.start(),
+        zeroOrMore(whitespace()),
+
+        choice(
+            sequence(
+                equalChar(),
+                zeroOrMore(whitespace()),
+                choice(
+                    functionArrayDestructureParameter2(),
+                    functionObjectDestructureParameter2(),
+                    primaryExpression(),
+                ),
+                zeroOrMore(whitespace()),
+
+                push {
+                    val value = pop(it) as Expression
+                    val element = pop(it) as Identifier
+                    val parameter = pop(it) as FunctionExpression.Parameter.ArrayDestructure
+
+                    parameter.withElement(FunctionExpression.Parameter.IdentifierParameter(element, value))
+                },
+            ),
+
+            push {
+                val element = pop(it) as Identifier
+                val parameter = pop(it) as FunctionExpression.Parameter.ArrayDestructure
+
+                parameter.withElement(FunctionExpression.Parameter.IdentifierParameter(element))
+            },
+        ),
+    )
+
+    // TODO candidate for separate class
+    open fun functionObjectDestructureParameter(): Rule<Statement> = sequence(
+        functionObjectDestructureParameter2(),
+
+        push {
+            val parameter = pop(it) as FunctionExpression.Parameter.ObjectDestructure
+            val parameters = pop(it) as FunctionExpression.Parameters
+
+            parameters.withParameter(parameter)
+        },
+    )
+
+    // TODO candidate for separate class
+    open fun functionObjectDestructureParameter2(): Rule<Statement> = sequence(
+        leftCurlyBracket,
+
+        push { FunctionExpression.Parameter.ObjectDestructure() },
+
+        zeroOrMore(whitespace()),
+        optional(objectDestructureElements()),
+
+        rightCurlyBracket,
+    )
+
+    open fun objectDestructureElements(): Rule<Statement> = sequence(
+        objectDestructureElement(),
+        zeroOrMore(
+            sequence(
+                comma,
+                zeroOrMore(whitespace()),
+                objectDestructureElement()
+            ),
+        ),
+    )
+
+    open fun objectDestructureElement(): Rule<Statement> = sequence(
+        identifierGrammar.start(),
+        zeroOrMore(whitespace()),
+        choice(
+            sequence(
+                equalChar(),
+                zeroOrMore(whitespace()),
+                choice(
+                    functionArrayDestructureParameter2(),
+                    functionObjectDestructureParameter2(),
+                    primaryExpression(),
+                ),
+                zeroOrMore(whitespace()),
+
+                push {
+                    val value = pop(it) as Expression
+                    val element = pop(it) as Identifier
+                    val parameter = pop(it) as FunctionExpression.Parameter.ObjectDestructure
+
+                    parameter.withProperty(FunctionExpression.Parameter.IdentifierParameter(element, value))
+                }
+            ),
+
+            push {
+                val element = pop(it) as Identifier
+                val parameter = pop(it) as FunctionExpression.Parameter.ObjectDestructure
+
+                parameter.withProperty(FunctionExpression.Parameter.IdentifierParameter(element))
             },
         ),
     )

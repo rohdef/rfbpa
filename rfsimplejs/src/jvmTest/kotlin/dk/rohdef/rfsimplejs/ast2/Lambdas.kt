@@ -5,18 +5,15 @@ import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.BlockStatement
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.FunctionExpression
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Nested
-import kotlin.test.Test
 
-class Lambdas {
-    private val grammar = JavaScriptGrammar::class.createGrammar()
-    private val parser = Parser(grammar)
+class Lambdas : FunSpec({
+    val grammar = JavaScriptGrammar::class.createGrammar()
+    val parser = Parser(grammar)
 
-    @Nested
-    inner class `Oneshot lambda` {
-        @Test
-        fun `oneshot lambda`() {
+    context("One shot lambda") {
+        test("by traditional function") {
             val text = "(function() {})()"
 
             val result = parser.run(text)
@@ -32,4 +29,4 @@ class Lambdas {
             )
         }
     }
-}
+})
