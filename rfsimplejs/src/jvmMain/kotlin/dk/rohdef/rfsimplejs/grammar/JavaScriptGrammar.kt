@@ -73,10 +73,30 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         choice(
             ifStatement(),
             declaration(),
+            assignment(),
             expression(),
             blockStatement(),
         ),
         zeroOrMore(sameLineWhitespace()),
+    )
+
+    open fun assignment(): Rule<Statement> = sequence(
+        identifierGrammar.start(),
+        zeroOrMore(sameLineWhitespace()),
+        equalChar,
+        zeroOrMore(whitespace()),
+        choice(
+            assignment(),
+            expression(),
+        ),
+        zeroOrMore(whitespace()),
+
+        push {
+            val expression = pop(it) as Expression
+            val identifier = pop(it) as Identifier
+
+            Assignment(identifier, expression)
+        },
     )
 
     open fun ifStatement(): Rule<Statement> = sequence(
@@ -106,8 +126,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 ),
                 zeroOrMore(whitespace()),
                 push {
-                    val elseAction = pop(it) as Statement
-                    val thenAction = pop(it) as Statement
+                    val elseAction = pop(it)
+                    val thenAction = pop(it)
                     val condition = pop(it) as Expression
 
                     IfStatement(condition, thenAction, elseAction)
@@ -115,7 +135,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             ),
 
             push {
-                val then = pop(it) as Statement
+                val then = pop(it)
                 val condition = pop(it) as Expression
 
                 IfStatement(condition, then)
