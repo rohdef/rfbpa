@@ -4,7 +4,11 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import dk.rohdef.rfsimplejs.ast2.Program
+import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
+import dk.rohdef.rfsimplejs.ast2.statement.ChainedCall
 import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
+import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
+import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.*
@@ -105,6 +109,31 @@ class ArithmeticTest : FunSpec({
                         Number.SimpleNumber.IntegerNumber(3),
                     ),
                     Number.SimpleNumber.IntegerNumber(4),
+                ),
+            )
+        }
+
+        test("chained calls get nested") {
+            val code = """
+                foo.bar() + baz[0].qux
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Addition(
+                    ChainedCall(
+                        Identifier("foo"),
+                        FunctionCall(Identifier("bar")),
+                    ),
+                    ChainedCall(
+                        ArrayReference(
+                            Identifier("baz"),
+                            Number.SimpleNumber.IntegerNumber(0),
+                        ),
+                        Identifier("qux"),
+                    ),
                 ),
             )
         }
@@ -377,6 +406,31 @@ class ArithmeticTest : FunSpec({
                     ArithmeticExpression.Division(
                         Number.SimpleNumber.IntegerNumber(4),
                         Number.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("chained calls get nested") {
+            val code = """
+                foo.bar() / baz[0].qux
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ArithmeticExpression.Division(
+                    ChainedCall(
+                        Identifier("foo"),
+                        FunctionCall(Identifier("bar")),
+                    ),
+                    ChainedCall(
+                        ArrayReference(
+                            Identifier("baz"),
+                            Number.SimpleNumber.IntegerNumber(0),
+                        ),
+                        Identifier("qux"),
                     ),
                 ),
             )

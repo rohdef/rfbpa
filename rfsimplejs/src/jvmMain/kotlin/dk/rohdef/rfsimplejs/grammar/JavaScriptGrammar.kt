@@ -503,6 +503,26 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         binaryFactory(percent) { left, right -> ArithmeticExpression.Modulo(left, right) },
     )
 
+    open fun continuation(): Rule<Statement> = choice(
+        asFunctionCall(),
+        asArrayReference(),
+        asChainedCall(),
+    )
+
+    open fun asChainedCall(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        period,
+        zeroOrMore(whitespace()),
+        literal(),
+        zeroOrMore(continuation()),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            ChainedCall(left, right)
+        },
+    )
+
     open fun binaryFactory(
         matcher: Rule<Statement>,
         binaryExpression: (Expression, Expression) -> Statement,
@@ -519,28 +539,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
-    open fun continuation(): Rule<Statement> = sequence(
-        zeroOrMore(sameLineWhitespace()),
-        choice(
-            asFunctionCall(),
-            asArrayReference(),
-            asChainedCall(),
-        ),
-    )
-
-    open fun asChainedCall(): Rule<Statement> = sequence(
-        period,
-        zeroOrMore(whitespace()),
-        primaryExpression(),
-        zeroOrMore(sameLineWhitespace()),
-        push {
-            val right = pop(it) as Expression
-            val left = pop(it) as Expression
-            ChainedCall(left, right)
-        },
-    )
-
     open fun asArrayReference(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
         leftSquareBracket,
         zeroOrMore(whitespace()),
         expression(),
@@ -554,6 +554,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asFunctionCall(): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
         leftParenthesis,
         zeroOrMore(whitespace()),
         push {
