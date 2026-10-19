@@ -12,6 +12,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
+import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.StringGrammar
@@ -72,6 +73,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun statement(): Rule<Statement> = sequence(
         choice(
             ifStatement(),
+            whileStatement(),
             declaration(),
             assignment(),
             expression(),
@@ -141,6 +143,31 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 IfStatement(condition, then)
             },
         ),
+    )
+
+    open fun whileStatement(): Rule<Statement> = sequence(
+        string("while"),
+        zeroOrMore(whitespace()),
+
+        leftParenthesis,
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(whitespace()),
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+
+        choice(
+            blockStatement(),
+            statement(),
+        ),
+        zeroOrMore(whitespace()),
+
+        push {
+            val action = pop(it)
+            val condition = pop(it) as Expression
+
+            WhileStatement(condition, action)
+        },
     )
 
     open fun functionDeclaration(): Rule<Statement> = sequence(

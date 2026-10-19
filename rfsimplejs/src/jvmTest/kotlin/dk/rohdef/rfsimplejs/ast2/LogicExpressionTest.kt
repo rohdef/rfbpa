@@ -12,6 +12,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
+import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
@@ -338,7 +339,133 @@ class LogicExpressionTest : FunSpec({
     xcontext("for") {
     }
 
-    xcontext("while") {
+    context("while") {
+        test("simple") {
+            val code = "while (true) 1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    Boolean.True,
+                    Number.SimpleNumber.IntegerNumber(1),
+                ),
+            )
+        }
+
+        test("utilize a bit") {
+            val code = "while (a === b) foo"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("utilize a lot") {
+            val code = "while ((a === b ? list[1] : list[0]) > 42) while (foo) a"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    LogicExpression.GreaterThan(
+                        EnclosedExpression(
+                            TernaryExpression(
+                                LogicExpression.NonCoercingEquals(
+                                    Identifier("a"),
+                                    Identifier("b"),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(1),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(0),
+                                ),
+                            ),
+                        ),
+                        Number.SimpleNumber.IntegerNumber(42),
+                    ),
+                    WhileStatement(
+                        Identifier("foo"),
+                        Identifier("a"),
+                    ),
+                ),
+            )
+        }
+
+        test("block") {
+            val code = "while (a === b) { foo }"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    BlockStatement(
+                        Identifier("foo"),
+                    ),
+                ),
+            )
+        }
+
+        test("empty block") {
+            val code = "while (true) {}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    Boolean.True,
+                    BlockStatement(),
+                ),
+            )
+        }
+
+        test("multiple statements in block") {
+            val code = """
+                while (a === b) {
+                    foo;
+                    1;
+                }
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    BlockStatement(
+                        Identifier("foo"),
+                        Number.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+    }
+
+    xcontext("do while") {
     }
 
     xcontext("switch") {
