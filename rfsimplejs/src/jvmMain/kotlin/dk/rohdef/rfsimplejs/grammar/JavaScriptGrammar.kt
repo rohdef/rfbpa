@@ -388,12 +388,8 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             functionExpression(),
             primaryExpression(),
         ),
-        zeroOrMore(
-            choice(
-                ternaryExpression(),
-                binaryExpression(),
-            ),
-        ),
+        zeroOrMore(binaryExpression()),
+        zeroOrMore(ternaryExpression()),
     )
 
     open fun primaryExpression(): Rule<Statement> = sequence(
@@ -404,7 +400,10 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             prefixExpression(),
         ),
         zeroOrMore(continuation()),
-        zeroOrMore(precedenceArithmetic()),
+        zeroOrMore(precedenceBinaryExpression()),
+        zeroOrMore(
+            binaryFactory(string("&&")) { left, right -> LogicExpression.LogicalAnd(left, right) },
+        ),
     )
 
     open fun enclosedExpression(): Rule<Statement> = sequence(
@@ -469,32 +468,32 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun binaryExpression(): Rule<Statement> = choice(
         arithmetic(),
-        logicExpression(),
+        logicDisjunction(),
     )
 
-    open fun logicExpression(): Rule<Statement> = choice(
-        binaryFactory(string("==")) { left, right -> LogicExpression.Equals(left, right) },
-        binaryFactory(string("!=")) { left, right -> PrefixExpression.Not(LogicExpression.Equals(left, right)) },
-        binaryFactory(string("===")) { left, right -> LogicExpression.NonCoercingEquals(left, right) },
-        binaryFactory(string("<")) { left, right -> LogicExpression.LessThan(left, right) },
-        binaryFactory(string("<=")) { left, right -> LogicExpression.LessThanOrEqual(left, right) },
-        binaryFactory(string(">")) { left, right -> LogicExpression.GreaterThan(left, right) },
-        binaryFactory(string(">=")) { left, right -> LogicExpression.GreaterThanOrEqual(left, right) },
-        binaryFactory(string("!==")) { left, right ->
-            PrefixExpression.Not(
-                LogicExpression.NonCoercingEquals(
-                    left,
-                    right
-                )
-            )
-        },
-        binaryFactory(string("||")) { left, right -> LogicExpression.LogicalOr(left, right) },
-        binaryFactory(string("&&")) { left, right -> LogicExpression.LogicalAnd(left, right) },
+    open fun logicComparison(): Rule<Statement> = choice(
+        comparisonFactory("==") { left, right -> LogicExpression.Equals(left, right) },
+        comparisonFactory("!=") { left, right -> PrefixExpression.Not(LogicExpression.Equals(left, right)) },
+        comparisonFactory("===") { left, right -> LogicExpression.NonCoercingEquals(left, right) },
+        comparisonFactory("<") { left, right -> LogicExpression.LessThan(left, right) },
+        comparisonFactory("<=") { left, right -> LogicExpression.LessThanOrEqual(left, right) },
+        comparisonFactory(">") { left, right -> LogicExpression.GreaterThan(left, right) },
+        comparisonFactory(">=") { left, right -> LogicExpression.GreaterThanOrEqual(left, right) },
+        comparisonFactory("!==") { left, right -> PrefixExpression.Not(LogicExpression.NonCoercingEquals(left, right)) },
     )
 
     open fun arithmetic(): Rule<Statement> = choice(
         binaryFactory(plus) { left, right -> ArithmeticExpression.Addition(left, right) },
         binaryFactory(minus) { left, right -> ArithmeticExpression.Subtraction(left, right) },
+    )
+
+    open fun precedenceBinaryExpression(): Rule<Statement> = choice(
+        precedenceArithmetic(),
+        logicComparison(),
+    )
+
+    open fun logicDisjunction(): Rule<Statement> = choice(
+        binaryFactory(string("||")) { left, right -> LogicExpression.LogicalOr(left, right) },
     )
 
     open fun precedenceArithmetic(): Rule<Statement> = choice(
@@ -531,6 +530,31 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         matcher,
         zeroOrMore(whitespace()),
         primaryExpression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            binaryExpression(left, right)
+        },
+    )
+
+    open fun comparisonFactory(
+        pattern: String,
+        binaryExpression: (Expression, Expression) -> Statement,
+    ): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        string(pattern),
+        zeroOrMore(whitespace()),
+        sequence(
+            choice(
+                enclosedExpression(),
+                keywordPrefixExpression(),
+                literal(),
+                prefixExpression(),
+            ),
+            zeroOrMore(continuation()),
+            zeroOrMore(precedenceBinaryExpression()),
+        ),
         zeroOrMore(sameLineWhitespace()),
         push {
             val right = pop(it) as Expression

@@ -12,21 +12,17 @@ configureCommon()
 kotest()
 kotlin {
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(project(":rfweeks"))
+        commonMain.dependencies {
+            implementation(project(":rfweeks"))
 
-                implementation(libs.bundles.kotlinxSerializationJson)
-            }
+            implementation(libs.bundles.kotlinxSerializationJson)
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(libs.kotlinxSerializationYaml)
-                implementation(libs.bundles.kotest)
-            }
+        commonTest.dependencies {
+            implementation(libs.kotlinxSerializationYaml)
+            implementation(libs.bundles.kotest)
         }
 
-        val jvmMain by getting
-        val jvmTest by getting
+        jvmMain.dependencies {}
+        jvmTest.dependencies {}
     }
 }

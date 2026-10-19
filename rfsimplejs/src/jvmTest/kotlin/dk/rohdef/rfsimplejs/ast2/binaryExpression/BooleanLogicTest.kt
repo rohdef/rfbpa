@@ -2,16 +2,15 @@ package dk.rohdef.rfsimplejs.ast2.binaryExpression
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
-import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.Program
+import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
-import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.*
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
-import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
-import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -102,11 +101,11 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.Equals(
+                    Identifier("a"),
                     LogicExpression.Equals(
-                        Identifier("a"),
                         Identifier("b"),
+                        Identifier("c"),
                     ),
-                    Identifier("c"),
                 ),
             )
         }
@@ -185,7 +184,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a === b === c"
 
             val result = parser.run(code)
@@ -193,11 +192,11 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.NonCoercingEquals(
+                    Identifier("a"),
                     LogicExpression.NonCoercingEquals(
-                        Identifier("a"),
                         Identifier("b"),
+                        Identifier("c"),
                     ),
-                    Identifier("c"),
                 ),
             )
         }
@@ -286,7 +285,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a != b != c"
 
             val result = parser.run(code)
@@ -295,13 +294,13 @@ class BooleanLogicTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Not(
                     LogicExpression.Equals(
+                        Identifier("a"),
                         PrefixExpression.Not(
                             LogicExpression.Equals(
-                                Identifier("a"),
                                 Identifier("b"),
+                                Identifier("c"),
                             ),
                         ),
-                        Identifier("c"),
                     ),
                 ),
             )
@@ -391,7 +390,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a !== b !== c"
 
             val result = parser.run(code)
@@ -400,20 +399,20 @@ class BooleanLogicTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Not(
                     LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
                         PrefixExpression.Not(
                             LogicExpression.NonCoercingEquals(
-                                Identifier("a"),
                                 Identifier("b"),
+                                Identifier("c"),
                             ),
                         ),
-                        Identifier("c"),
                     ),
                 ),
             )
         }
     }
 
-    context("or (||)") {
+    context("or `||`") {
         test("compares two numbers") {
             val code = "1 || 2"
 
@@ -486,7 +485,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a || b || c"
 
             val result = parser.run(code)
@@ -504,7 +503,7 @@ class BooleanLogicTest : FunSpec({
         }
     }
 
-    context("and (&&)") {
+    context("and `&&`") {
         test("compares two numbers") {
             val code = "1 && 2"
 
@@ -577,7 +576,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a && b && c"
 
             val result = parser.run(code)
@@ -585,17 +584,17 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.LogicalAnd(
+                    Identifier("a"),
                     LogicExpression.LogicalAnd(
-                        Identifier("a"),
                         Identifier("b"),
+                        Identifier("c"),
                     ),
-                    Identifier("c"),
                 ),
             )
         }
     }
 
-    context("less than (<)") {
+    context("less than `<`") {
         test("compares two numbers") {
             val code = "1 < 2"
 
@@ -669,7 +668,7 @@ class BooleanLogicTest : FunSpec({
         }
     }
 
-    context("greater than (>)") {
+    context("greater than `>`") {
         test("compares two numbers") {
             val code = "1 > 2"
 
@@ -743,7 +742,7 @@ class BooleanLogicTest : FunSpec({
         }
     }
 
-    context("less than or equal (<=)") {
+    context("less than or equal `<=`") {
         test("compares two numbers") {
             val code = "1 <= 2"
 
@@ -817,7 +816,7 @@ class BooleanLogicTest : FunSpec({
         }
     }
 
-    context("greater than or equal (>=)") {
+    context("greater than or equal `>=`") {
         test("compares two numbers") {
             val code = "1 >= 2"
 
@@ -887,6 +886,350 @@ class BooleanLogicTest : FunSpec({
                     Number.SimpleNumber.DecimalNumber("29.5".toBigDecimal()),
                     Number.SimpleNumber.IntegerNumber(19),
                 )
+            )
+        }
+    }
+
+    context("combinations") {
+        context("`&&` has precedence over `||`") {
+            test("operator precedence in the middle") {
+                val code = "a || b && c || d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LogicalOr(
+                            Identifier("a"),
+                            LogicExpression.LogicalAnd(
+                                Identifier("b"),
+                                Identifier("c"),
+                            ),
+                        ),
+                        Identifier("d"),
+                    ),
+                )
+            }
+
+            test("operator precedence to the left") {
+                val code = "a && b || c || d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LogicalOr(
+                            LogicExpression.LogicalAnd(
+                                Identifier("a"),
+                                Identifier("b"),
+                            ),
+                            Identifier("c"),
+                        ),
+                        Identifier("d"),
+                    ),
+                )
+            }
+
+            test("operator precedence to the right") {
+                val code = "a || b || c && d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LogicalOr(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.LogicalAnd(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+
+            test("operator precedence on both sides") {
+                val code = "a && b || c && d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LogicalAnd(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.LogicalAnd(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+        }
+
+        context("comparisons evaluated before `&&` and `||`") {
+            test("comparisons before `&&`") {
+                val code = "a < b && c > d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalAnd(
+                        LogicExpression.LessThan(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.GreaterThan(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+
+            test("less than or equal and greater than or equal before `&&`") {
+                val code = "a <= b && c >= d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalAnd(
+                        LogicExpression.LessThanOrEqual(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.GreaterThanOrEqual(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+
+            test("equality and not equals before `&&`") {
+                val code = "a == b && c != d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalAnd(
+                        LogicExpression.Equals(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        PrefixExpression.Not(
+                            LogicExpression.Equals(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("strict equality and strict not equals before `&&`") {
+                val code = "a === b && c !== d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalAnd(
+                        LogicExpression.NonCoercingEquals(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        PrefixExpression.Not(
+                            LogicExpression.NonCoercingEquals(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("comparisons before `||`") {
+                val code = "a < b || c > d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LessThan(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.GreaterThan(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+
+            test("less than or equal and greater than or equal before `||`") {
+                val code = "a <= b || c >= d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LessThanOrEqual(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.GreaterThanOrEqual(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                )
+            }
+
+            test("equality and not equals before `||`") {
+                val code = "a == b || c != d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.Equals(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        PrefixExpression.Not(
+                            LogicExpression.Equals(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("strict equality and strict not equals before `||`") {
+                val code = "a === b || c !== d"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.NonCoercingEquals(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        PrefixExpression.Not(
+                            LogicExpression.NonCoercingEquals(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("comparisons with `&&` and `||` combined") {
+                val code = "a < b || c == d && e > f"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LessThan(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        LogicExpression.LogicalAnd(
+                            LogicExpression.Equals(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                            LogicExpression.GreaterThan(
+                                Identifier("e"),
+                                Identifier("f"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+            test("complex comparisons with `&&` and `||`") {
+                val code = "a <= b && c !== d || e >= f && g === h"
+
+                val result = parser.run(code)
+                val program = result.stackTop
+
+                program shouldBe Program(
+                    LogicExpression.LogicalOr(
+                        LogicExpression.LogicalAnd(
+                            LogicExpression.LessThanOrEqual(
+                                Identifier("a"),
+                                Identifier("b"),
+                            ),
+                            PrefixExpression.Not(
+                                LogicExpression.NonCoercingEquals(
+                                    Identifier("c"),
+                                    Identifier("d"),
+                                ),
+                            ),
+                        ),
+                        LogicExpression.LogicalAnd(
+                            LogicExpression.GreaterThanOrEqual(
+                                Identifier("e"),
+                                Identifier("f"),
+                            ),
+                            LogicExpression.NonCoercingEquals(
+                                Identifier("g"),
+                                Identifier("h"),
+                            ),
+                        ),
+                    ),
+                )
+            }
+        }
+
+        test("parenthesis enclosed and precedence") {
+            val code = "( a || b ) && ( c < d || e > f )"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LogicalAnd(
+                    EnclosedExpression(
+                        LogicExpression.LogicalOr(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                    ),
+                    EnclosedExpression(
+                        LogicExpression.LogicalOr(
+                            LogicExpression.LessThan(
+                                Identifier("c"),
+                                Identifier("d"),
+                            ),
+                            LogicExpression.GreaterThan(
+                                Identifier("e"),
+                                Identifier("f"),
+                            ),
+                        ),
+                    ),
+                ),
             )
         }
     }
