@@ -468,6 +468,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             primaryExpression(),
         ),
         zeroOrMore(binaryExpression()),
+        optional(postfixExpression()),
         zeroOrMore(ternaryExpression()),
     )
 
@@ -520,6 +521,11 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
     )
 
+    open fun postfixExpression(): Rule<Statement> = choice(
+        postfixFactory(string("++")) { expression -> PostfixExpression.Increment(expression) },
+        postfixFactory(string("--")) { expression -> PostfixExpression.Decrement(expression) },
+    )
+
     open fun keywordPrefixFactory(
         matcher: Rule<Statement>,
         prefixExpression: (Expression) -> Expression
@@ -539,6 +545,16 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             matcher,
             zeroOrMore(whitespace()),
             primaryExpression(),
+            push {
+                val expression = pop(it) as Expression
+                prefixExpression(expression)
+            }
+        )
+
+    open fun postfixFactory(matcher: Rule<Statement>, prefixExpression: (Expression) -> Expression): Rule<Statement> =
+        sequence(
+            zeroOrMore(whitespace()),
+            matcher,
             push {
                 val expression = pop(it) as Expression
                 prefixExpression(expression)
