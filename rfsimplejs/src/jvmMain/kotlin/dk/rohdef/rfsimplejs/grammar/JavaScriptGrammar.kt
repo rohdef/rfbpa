@@ -9,7 +9,9 @@ import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
@@ -73,6 +75,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun statement(): Rule<Statement> = sequence(
         choice(
             ifStatement(),
+            forStatement(),
             whileStatement(),
             declaration(),
             assignment(),
@@ -143,6 +146,55 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 IfStatement(condition, then)
             },
         ),
+    )
+
+    open fun forStatement() = sequence(
+        string("for"),
+        zeroOrMore(whitespace()),
+
+        leftParenthesis,
+
+        zeroOrMore(whitespace()),
+        choice(
+            statement(),
+            push { BlockStatement() },
+        ),
+        zeroOrMore(whitespace()),
+
+        semiColon,
+
+        zeroOrMore(whitespace()),
+        choice(
+            expression(),
+            push { Boolean.True },
+        ),
+        zeroOrMore(whitespace()),
+
+        semiColon,
+
+        zeroOrMore(whitespace()),
+        choice(
+            statement(),
+            push { BlockStatement() },
+        ),
+        zeroOrMore(whitespace()),
+
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+
+        choice(
+            blockStatement(),
+            statement(),
+        ),
+
+        push {
+            val action = pop(it)
+            val update = pop(it)
+            val condition = pop(it) as Expression
+            val initialization = pop(it)
+
+            ForStatement(initialization, condition, update, action)
+        },
     )
 
     open fun whileStatement(): Rule<Statement> = sequence(

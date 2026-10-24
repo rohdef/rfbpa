@@ -2,14 +2,20 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
+import dk.rohdef.rfsimplejs.ast2.Declaration
 import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
+import dk.rohdef.rfsimplejs.ast2.statement.Assignment
 import dk.rohdef.rfsimplejs.ast2.statement.BlockStatement
 import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.PostfixExpression
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
@@ -336,7 +342,185 @@ class LogicExpressionTest : FunSpec({
         }
     }
 
-    xcontext("for") {
+    context("for") {
+        test("simple") {
+            val code = "for (let i = 0; i < 10; i = i + 1) foo"
+//            val code = "for (let i = 0; i < 10; i = i + 1) foo"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Declaration.Let(
+                        Identifier("i") to Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.LessThan(
+                        Identifier("i"),
+                        Number.SimpleNumber.IntegerNumber(10),
+                    ),
+                    Assignment(
+                        Identifier("i"),
+                        ArithmeticExpression.Addition(
+                            Identifier("i"),
+                            Number.SimpleNumber.IntegerNumber(1),
+                        ),
+                    ),
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("utilize a bit") {
+            val code = "for (a = 0; a === b; a++) foo"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Assignment(
+                        Identifier("a"),
+                        Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    PostfixExpression.Increment(
+                        Identifier("a"),
+                    ),
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("utilize a lot") {
+            val code = "for ((a === b ? list[1] : list[0]) > 42; foo; a = a + 1) for (foo; a; b) a"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    LogicExpression.GreaterThan(
+                        EnclosedExpression(
+                            TernaryExpression(
+                                LogicExpression.NonCoercingEquals(
+                                    Identifier("a"),
+                                    Identifier("b"),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(1),
+                                ),
+                                ArrayReference(
+                                    Identifier("list"),
+                                    Number.SimpleNumber.IntegerNumber(0),
+                                ),
+                            ),
+                        ),
+                        Number.SimpleNumber.IntegerNumber(42),
+                    ),
+                    Identifier("foo"),
+                    Assignment(
+                        Identifier("a"),
+                        ArithmeticExpression.Addition(
+                            Identifier("a"),
+                            Number.SimpleNumber.IntegerNumber(1),
+                        ),
+                    ),
+                    ForStatement(
+                        Identifier("foo"),
+                        Identifier("a"),
+                        Identifier("b"),
+                        Identifier("a"),
+                    ),
+                ),
+            )
+        }
+
+        test("block") {
+            val code = "for (a = 0; a === b; a = a + 1) { foo }"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Assignment(
+                        Identifier("a"),
+                        Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Assignment(
+                        Identifier("a"),
+                        ArithmeticExpression.Addition(
+                            Identifier("a"),
+                            Number.SimpleNumber.IntegerNumber(1),
+                        ),
+                    ),
+                    BlockStatement(
+                        Identifier("foo"),
+                    ),
+                ),
+            )
+        }
+
+        test("empty block") {
+            val code = "for (;;) {}"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    BlockStatement(),
+                    Boolean.True,
+                    BlockStatement(),
+                    BlockStatement(),
+                ),
+            )
+        }
+
+        test("multiple statements in block") {
+            val code = """
+                for (a = 0; a === b; a = a + 1) {
+                    foo;
+                    1;
+                }
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Assignment(
+                        Identifier("a"),
+                        Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Assignment(
+                        Identifier("a"),
+                        ArithmeticExpression.Addition(
+                            Identifier("a"),
+                            Number.SimpleNumber.IntegerNumber(1),
+                        ),
+                    ),
+                    BlockStatement(
+                        Identifier("foo"),
+                        Number.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
     }
 
     context("while") {
