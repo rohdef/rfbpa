@@ -12,7 +12,6 @@ JavaScript contructs for modules (`import`, `export`, etc.) is currently not sup
 - statement
   - template-literal
   - regex
-  - postfix increment/decrement
   - class
   - all module logic, export, import etc.b
   - bitwise logic

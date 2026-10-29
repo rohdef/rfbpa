@@ -15,7 +15,9 @@ data class FunctionExpression(
 
         constructor(vararg parameters: Parameter) : this(parameters.toList())
 
+        fun withParameter(identifier: String) = withParameter(Parameter.IdentifierParameter(identifier, Undefined))
         fun withParameter(identifier: Identifier) = withParameter(Parameter.IdentifierParameter(identifier, Undefined))
+        fun withParameter(identifier: String, value: Expression) = withParameter(Parameter.IdentifierParameter(identifier, value))
         fun withParameter(identifier: Identifier, value: Expression) = withParameter(Parameter.IdentifierParameter(identifier, value))
         fun withParameter(parameter: Parameter) = copy(parameters = parameters + parameter)
     }

@@ -36,9 +36,9 @@ class LambdaTests : FunSpec({
         }
 
         test("by actual lambda") {
-            val text = "(() => 42)()"
+            val code = "(() => 42)()"
 
-            val result = parser.run(text)
+            val result = parser.run(code)
                 .stackTop
 
             result shouldBe Program(

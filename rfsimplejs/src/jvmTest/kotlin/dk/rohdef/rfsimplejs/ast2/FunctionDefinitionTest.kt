@@ -87,9 +87,9 @@ class FunctionDefinitionTest : FunSpec({
                 Declaration.Variable(
                     Identifier("this_n4m3_is_cra\$y") to FunctionExpression(
                         FunctionExpression.Parameters()
-                            .withParameter(Identifier("x"))
-                            .withParameter(Identifier("y"))
-                            .withParameter(Identifier("z")),
+                            .withParameter("x")
+                            .withParameter("y")
+                            .withParameter("z"),
                         BlockStatement(),
                     ),
                 )

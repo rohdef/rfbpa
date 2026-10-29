@@ -9,6 +9,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
@@ -261,6 +262,150 @@ class ALittleMoreTest : FunSpec({
                                 ),
                             ),
                         ),
+            ),
+        )
+    }
+
+    test("funny") {
+        val code = """
+                function tidSegmenter(t){
+                  var l=Math.max(0,Math.min(1440,+(t&&t.l)||0));
+                  if(l>=1440) return [[0,1440]];
+                  var s=((((+(t&&t.s)||0))%1440)+1440)%1440;
+                  // The return is causing parse problems... why?
+                  return (s+l<=1440) ? [[s,s+l]] : [[s,1440],[0,s+l-1440]];
+                }
+            """.trimIndent()
+
+        val result = parser.run(code)
+            .stackTop
+
+        result shouldBe Program(
+            Declaration.Variable(
+                Identifier("tidSegmenter") to FunctionExpression(
+                    FunctionExpression.Parameters()
+                        .withParameter("t"),
+                    BlockStatement(
+                        Declaration.Variable(
+                            Identifier("l") to ChainedCall(
+                                Identifier("Math"),
+                                FunctionCall(
+                                    Identifier("max"),
+                                    Number.SimpleNumber.IntegerNumber(0),
+                                    ChainedCall(
+                                        Identifier("Math"),
+                                        FunctionCall(
+                                            Identifier("min"),
+                                            Number.SimpleNumber.IntegerNumber(1440),
+                                            LogicExpression.LogicalOr(
+                                                PrefixExpression.Plus(
+                                                    EnclosedExpression(
+                                                        LogicExpression.LogicalAnd(
+                                                            Identifier("t"),
+                                                            ChainedCall(
+                                                                Identifier("t"),
+                                                                Identifier("l"),
+                                                            ),
+                                                        )
+                                                    ),
+                                                ),
+                                                Number.SimpleNumber.IntegerNumber(0),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+
+                        IfStatement(
+                            LogicExpression.GreaterThanOrEqual(
+                                Identifier("l"),
+                                Number.SimpleNumber.IntegerNumber(1440),
+                            ),
+                            Return.Expression(
+                                ArrayLiteral(
+                                    ArrayLiteral(
+                                        Number.SimpleNumber.IntegerNumber(0),
+                                        Number.SimpleNumber.IntegerNumber(1440),
+                                    ),
+                                ),
+                            ),
+                        ),
+
+                        Declaration.Variable(
+                            Identifier("s") to ArithmeticExpression.Modulo(
+                                EnclosedExpression(
+                                    ArithmeticExpression.Addition(
+                                        EnclosedExpression(
+                                            ArithmeticExpression.Modulo(
+                                                EnclosedExpression(
+                                                    EnclosedExpression(
+                                                        LogicExpression.LogicalOr(
+                                                            PrefixExpression.Plus(
+                                                                EnclosedExpression(
+                                                                    LogicExpression.LogicalAnd(
+                                                                        Identifier("t"),
+                                                                        ChainedCall(
+                                                                            Identifier("t"),
+                                                                            Identifier("s"),
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            Number.SimpleNumber.IntegerNumber(0),
+                                                        ),
+                                                    ),
+                                                ),
+                                                Number.SimpleNumber.IntegerNumber(1440),
+                                            ),
+                                        ),
+                                        Number.SimpleNumber.IntegerNumber(1440)
+                                    ),
+                                ),
+                                Number.SimpleNumber.IntegerNumber(1440),
+                            ),
+                        ),
+
+                        Return.Expression(
+                            TernaryExpression(
+                                EnclosedExpression(
+                                    LogicExpression.LessThanOrEqual(
+                                        ArithmeticExpression.Addition(
+                                            Identifier("s"),
+                                            Identifier("l")
+                                        ),
+                                        Number.SimpleNumber.IntegerNumber(1440),
+                                    ),
+                                ),
+                                ArrayLiteral(
+                                    ArrayLiteral(
+                                        Identifier("s"),
+                                        ArithmeticExpression.Addition(
+                                            Identifier("s"),
+                                            Identifier("l"),
+                                        ),
+                                    ),
+                                ),
+                                ArrayLiteral(
+                                    ArrayLiteral(
+                                        Identifier("s"),
+                                        Number.SimpleNumber.IntegerNumber(1440),
+                                    ),
+                                    ArrayLiteral(
+                                        Number.SimpleNumber.IntegerNumber(0),
+                                        ArithmeticExpression.Subtraction(
+                                            ArithmeticExpression.Addition(
+                                                Identifier("s"),
+                                                Identifier("l"),
+                                            ),
+                                            Number.SimpleNumber.IntegerNumber(1440),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
             ),
         )
     }

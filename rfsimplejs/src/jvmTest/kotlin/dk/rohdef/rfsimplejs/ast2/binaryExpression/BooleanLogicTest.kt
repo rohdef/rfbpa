@@ -890,6 +890,10 @@ class BooleanLogicTest : FunSpec({
         }
     }
 
+    context("mathematical operations are before comparisons") {
+
+    }
+
     context("combinations") {
         context("`&&` has precedence over `||`") {
             test("operator precedence in the middle") {

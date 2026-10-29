@@ -759,7 +759,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         optional(
             sequence(
                 zeroOrMore(whitespace()),
-                primaryExpression(),
+                expression(),
                 push {
                     val expression = pop(it) as Expression
                     val array = pop(it) as ArrayLiteral
@@ -770,7 +770,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                         zeroOrMore(whitespace()),
                         comma,
                         zeroOrMore(whitespace()),
-                        primaryExpression(),
+                        expression(),
                         push {
                             val literal = pop(it) as Expression
                             val array = pop(it) as ArrayLiteral
@@ -857,11 +857,11 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(sameLineWhitespace()),
         char('?'),
         zeroOrMore(whitespace()),
-        primaryExpression(),
+        expression(),
         zeroOrMore(whitespace()),
         char(':'),
         zeroOrMore(whitespace()),
-        primaryExpression(),
+        expression(),
 
         push {
             val expression = pop(it) as Expression
