@@ -303,7 +303,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "2 * 3 * 4;"
 
             val result = parser.run(code)
@@ -311,11 +311,11 @@ class ArithmeticTest : FunSpec({
 
             program shouldBe Program(
                 ArithmeticExpression.Multiplication(
-                    Number.SimpleNumber.IntegerNumber(2),
                     ArithmeticExpression.Multiplication(
+                        Number.SimpleNumber.IntegerNumber(2),
                         Number.SimpleNumber.IntegerNumber(3),
-                        Number.SimpleNumber.IntegerNumber(4),
                     ),
+                    Number.SimpleNumber.IntegerNumber(4),
                 ),
             )
         }
@@ -394,7 +394,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "8/4/2"
 
             val result = parser.run(code)
@@ -402,11 +402,11 @@ class ArithmeticTest : FunSpec({
 
             program shouldBe Program(
                 ArithmeticExpression.Division(
-                    Number.SimpleNumber.IntegerNumber(8),
                     ArithmeticExpression.Division(
+                        Number.SimpleNumber.IntegerNumber(8),
                         Number.SimpleNumber.IntegerNumber(4),
-                        Number.SimpleNumber.IntegerNumber(2),
                     ),
+                    Number.SimpleNumber.IntegerNumber(2),
                 ),
             )
         }
@@ -510,7 +510,7 @@ class ArithmeticTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "8%3%2"
 
             val result = parser.run(code)
@@ -518,11 +518,11 @@ class ArithmeticTest : FunSpec({
 
             program shouldBe Program(
                 ArithmeticExpression.Modulo(
-                    Number.SimpleNumber.IntegerNumber(8),
                     ArithmeticExpression.Modulo(
+                        Number.SimpleNumber.IntegerNumber(8),
                         Number.SimpleNumber.IntegerNumber(3),
-                        Number.SimpleNumber.IntegerNumber(2),
                     ),
+                    Number.SimpleNumber.IntegerNumber(2),
                 ),
             )
         }

@@ -94,7 +94,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the left") {
+        test("associates to the right") {
             val code = "a == b == c"
 
             val result = parser.run(code)
@@ -102,11 +102,11 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.Equals(
-                    Identifier("a"),
                     LogicExpression.Equals(
+                        Identifier("a"),
                         Identifier("b"),
-                        Identifier("c"),
                     ),
+                    Identifier("c"),
                 ),
             )
         }
@@ -185,7 +185,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "a === b === c"
 
             val result = parser.run(code)
@@ -193,11 +193,11 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.NonCoercingEquals(
-                    Identifier("a"),
                     LogicExpression.NonCoercingEquals(
+                        Identifier("a"),
                         Identifier("b"),
-                        Identifier("c"),
                     ),
+                    Identifier("c"),
                 ),
             )
         }
@@ -286,7 +286,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "a != b != c"
 
             val result = parser.run(code)
@@ -295,13 +295,13 @@ class BooleanLogicTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Not(
                     LogicExpression.Equals(
-                        Identifier("a"),
                         PrefixExpression.Not(
                             LogicExpression.Equals(
+                                Identifier("a"),
                                 Identifier("b"),
-                                Identifier("c"),
                             ),
                         ),
+                        Identifier("c"),
                     ),
                 ),
             )
@@ -391,7 +391,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "a !== b !== c"
 
             val result = parser.run(code)
@@ -400,13 +400,13 @@ class BooleanLogicTest : FunSpec({
             program shouldBe Program(
                 PrefixExpression.Not(
                     LogicExpression.NonCoercingEquals(
-                        Identifier("a"),
                         PrefixExpression.Not(
                             LogicExpression.NonCoercingEquals(
+                                Identifier("a"),
                                 Identifier("b"),
-                                Identifier("c"),
                             ),
                         ),
+                        Identifier("c"),
                     ),
                 ),
             )
@@ -486,7 +486,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "a || b || c"
 
             val result = parser.run(code)
@@ -577,7 +577,7 @@ class BooleanLogicTest : FunSpec({
             )
         }
 
-        test("associates to the right") {
+        test("associates to the left") {
             val code = "a && b && c"
 
             val result = parser.run(code)
@@ -585,11 +585,11 @@ class BooleanLogicTest : FunSpec({
 
             program shouldBe Program(
                 LogicExpression.LogicalAnd(
-                    Identifier("a"),
                     LogicExpression.LogicalAnd(
+                        Identifier("a"),
                         Identifier("b"),
-                        Identifier("c"),
                     ),
+                    Identifier("c"),
                 ),
             )
         }
