@@ -6,6 +6,7 @@ import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.*
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -891,7 +892,65 @@ class BooleanLogicTest : FunSpec({
     }
 
     context("mathematical operations are before comparisons") {
+        test("low precedence mathematical operator before comparison") {
+            val code = "a + b < c"
 
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.LessThan(
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                ),
+            )
+        }
+
+        test("high precedence mathematical operator before comparison") {
+            val code = "a * b > c"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.GreaterThan(
+                    ArithmeticExpression.Multiplication(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                    Identifier("c"),
+                ),
+            )
+        }
+
+        test("two comparisons with left, middle, and right mathematical operations") {
+            val code = "a + b < c * d == e - f"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                LogicExpression.Equals(
+                    LogicExpression.LessThan(
+                        ArithmeticExpression.Addition(
+                            Identifier("a"),
+                            Identifier("b"),
+                        ),
+                        ArithmeticExpression.Multiplication(
+                            Identifier("c"),
+                            Identifier("d"),
+                        ),
+                    ),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("e"),
+                        Identifier("f"),
+                    ),
+                ),
+            )
+        }
     }
 
     context("combinations") {

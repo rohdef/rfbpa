@@ -561,10 +561,11 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             }
         )
 
-    open fun binaryExpression(): Rule<Statement> = choice(
-        arithmetic(),
-        logicDisjunction(),
-    )
+    open fun binaryExpression(): Rule<Statement> = logicDisjunction()
+//    open fun binaryExpression(): Rule<Statement> = choice(
+//        additativeExpression(),
+//        logicDisjunction(),
+//    )
 
     open fun logicComparison(): Rule<Statement> = choice(
         comparisonFactory("==") { left, right -> LogicExpression.Equals(left, right) },
@@ -577,13 +578,14 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         comparisonFactory("!==") { left, right -> PrefixExpression.Not(LogicExpression.NonCoercingEquals(left, right)) },
     )
 
-    open fun arithmetic(): Rule<Statement> = choice(
-        binaryFactory(plus) { left, right -> ArithmeticExpression.Addition(left, right) },
-        binaryFactory(minus) { left, right -> ArithmeticExpression.Subtraction(left, right) },
+    open fun additativeExpression(): Rule<Statement> = choice(
+        binaryArithmeticFactory(plus) { left, right -> ArithmeticExpression.Addition(left, right) },
+        binaryArithmeticFactory(minus) { left, right -> ArithmeticExpression.Subtraction(left, right) },
     )
 
     open fun precedenceBinaryExpression(): Rule<Statement> = choice(
-        precedenceArithmetic(),
+        additativeExpression(),
+        multiplicativeExpression(),
         logicComparison(),
     )
 
@@ -591,10 +593,10 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         binaryFactory(string("||")) { left, right -> LogicExpression.LogicalOr(left, right) },
     )
 
-    open fun precedenceArithmetic(): Rule<Statement> = choice(
-        binaryFactory(star) { left, right -> ArithmeticExpression.Multiplication(left, right) },
-        binaryFactory(slash) { left, right -> ArithmeticExpression.Division(left, right) },
-        binaryFactory(percent) { left, right -> ArithmeticExpression.Modulo(left, right) },
+    open fun multiplicativeExpression(): Rule<Statement> = choice(
+        binaryArithmeticFactory(star) { left, right -> ArithmeticExpression.Multiplication(left, right) },
+        binaryArithmeticFactory(slash) { left, right -> ArithmeticExpression.Division(left, right) },
+        binaryArithmeticFactory(percent) { left, right -> ArithmeticExpression.Modulo(left, right) },
     )
 
     open fun continuation(): Rule<Statement> = choice(
@@ -625,6 +627,24 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         matcher,
         zeroOrMore(whitespace()),
         primaryExpression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            binaryExpression(left, right)
+        },
+    )
+
+    open fun binaryArithmeticFactory(
+        matcher: Rule<Statement>,
+        binaryExpression: (Expression, Expression) -> Statement,
+    ): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        matcher,
+        zeroOrMore(whitespace()),
+
+        primaryExpression(),
+
         zeroOrMore(sameLineWhitespace()),
         push {
             val right = pop(it) as Expression
