@@ -5,6 +5,7 @@ import com.github.mpe85.grampa.grammar.AbstractGrammar
 import com.github.mpe85.grampa.rule.Rule
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Undefined
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 
 open class LiteralGrammar(
@@ -20,6 +21,7 @@ open class LiteralGrammar(
         stringGrammar.start(),
         nullLiteral(),
         booleanLiteral(),
+        undefinedLiteral(),
     )
 
     open fun nullLiteral() = sequence(
@@ -40,5 +42,10 @@ open class LiteralGrammar(
     open fun falseLiteral() = sequence(
         string("false"),
         push { AstBoolean.False },
+    )
+
+    open fun undefinedLiteral() = sequence(
+        string("undefined"),
+        push { Undefined },
     )
 }

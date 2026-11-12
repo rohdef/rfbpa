@@ -119,10 +119,10 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             blockStatement(),
             statement(),
         ),
-        zeroOrMore(whitespace()),
 
         choice(
             sequence(
+                zeroOrMore(whitespace()),
                 string("else"),
                 zeroOrMore(whitespace()),
                 choice(
@@ -221,6 +221,42 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             WhileStatement(condition, action)
         },
     )
+    open fun lambdaExpression(): Rule<Statement> = sequence(
+        choice(
+            lambdaParenthesizedParameters(),
+            lambdaSingleIdentifierParameter(),
+        ),
+        zeroOrMore(whitespace()),
+        string("=>"),
+        zeroOrMore(whitespace()),
+        choice(
+            blockStatement(),
+            lambdaExpressionBody(),
+        ),
+        push {
+            val body = pop(it) as BlockStatement
+            val parameters = pop(it) as FunctionExpression.Parameters
+            FunctionExpression(parameters, body)
+        },
+    )
+
+    open fun lambdaSingleIdentifierParameter(): Rule<Statement> = sequence(
+        identifierGrammar.start(),
+        push {
+            val identifier = pop(it) as Identifier
+            FunctionExpression.Parameters().withParameter(identifier)
+        },
+    )
+
+    open fun lambdaExpressionBody(): Rule<Statement> = sequence(
+        expression(),
+        push {
+            val expression = pop(it) as Expression
+            BlockStatement(Return.Expression(expression))
+        },
+    )
+
+    open fun lambdaParenthesizedParameters(): Rule<Statement> = functionParameters()
 
     open fun functionDeclaration(): Rule<Statement> = sequence(
         string("function"),
@@ -464,6 +500,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 string("return"),
                 push { Return.Void },
             ),
+            lambdaExpression(),
             functionExpression(),
             logicDisjunctionExpression(),
         ),
@@ -784,7 +821,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         zeroOrMore(whitespace()),
         colon,
         zeroOrMore(whitespace()),
-        primaryExpression(),
+        expression(),
         push {
             val expression = pop(it) as Expression
             val identifier = pop(it) as Identifier
