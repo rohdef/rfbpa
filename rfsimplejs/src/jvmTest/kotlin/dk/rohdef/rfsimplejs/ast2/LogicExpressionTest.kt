@@ -651,7 +651,4 @@ class LogicExpressionTest : FunSpec({
 
     xcontext("do while") {
     }
-
-    xcontext("switch") {
-    }
 })

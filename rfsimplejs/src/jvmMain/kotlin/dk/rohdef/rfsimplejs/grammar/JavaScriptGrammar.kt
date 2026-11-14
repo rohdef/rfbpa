@@ -83,10 +83,22 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             whileStatement(),
             declaration(),
             assignment(),
+            breakStatement(),
+            continueStatement(),
             expression(),
             blockStatement(),
         ),
         zeroOrMore(sameLineWhitespace()),
+    )
+
+    open fun breakStatement(): Rule<Statement> = sequence(
+        string("break"),
+        push { Break },
+    )
+
+    open fun continueStatement(): Rule<Statement> = sequence(
+        string("continue"),
+        push { Continue },
     )
 
     open fun assignment(): Rule<Statement> = sequence(
