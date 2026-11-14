@@ -40,4 +40,8 @@ sealed interface PrefixExpression : Expression.PrimaryExpression {
     data class Await(val expression: Expression) : PrefixExpression {
         override fun toCode() = "await ${expression.toCode()}"
     }
+
+    data class BitwiseNot(val expression: Expression) : PrefixExpression {
+        override fun toCode() = "~${expression.toCode()}"
+    }
 }
