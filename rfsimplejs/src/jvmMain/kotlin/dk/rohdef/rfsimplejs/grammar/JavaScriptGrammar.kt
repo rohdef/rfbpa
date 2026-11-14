@@ -14,6 +14,8 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.TemplateLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
+import dk.rohdef.rfsimplejs.ast2.statement.logic.Switch
+import dk.rohdef.rfsimplejs.ast2.statement.logic.SwitchCase
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
@@ -81,6 +83,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             ifStatement(),
             forStatement(),
             whileStatement(),
+            switchStatement(),
             declaration(),
             assignment(),
             breakStatement(),
@@ -236,6 +239,123 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
             WhileStatement(condition, action)
         },
+    )
+
+    open fun switchStatement(): Rule<Statement> = sequence(
+        string("switch"),
+
+        zeroOrMore(whitespace()),
+        leftParenthesis,
+        zeroOrMore(whitespace()),
+
+        expression(),
+
+        zeroOrMore(whitespace()),
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+
+        leftCurlyBracket,
+        zeroOrMore(ignorable()),
+
+        push {
+            val subject = pop(it) as Expression
+            Switch(subject, emptyList())
+        },
+        zeroOrMore(
+            switchCase(),
+        ),
+
+        zeroOrMore(ignorable()),
+        rightCurlyBracket,
+    )
+
+    open fun switchCase(): Rule<Statement> = sequence(
+        choice(
+            matchCase(),
+            defaultCase(),
+        ),
+        zeroOrMore(ignorable()),
+    )
+
+    open fun matchCase(): Rule<Statement> = sequence(
+        string("case"),
+        choice(
+            oneOrMore(whitespace()),
+            test(leftParenthesis),
+        ),
+
+        expression(),
+        zeroOrMore(whitespace()),
+        colon,
+        zeroOrMore(ignorable()),
+
+        push { BlockStatement() },
+        switchCaseBody(),
+
+        push {
+            val body = pop(it) as BlockStatement
+            val match = pop(it) as Expression
+            val switch = pop(it) as Switch
+            switch.withCase(SwitchCase.Match(match, body))
+        },
+    )
+
+    open fun defaultCase(): Rule<Statement> = sequence(
+        string("default"),
+        zeroOrMore(whitespace()),
+        colon,
+        zeroOrMore(ignorable()),
+
+        push { BlockStatement() },
+        switchCaseBody(),
+
+        push {
+            val body = pop(it) as BlockStatement
+            val switch = pop(it) as Switch
+            switch.withCase(SwitchCase.Default(body))
+        },
+    )
+
+    open fun switchCaseBody(): Rule<Statement> = sequence(
+        optional(
+            sequence(
+                switchCaseItem(),
+                zeroOrMore(
+                    sequence(
+                        codeSeparator(),
+                        zeroOrMore(ignorable()),
+                        switchCaseItem(),
+                    ),
+                ),
+                optional(semiColon),
+            ),
+        ),
+        zeroOrMore(ignorable()),
+    )
+
+    open fun switchCaseItem(): Rule<Statement> = sequence(
+        testNot(switchCaseTerminator()),
+        choice(
+            functionDeclaration(),
+            statement(),
+        ),
+        push {
+            val statement = pop(it)
+            val blockStatement = pop(it) as BlockStatement
+            blockStatement.withStatement(statement)
+        },
+    )
+
+    open fun switchCaseTerminator(): Rule<Statement> = choice(
+        sequence(
+            string("case"),
+            choice(
+                oneOrMore(whitespace()),
+                test(leftParenthesis),
+            ),
+        ),
+        sequence(string("default"), zeroOrMore(whitespace()), colon),
+        rightCurlyBracket,
     )
     open fun lambdaExpression(): Rule<Statement> = sequence(
         choice(

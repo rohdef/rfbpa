@@ -25,7 +25,7 @@ sealed interface SwitchCase : Statement {
     ) : SwitchCase {
         constructor(vararg statements: Statement) : this(BlockStatement(*statements))
 
-        override fun toCode() =  "default:\n${body.toCode()}"
+        override fun toCode() = "default:\n${body.toCode()}"
     }
 
     data class Match(

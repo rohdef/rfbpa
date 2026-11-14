@@ -507,11 +507,11 @@ class SwitchTest : FunSpec({
             program shouldBe Program(
                 Switch(
                     ChainedCall(
+                        Identifier("obj"),
                         ChainedCall(
-                            Identifier("obj"),
                             Identifier("prop"),
+                            FunctionCall(Identifier("getValue"), emptyList()),
                         ),
-                        FunctionCall(Identifier("getValue"), emptyList()),
                     ),
                     listOf(
                         SwitchCase.Match(
@@ -906,7 +906,11 @@ class SwitchTest : FunSpec({
     context("toCode") {
         test("empty switch toCode") {
             val switchStatement = Switch(Identifier("x"), emptyList())
-            switchStatement.toCode() shouldBe "switch (x) {}"
+            switchStatement.toCode() shouldBe """
+                switch (x) {
+                    
+                }
+            """.trimIndent()
         }
 
         test("switch with cases and default toCode") {
@@ -924,13 +928,12 @@ class SwitchTest : FunSpec({
             )
 
             switchStatement.toCode() shouldBe """
-                switch (x) {
+            switch (x) {
                 case 1:
-                return 10;
-                default:
-                return;
-                }
-            """.trimIndent()
+return 10;
+    default:
+return;
+            }""".trimIndent()
         }
     }
 })
