@@ -1,19 +1,17 @@
 package dk.rohdef.rfsimplejs.ast2.statement.literals
 
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
-import dk.rohdef.rfsimplejs.ast2.statement.Identifier
-import dk.rohdef.rfsimplejs.ast2.statement.Statement
 
 data class ObjectLiteral(
-    val properties: Map<Identifier, Expression>,
+    val properties: Map<Expression, Expression>,
 ) : SyntaticLiteral {
-    constructor(vararg properties: Pair<Identifier, Expression>) : this(properties.toMap())
+    constructor(vararg properties: Pair<Expression, Expression>) : this(properties.toMap())
 
     override fun toCode() = """
         {
-            ${properties.entries.joinToString(",\n") { (identifier, expression) -> "${identifier.toCode()}: ${expression.toCode()}" }}
+            ${properties.entries.joinToString(",\n") { (key, expression) -> "${key.toCode()}: ${expression.toCode()}" }}
         }
     """.trimIndent()
 
-    fun withProperty(identifier: Identifier, expression: Expression) = this.copy(properties = properties + (identifier to expression))
+    fun withProperty(key: Expression, expression: Expression) = this.copy(properties = properties + (key to expression))
 }
