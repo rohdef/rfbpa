@@ -88,7 +88,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("test/i"),
+                RegexLiteral("test", "i"),
             )
         }
 
@@ -99,7 +99,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("abc/g"),
+                RegexLiteral("abc", "g"),
             )
         }
 
@@ -110,7 +110,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("line/m"),
+                RegexLiteral("line", "m"),
             )
         }
 
@@ -121,7 +121,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("all/s"),
+                RegexLiteral("all", "s"),
             )
         }
 
@@ -132,7 +132,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("unicode/u"),
+                RegexLiteral("unicode", "u"),
             )
         }
 
@@ -143,7 +143,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("sticky/y"),
+                RegexLiteral("sticky", "y"),
             )
         }
 
@@ -154,7 +154,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("search/gi"),
+                RegexLiteral("search", "gi"),
             )
         }
 
@@ -165,7 +165,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("complex/gimsuy"),
+                RegexLiteral("complex", "gimsuy"),
             )
         }
     }
@@ -233,7 +233,7 @@ class RegexTest : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                RegexLiteral("[a-z]/i"),
+                RegexLiteral("[a-z]", "i"),
             )
         }
     }
@@ -395,7 +395,7 @@ class RegexTest : FunSpec({
             program shouldBe Program(
                 Declaration.Constant(
                     mapOf(
-                        Identifier("pattern") to RegexLiteral("abc/i"),
+                        Identifier("pattern") to RegexLiteral("abc", "i"),
                     ),
                 ),
             )
@@ -425,7 +425,7 @@ class RegexTest : FunSpec({
             program shouldBe Program(
                 Declaration.Variable(
                     mapOf(
-                        Identifier("regex") to RegexLiteral("\\w+/g"),
+                        Identifier("regex") to RegexLiteral("\\w+", "g"),
                     ),
                 ),
             )
@@ -486,7 +486,7 @@ class RegexTest : FunSpec({
                     FunctionCall(
                         Identifier("replace"),
                         listOf(
-                            RegexLiteral("foo/g"),
+                            RegexLiteral("foo", "g"),
                             StringLiteral("bar"),
                         ),
                     ),
@@ -503,8 +503,8 @@ class RegexTest : FunSpec({
             program shouldBe Program(
                 ArrayLiteral(
                     RegexLiteral("first"),
-                    RegexLiteral("second/i"),
-                    RegexLiteral("third/g"),
+                    RegexLiteral("second", "i"),
+                    RegexLiteral("third", "g"),
                 ),
             )
         }
@@ -521,6 +521,20 @@ class RegexTest : FunSpec({
                     Identifier("flag") to RegexLiteral("test"),
                 ),
             )
+        }
+    }
+
+    context("toCode") {
+        test("regex without flags") {
+            RegexLiteral("abc").toCode() shouldBe "/abc/"
+        }
+
+        test("regex with flags") {
+            RegexLiteral("abc", "gi").toCode() shouldBe "/abc/gi"
+        }
+
+        test("complex regex with flags") {
+            RegexLiteral("^[a-z0-9_-]+@[a-z0-9.-]+\\.[a-z]{2,}\$", "imsuy").toCode() shouldBe "/^[a-z0-9_-]+@[a-z0-9.-]+\\.[a-z]{2,}\$/imsuy"
         }
     }
 })

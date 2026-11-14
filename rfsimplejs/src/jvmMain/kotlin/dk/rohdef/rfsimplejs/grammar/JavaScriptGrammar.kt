@@ -18,15 +18,18 @@ import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
 import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
+import dk.rohdef.rfsimplejs.grammar.literal.RegexGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.StringGrammar
 
 open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     private val numberGrammar = NumberGrammar::class.createGrammar()
     private val stringGrammar = StringGrammar::class.createGrammar()
+    private val regexGrammar = RegexGrammar::class.createGrammar()
     private val identifierGrammar = IdentifierGrammar::class.createGrammar()
     private val literalGrammar = LiteralGrammar::class.createGrammar(
         numberGrammar,
         stringGrammar,
+        regexGrammar,
     )
 
     override fun start(): Rule<Statement> = program() + eoi()

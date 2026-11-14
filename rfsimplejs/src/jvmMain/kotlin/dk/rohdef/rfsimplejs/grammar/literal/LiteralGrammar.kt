@@ -11,6 +11,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean as AstBoolean
 open class LiteralGrammar(
     private val numberGrammar: NumberGrammar = NumberGrammar::class.createGrammar(),
     private val stringGrammar: StringGrammar = StringGrammar::class.createGrammar(),
+    private val regexGrammar: RegexGrammar = RegexGrammar::class.createGrammar(),
 ) : AbstractGrammar<Statement>() {
     override fun start() = literal()
 
@@ -19,6 +20,7 @@ open class LiteralGrammar(
     open fun lexicalLiteral(): Rule<Statement> = choice(
         numberGrammar.start(),
         stringGrammar.start(),
+        regexGrammar.start(),
         nullLiteral(),
         booleanLiteral(),
         undefinedLiteral(),
