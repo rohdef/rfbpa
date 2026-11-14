@@ -686,6 +686,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         prefixFactory(string("++")) { expression -> PrefixExpression.Increment(expression) },
         prefixFactory(string("--")) { expression -> PrefixExpression.Decrement(expression) },
         prefixFactory(exclamation) { expression -> PrefixExpression.Not(expression) },
+        prefixFactory(tilde) { expression -> PrefixExpression.BitwiseNot(expression) },
         prefixFactory(plus) { expression -> PrefixExpression.Plus(expression) },
         prefixFactory(minus) { expression -> PrefixExpression.Minus(expression) },
     )
@@ -1273,6 +1274,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     val equalChar = char('=')
     val plus = char('+')
     val exclamation = char('!')
+    val tilde = char('~')
     val minus = char('-')
     val star = char('*')
     val slash = char('/')
