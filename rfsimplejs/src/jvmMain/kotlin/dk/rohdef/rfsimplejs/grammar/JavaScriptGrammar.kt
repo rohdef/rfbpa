@@ -7,6 +7,7 @@ import dk.rohdef.rfsimplejs.ast2.Declaration
 import dk.rohdef.rfsimplejs.ast2.Program
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.BitwiseExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -762,18 +763,75 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun logicalConjunctionExpression(): Rule<Statement> = sequence(
-        logicComparison(),
+        bitwiseOrExpression(),
         zeroOrMore(
             sequence(
                 zeroOrMore(sameLineWhitespace()),
                 string("&&"),
+                zeroOrMore(whitespace()),
+                bitwiseOrExpression(),
+                zeroOrMore(sameLineWhitespace()),
+                push {
+                    val right = pop(it) as Expression
+                    val left = pop(it) as Expression
+                    LogicExpression.LogicalAnd(left, right)
+                },
+            ),
+        ),
+    )
+
+    open fun bitwiseOrExpression(): Rule<Statement> = sequence(
+        bitwiseXorExpression(),
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                char('|'),
+                testNot(choice(char('|'), char('='))),
+                zeroOrMore(whitespace()),
+                bitwiseXorExpression(),
+                zeroOrMore(sameLineWhitespace()),
+                push {
+                    val right = pop(it) as Expression
+                    val left = pop(it) as Expression
+                    BitwiseExpression.Or(left, right)
+                },
+            ),
+        ),
+    )
+
+    open fun bitwiseXorExpression(): Rule<Statement> = sequence(
+        bitwiseAndExpression(),
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                char('^'),
+                testNot(char('=')),
+                zeroOrMore(whitespace()),
+                bitwiseAndExpression(),
+                zeroOrMore(sameLineWhitespace()),
+                push {
+                    val right = pop(it) as Expression
+                    val left = pop(it) as Expression
+                    BitwiseExpression.Xor(left, right)
+                },
+            ),
+        ),
+    )
+
+    open fun bitwiseAndExpression(): Rule<Statement> = sequence(
+        logicComparison(),
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                char('&'),
+                testNot(choice(char('&'), char('='))),
                 zeroOrMore(whitespace()),
                 logicComparison(),
                 zeroOrMore(sameLineWhitespace()),
                 push {
                     val right = pop(it) as Expression
                     val left = pop(it) as Expression
-                    LogicExpression.LogicalAnd(left, right)
+                    BitwiseExpression.And(left, right)
                 },
             ),
         ),
