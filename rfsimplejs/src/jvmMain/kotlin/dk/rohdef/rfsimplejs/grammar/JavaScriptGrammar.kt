@@ -731,7 +731,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         )
 
     open fun logicComparison(): Rule<Statement> = sequence(
-        additativeExpression(),
+        bitwiseShiftExpression(),
         zeroOrMore(
             choice(
                 comparisonFactory("===") { left, right -> LogicExpression.NonCoercingEquals(left, right) },
@@ -752,6 +752,34 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     ): Rule<Statement> = sequence(
         zeroOrMore(sameLineWhitespace()),
         string(pattern),
+        zeroOrMore(whitespace()),
+        bitwiseShiftExpression(),
+        zeroOrMore(sameLineWhitespace()),
+        push {
+            val right = pop(it) as Expression
+            val left = pop(it) as Expression
+            binaryExpression(left, right)
+        },
+    )
+
+    open fun bitwiseShiftExpression(): Rule<Statement> = sequence(
+        additativeExpression(),
+        zeroOrMore(
+            choice(
+                bitwiseShiftFactory(">>>") { left, right -> BitwiseExpression.UnsignedRightShift(left, right) },
+                bitwiseShiftFactory(">>") { left, right -> BitwiseExpression.RightShift(left, right) },
+                bitwiseShiftFactory("<<") { left, right -> BitwiseExpression.LeftShift(left, right) },
+            ),
+        ),
+    )
+
+    open fun bitwiseShiftFactory(
+        operator: String,
+        binaryExpression: (Expression, Expression) -> Statement,
+    ): Rule<Statement> = sequence(
+        zeroOrMore(sameLineWhitespace()),
+        string(operator),
+        testNot(char('=')),
         zeroOrMore(whitespace()),
         additativeExpression(),
         zeroOrMore(sameLineWhitespace()),
