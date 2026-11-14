@@ -1001,17 +1001,26 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun objectProperty() = sequence(
         zeroOrMore(whitespace()),
-        identifierGrammar.start(),
+        objectPropertyKey(),
         zeroOrMore(whitespace()),
         colon,
         zeroOrMore(whitespace()),
         expression(),
         push {
             val expression = pop(it) as Expression
-            val identifier = pop(it) as Identifier
+            val key = pop(it) as Expression
             val objectLiteral = pop(it) as ObjectLiteral
-            objectLiteral.withProperty(identifier, expression)
+            objectLiteral.withProperty(key, expression)
         },
+    )
+
+    open fun objectPropertyKey(): Rule<Statement> = choice(
+        stringGrammar.start(),
+        numberGrammar.start(),
+        literalGrammar.nullLiteral(),
+        literalGrammar.booleanLiteral(),
+        literalGrammar.undefinedLiteral(),
+        identifierGrammar.start(),
     )
 
     open fun array() = sequence(

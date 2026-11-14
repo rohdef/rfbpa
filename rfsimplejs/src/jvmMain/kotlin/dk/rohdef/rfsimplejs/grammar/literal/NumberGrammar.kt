@@ -42,8 +42,16 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
 
     open fun binaryLiteral() = sequence(
         sequence(
-            string("0b"),
-            regex("^[01]+$"),
+            choice(
+                string("0b"),
+                string("0B"),
+            ),
+            oneOrMore(
+                choice(
+                    char('0'),
+                    char('1'),
+                ),
+            ),
         ),
         push {
             Number.BinaryNumber(it.previousMatch.toString())
@@ -52,8 +60,17 @@ open class NumberGrammar : AbstractGrammar<Statement>() {
 
     open fun hexLiteral() = sequence(
         sequence(
-            string("0x"),
-            regex("^[0-9a-fA-F]+$"),
+            choice(
+                string("0x"),
+                string("0X"),
+            ),
+            oneOrMore(
+                choice(
+                    digit(),
+                    charRange('a', 'f'),
+                    charRange('A', 'F'),
+                ),
+            ),
         ),
         push {
             Number.HexadecimalNumber(it.previousMatch.toString())

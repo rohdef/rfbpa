@@ -87,7 +87,7 @@ class ObjectTests : FunSpec({
                 result.stackTop shouldBe Program(
                     ObjectLiteral(
                         StringLiteral("first name") to StringLiteral("John"),
-                        StringLiteral("escape'quote") to Number.SimpleNumber.IntegerNumber(42),
+                        StringLiteral("escape\\'quote") to Number.SimpleNumber.IntegerNumber(42),
                     ),
                 )
             }
@@ -128,7 +128,7 @@ class ObjectTests : FunSpec({
                 result.stackTop shouldBe Program(
                     ObjectLiteral(
                         StringLiteral("full name") to StringLiteral("Jane Doe"),
-                        StringLiteral("say \"hi\"") to Number.SimpleNumber.IntegerNumber(100),
+                        StringLiteral("""say \"hi\"""") to Number.SimpleNumber.IntegerNumber(100),
                     ),
                 )
             }
