@@ -11,6 +11,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.TemplateLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
@@ -788,6 +789,54 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun syntaticLiteral(): Rule<Statement> = choice(
         objectLiteral(),
         array(),
+        templateLiteral(),
+    )
+
+    open fun templateLiteral(): Rule<Statement> = sequence(
+        char('`'),
+        push { TemplateLiteral() },
+        zeroOrMore(
+            templateLiteralPart(),
+        ),
+        char('`'),
+    )
+
+    open fun templateLiteralPart(): Rule<Statement> = choice(
+        templateLiteralExpression(),
+        templateLiteralString(),
+    )
+
+    open fun templateLiteralExpression(): Rule<Statement> = sequence(
+        string("\${"),
+        zeroOrMore(whitespace()),
+        expression(),
+        zeroOrMore(whitespace()),
+        char('}'),
+        push {
+            val expression = pop(it) as Expression
+            val templateLiteral = pop(it) as TemplateLiteral
+            templateLiteral.withPart(TemplateLiteral.TemplateLiteralPart.ExpressionPart(expression))
+        },
+    )
+
+    open fun templateLiteralString(): Rule<Statement> = sequence(
+        oneOrMore(
+            choice(
+                char('\\') + char('`'),
+                char('\\') + char('$'),
+                char('\\') + char('\\'),
+                sequence(
+                    testNot(char('`')),
+                    testNot(string("\${")),
+                    anyChar(),
+                ),
+            ),
+        ),
+        push {
+            val text = it.previousMatch!!.toString()
+            val templateLiteral = pop(it) as TemplateLiteral
+            templateLiteral.withPart(TemplateLiteral.TemplateLiteralPart.StringPart(text))
+        },
     )
 
     open fun objectLiteral() = sequence(

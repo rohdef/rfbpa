@@ -484,17 +484,17 @@ class TemplateLiteralTests : FunSpec({
             val program = result.stackTop
 
             program shouldBe Program(
-                FunctionCall(
-                    ChainedCall(
-                        Identifier("console"),
+                ChainedCall(
+                    Identifier("console"),
+                    FunctionCall(
                         Identifier("log"),
-                    ),
-                    listOf(
-                        TemplateLiteral(
-                            listOf(
-                                StringPart("User: "),
-                                ExpressionPart(
-                                    Identifier("username"),
+                        listOf(
+                            TemplateLiteral(
+                                listOf(
+                                    StringPart("User: "),
+                                    ExpressionPart(
+                                        Identifier("username"),
+                                    ),
                                 ),
                             ),
                         ),
