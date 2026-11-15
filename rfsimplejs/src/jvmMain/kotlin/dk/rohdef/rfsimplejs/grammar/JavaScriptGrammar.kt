@@ -193,7 +193,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
         choice(
             sequence(
-                zeroOrMore(whitespace()),
+                zeroOrMore(ignorable()),
                 string("else"),
                 zeroOrMore(whitespace()),
                 choice(

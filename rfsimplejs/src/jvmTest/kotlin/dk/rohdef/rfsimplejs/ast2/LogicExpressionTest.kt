@@ -2,14 +2,7 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
-import dk.rohdef.rfsimplejs.ast2.Declaration
-import dk.rohdef.rfsimplejs.ast2.statement.ArrayReference
-import dk.rohdef.rfsimplejs.ast2.statement.Assignment
-import dk.rohdef.rfsimplejs.ast2.statement.BlockStatement
-import dk.rohdef.rfsimplejs.ast2.statement.EnclosedExpression
-import dk.rohdef.rfsimplejs.ast2.statement.Identifier
-import dk.rohdef.rfsimplejs.ast2.statement.PostfixExpression
-import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
+import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
@@ -115,6 +108,21 @@ class LogicExpressionTest : FunSpec({
                     Boolean.True,
                     Number.SimpleNumber.IntegerNumber(1),
                     Number.SimpleNumber.IntegerNumber(2),
+                ),
+            )
+        }
+
+        test("simple with semicolons") {
+            val code = "if(true) a; else b;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                IfStatement(
+                    Boolean.True,
+                    Identifier("a"),
+                    Identifier("b"),
                 ),
             )
         }
