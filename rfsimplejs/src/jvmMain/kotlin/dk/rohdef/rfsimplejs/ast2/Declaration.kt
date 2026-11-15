@@ -1,6 +1,5 @@
 package dk.rohdef.rfsimplejs.ast2
 
-import dk.rohdef.rfsimplejs.ast2.Declaration.Variable
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
 
