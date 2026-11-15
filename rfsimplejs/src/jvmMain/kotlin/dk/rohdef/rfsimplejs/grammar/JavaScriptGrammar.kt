@@ -13,6 +13,8 @@ import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.TemplateLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Undefined
+import dk.rohdef.rfsimplejs.ast2.statement.logic.ForInStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.Switch
@@ -124,6 +126,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun blockEndedStatement(): Rule<Statement> = choice(
         functionDeclaration(),
         ifStatement(),
+        forInStatement(),
         forStatement(),
         whileStatement(),
         switchStatement(),
@@ -217,6 +220,71 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
                 IfStatement(condition, then)
             },
         ),
+    )
+
+    open fun forInStatement(): Rule<Statement> = sequence(
+        string("for"),
+        zeroOrMore(whitespace()),
+
+        leftParenthesis,
+        zeroOrMore(whitespace()),
+
+        forInVariable(),
+
+        oneOrMore(whitespace()),
+        string("in"),
+        testNot(identifierGrammar.identifierChars()),
+        zeroOrMore(whitespace()),
+
+        expression(),
+        zeroOrMore(whitespace()),
+
+        rightParenthesis,
+        zeroOrMore(whitespace()),
+
+        choice(
+            blockStatement(),
+            statement(),
+        ),
+
+        push {
+            val action = pop(it)
+            val expression = pop(it) as Expression
+            val variable = pop(it)
+
+            ForInStatement(variable, expression, action)
+        },
+    )
+
+    open fun forInVariable(): Rule<Statement> = choice(
+        sequence(
+            string("var"),
+            oneOrMore(whitespace()),
+            identifierGrammar.start(),
+            push {
+                val identifier = pop(it) as Identifier
+                Declaration.Variable(identifier to Undefined)
+            },
+        ),
+        sequence(
+            string("let"),
+            oneOrMore(whitespace()),
+            identifierGrammar.start(),
+            push {
+                val identifier = pop(it) as Identifier
+                Declaration.Let(identifier to Undefined)
+            },
+        ),
+        sequence(
+            string("const"),
+            oneOrMore(whitespace()),
+            identifierGrammar.start(),
+            push {
+                val identifier = pop(it) as Identifier
+                Declaration.Constant(identifier to Undefined)
+            },
+        ),
+        identifierGrammar.start(),
     )
 
     open fun forStatement() = sequence(
