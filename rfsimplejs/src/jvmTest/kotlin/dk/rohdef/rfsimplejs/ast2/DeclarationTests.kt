@@ -2,13 +2,17 @@ package dk.rohdef.rfsimplejs.ast2
 
 import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
+import dk.rohdef.rfsimplejs.ast2.statement.ChainedCall
 import dk.rohdef.rfsimplejs.ast2.statement.Expression
+import dk.rohdef.rfsimplejs.ast2.statement.FunctionCall
 import dk.rohdef.rfsimplejs.ast2.statement.Identifier
+import dk.rohdef.rfsimplejs.ast2.statement.PrefixExpression
 import dk.rohdef.rfsimplejs.ast2.statement.Statement
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Null
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.Undefined
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
@@ -89,9 +93,64 @@ class DeclarationTests : FunSpec({
 
             result.stackTop.shouldBeNull()
         }
+
+        test("identifier only") {
+            val code = "var i;"
+            val result = parser.run(code)
+
+            result.stackTop shouldBe wrapping(
+                Declaration.Variable(
+                    Identifier("i") to Undefined,
+                ),
+            )
+        }
+
+        test("initialized and identifier only") {
+            val code = "var nu=new Date().getTime(), i"
+            val result = parser.run(code)
+
+            result.stackTop shouldBe wrapping(
+                Declaration.Variable(
+                    Identifier("nu") to PrefixExpression.New(
+                        ChainedCall(
+                            FunctionCall(Identifier("Date")),
+                            FunctionCall(Identifier("getTime")),
+                        ),
+                    ),
+                    Identifier("i") to Undefined,
+                ),
+            )
+        }
     }
 
     context("let") {
+        test("identifier only") {
+            val code = "let i;"
+            val result = parser.run(code)
+
+            result.stackTop shouldBe wrapping(
+                Declaration.Let(
+                    Identifier("i") to Undefined,
+                ),
+            )
+        }
+
+        test("initialized and identifier only") {
+            val code = "let nu=new Date().getTime(), i"
+            val result = parser.run(code)
+
+            result.stackTop shouldBe wrapping(
+                Declaration.Let(
+                    Identifier("nu") to PrefixExpression.New(
+                        ChainedCall(
+                            FunctionCall(Identifier("Date")),
+                            FunctionCall(Identifier("getTime")),
+                        ),
+                    ),
+                    Identifier("i") to Undefined,
+                ),
+            )
+        }
         withTests(
             nameFn = { "let ${it.lvalue.toCode()} = ${it.expression.toCode()}" },
             testSamples,

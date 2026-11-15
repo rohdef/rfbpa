@@ -1310,7 +1310,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         ),
     )
 
-    open fun lvalueExpression(): Rule<Statement> = sequence(
+    open fun lvalueExpression(): Rule<Statement> = choice(
         sequence(
             identifierGrammar.start(),
             zeroOrMore(sameLineWhitespace()),
@@ -1318,13 +1318,22 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             zeroOrMore(whitespace()),
             expression(),
             zeroOrMore(sameLineWhitespace()),
+            push {
+                val expression = pop(it) as Expression
+                val lvalue = pop(it) as Identifier
+                val declaration = pop(it) as Declaration<*>
+                declaration.withDeclarion(lvalue, expression)
+            },
         ),
-        push {
-            val expression = pop(it) as Expression
-            val lvalue = pop(it) as Identifier
-            val declaration = pop(it) as Declaration<*>
-            declaration.withDeclarion(lvalue, expression)
-        },
+        sequence(
+            identifierGrammar.start(),
+            zeroOrMore(sameLineWhitespace()),
+            push {
+                val lvalue = pop(it) as Identifier
+                val declaration = pop(it) as Declaration<*>
+                declaration.withDeclarion(lvalue, Undefined)
+            },
+        ),
     )
 
     open fun ternaryExpression(): Rule<Statement> = sequence(

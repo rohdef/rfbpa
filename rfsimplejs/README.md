@@ -10,11 +10,8 @@ JavaScript contructs for modules (`import`, `export`, etc.) is currently not sup
 # Deliberately postponed/not supported
 
 - statement
-  - template-literal
-  - regex
   - class
   - all module logic, export, import etc.b
-  - bitwise logic
-  - some of the less used assignments (eg., `<<==`)
+  - bitwise assignment logic
 
 Probably a good idea to support empty statements as a unit, rather than using block (it is kind of a hack)
