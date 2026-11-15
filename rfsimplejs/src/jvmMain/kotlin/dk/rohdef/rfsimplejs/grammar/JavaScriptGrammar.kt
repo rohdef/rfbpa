@@ -741,17 +741,30 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun expression(): Rule<Statement> = sequence(
         choice(
-            keywordPrefixFactory(string("return ")) { expression -> Return.Expression(expression) },
-            sequence(
-                string("return"),
-                push { Return.Void },
-            ),
+            returnExpression(),
             lambdaExpression(),
             functionExpression(),
             logicDisjunctionExpression(),
         ),
         optional(postfixExpression()),
         zeroOrMore(ternaryExpression()),
+    )
+
+    open fun returnExpression(): Rule<Statement> = sequence(
+        string("return"),
+        testNot(identifierGrammar.identifierChars()),
+        choice(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                testNot(choice(semiColon, lf(), cr(), rightCurlyBracket, eoi())),
+                expression(),
+                push {
+                    val expression = pop(it) as Expression
+                    Return.Expression(expression)
+                },
+            ),
+            push { Return.Void },
+        ),
     )
 
     open fun primaryExpression(): Rule<Statement> = sequence(

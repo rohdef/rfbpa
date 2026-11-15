@@ -7,6 +7,7 @@ import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpressio
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
+import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
@@ -70,6 +71,26 @@ class FunctionDefinitionTest : FunSpec({
                     ),
                 ),
             )
+        )
+    }
+
+    test("return without space") {
+        val code = "function() { return{a: 3, b: 4} }"
+
+        val result = parser.run(code)
+        val program = result.stackTop
+
+        program shouldBe Program(
+            FunctionExpression(
+                FunctionExpression.Parameters(),
+                BlockStatement(
+                    Return.Expression(
+                        ObjectLiteral()
+                            .withProperty(Identifier("a"), Number.SimpleNumber.IntegerNumber(3))
+                            .withProperty(Identifier("b"), Number.SimpleNumber.IntegerNumber(4)),
+                    ),
+                ),
+            ),
         )
     }
 
