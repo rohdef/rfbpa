@@ -618,4 +618,81 @@ class ALittleMoreTest : FunSpec({
             )
         }
     }
+
+    context("chained function call with function parameter") {
+        test("chained call with anonymous function parameter across lines") {
+            val code = """
+                fetch()
+                    .catch(function(){});
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ChainedCall(
+                    FunctionCall(
+                        Identifier("fetch"),
+                    ),
+                    FunctionCall(
+                        Identifier("catch"),
+                        FunctionExpression(
+                            FunctionExpression.Parameters(),
+                            BlockStatement(),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("chained call with function parameter and return expression") {
+            val code = """
+                fetch('some-api/foo')
+                    .then(function(r){ return r.json(); })
+                    .catch(function(){ return false; });
+            """.trimIndent()
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ChainedCall(
+                    FunctionCall(
+                        Identifier("fetch"),
+                        StringLiteral("some-api/foo"),
+                    ),
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("then"),
+                            FunctionExpression(
+                                FunctionExpression.Parameters()
+                                    .withParameter(Identifier("r")),
+                                BlockStatement(
+                                    Return.Expression(
+                                        ChainedCall(
+                                            Identifier("r"),
+                                            FunctionCall(
+                                                Identifier("json"),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        FunctionCall(
+                            Identifier("catch"),
+                            FunctionExpression(
+                                FunctionExpression.Parameters(),
+                                BlockStatement(
+                                    Return.Expression(
+                                        AstBoolean.False,
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+    }
 })

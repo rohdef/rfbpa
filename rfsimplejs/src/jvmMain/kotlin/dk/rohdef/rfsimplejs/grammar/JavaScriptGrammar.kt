@@ -9,18 +9,9 @@ import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.BitwiseExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
-import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.literals.*
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Boolean
-import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
-import dk.rohdef.rfsimplejs.ast2.statement.literals.TemplateLiteral
-import dk.rohdef.rfsimplejs.ast2.statement.literals.Undefined
-import dk.rohdef.rfsimplejs.ast2.statement.logic.ForInStatement
-import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
-import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
-import dk.rohdef.rfsimplejs.ast2.statement.logic.Switch
-import dk.rohdef.rfsimplejs.ast2.statement.logic.SwitchCase
-import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
-import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
+import dk.rohdef.rfsimplejs.ast2.statement.logic.*
 import dk.rohdef.rfsimplejs.grammar.literal.LiteralGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.NumberGrammar
 import dk.rohdef.rfsimplejs.grammar.literal.RegexGrammar
@@ -1063,7 +1054,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun asChainedCall(): Rule<Statement> = sequence(
-        zeroOrMore(sameLineWhitespace()),
+        zeroOrMore(whitespace()),
         period,
         zeroOrMore(whitespace()),
         literal(),
