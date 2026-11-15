@@ -153,20 +153,32 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     open fun assignment(): Rule<Statement> = sequence(
         primaryExpression(),
         zeroOrMore(sameLineWhitespace()),
-        equalChar,
-        testNot(choice(equalChar, char('>'))),
+        choice(
+            assignmentFactory(string("+=")) { target, expr -> ArithmeticExpression.Addition(target, expr) },
+            assignmentFactory(string("-=")) { target, expr -> ArithmeticExpression.Subtraction(target, expr) },
+            assignmentFactory(string("*=")) { target, expr -> ArithmeticExpression.Multiplication(target, expr) },
+            assignmentFactory(string("/=")) { target, expr -> ArithmeticExpression.Division(target, expr) },
+            assignmentFactory(string("%=")) { target, expr -> ArithmeticExpression.Modulo(target, expr) },
+            assignmentFactory(sequence(equalChar, testNot(choice(equalChar, char('>'))))) { _, expr -> expr },
+        ),
+    )
+
+    open fun assignmentFactory(
+        operator: Rule<Statement>,
+        valueTransformer: (Expression, Expression) -> Expression,
+    ): Rule<Statement> = sequence(
+        operator,
         zeroOrMore(whitespace()),
         choice(
             assignment(),
             expression(),
         ),
         zeroOrMore(whitespace()),
-
         push {
             val expression = pop(it) as Expression
             val target = pop(it) as Expression
 
-            Assignment(target, expression)
+            Assignment(target, valueTransformer(target, expression))
         },
     )
 
@@ -1002,7 +1014,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         matcher: Rule<Statement>,
         binaryExpression: (Expression, Expression) -> Statement,
     ): Rule<Statement> = sequence(
-        zeroOrMore(sameLineWhitespace()),
+        zeroOrMore(whitespace()),
         matcher,
         zeroOrMore(whitespace()),
         multiplicativeExpression(),
