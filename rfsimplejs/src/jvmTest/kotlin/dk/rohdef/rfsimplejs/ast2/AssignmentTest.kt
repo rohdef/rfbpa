@@ -648,6 +648,855 @@ class AssignmentTest : FunSpec({
         }
     }
 
+    context("addition assignment +=") {
+        test("simple identifier addition assignment") {
+            val code = "a += 1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with identifier") {
+            val code = "a += b"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with string concatenation") {
+            val code = """msg += " world""""
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("msg"),
+                    ArithmeticExpression.Addition(
+                        Identifier("msg"),
+                        StringLiteral(" world"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with complex expression") {
+            val code = "x += 1 + 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("x"),
+                    ArithmeticExpression.Addition(
+                        Identifier("x"),
+                        ArithmeticExpression.Addition(
+                            AstNumber.SimpleNumber.IntegerNumber(1),
+                            AstNumber.SimpleNumber.IntegerNumber(2),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("array reference target") {
+            val code = "arr[0] += 5"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ArrayReference(
+                        Identifier("arr"),
+                        AstNumber.SimpleNumber.IntegerNumber(0),
+                    ),
+                    ArithmeticExpression.Addition(
+                        ArrayReference(
+                            Identifier("arr"),
+                            AstNumber.SimpleNumber.IntegerNumber(0),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(5),
+                    ),
+                ),
+            )
+        }
+
+        test("object property chain target") {
+            val code = "user.score += 10"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("user"),
+                        Identifier("score"),
+                    ),
+                    ArithmeticExpression.Addition(
+                        ChainedCall(
+                            Identifier("user"),
+                            Identifier("score"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(10),
+                    ),
+                ),
+            )
+        }
+
+        test("nested object chain target") {
+            val code = """bg.innerHTML += "warning""""
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("bg"),
+                        Identifier("innerHTML"),
+                    ),
+                    ArithmeticExpression.Addition(
+                        ChainedCall(
+                            Identifier("bg"),
+                            Identifier("innerHTML"),
+                        ),
+                        StringLiteral("warning"),
+                    ),
+                ),
+            )
+        }
+
+        test("function call result target") {
+            val code = "getCounter().count += 1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("getCounter"),
+                        ),
+                        Identifier("count"),
+                    ),
+                    ArithmeticExpression.Addition(
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("getCounter"),
+                            ),
+                            Identifier("count"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+
+        test("without whitespace") {
+            val code = "a+=1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+
+        test("with whitespace and semicolon") {
+            val code = "  a  +=  10 ;  "
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(10),
+                    ),
+                ),
+            )
+        }
+    }
+
+    context("subtraction assignment -=") {
+        test("simple identifier subtraction assignment") {
+            val code = "a -= 1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with identifier") {
+            val code = "a -= b"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with complex expression") {
+            val code = "x -= 2 * y"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("x"),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("x"),
+                        ArithmeticExpression.Multiplication(
+                            AstNumber.SimpleNumber.IntegerNumber(2),
+                            Identifier("y"),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("array reference target") {
+            val code = "arr[i] -= 3"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ArrayReference(
+                        Identifier("arr"),
+                        Identifier("i"),
+                    ),
+                    ArithmeticExpression.Subtraction(
+                        ArrayReference(
+                            Identifier("arr"),
+                            Identifier("i"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(3),
+                    ),
+                ),
+            )
+        }
+
+        test("object property chain target") {
+            val code = "player.health -= 15"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("player"),
+                        Identifier("health"),
+                    ),
+                    ArithmeticExpression.Subtraction(
+                        ChainedCall(
+                            Identifier("player"),
+                            Identifier("health"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(15),
+                    ),
+                ),
+            )
+        }
+
+        test("function call result target") {
+            val code = "getAccount().balance -= 50"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("getAccount"),
+                        ),
+                        Identifier("balance"),
+                    ),
+                    ArithmeticExpression.Subtraction(
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("getAccount"),
+                            ),
+                            Identifier("balance"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(50),
+                    ),
+                ),
+            )
+        }
+
+        test("without whitespace") {
+            val code = "a-=1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(1),
+                    ),
+                ),
+            )
+        }
+
+        test("with whitespace and semicolon") {
+            val code = "  a  -=  5 ;  "
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Subtraction(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(5),
+                    ),
+                ),
+            )
+        }
+    }
+
+    context("multiplication assignment *=") {
+        test("simple identifier multiplication assignment") {
+            val code = "a *= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Multiplication(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with identifier") {
+            val code = "a *= b"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Multiplication(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with complex expression") {
+            val code = "x *= y + z"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("x"),
+                    ArithmeticExpression.Multiplication(
+                        Identifier("x"),
+                        ArithmeticExpression.Addition(
+                            Identifier("y"),
+                            Identifier("z"),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("array reference target") {
+            val code = "arr[0] *= 4"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ArrayReference(
+                        Identifier("arr"),
+                        AstNumber.SimpleNumber.IntegerNumber(0),
+                    ),
+                    ArithmeticExpression.Multiplication(
+                        ArrayReference(
+                            Identifier("arr"),
+                            AstNumber.SimpleNumber.IntegerNumber(0),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(4),
+                    ),
+                ),
+            )
+        }
+
+        test("object property chain target") {
+            val code = "scale.factor *= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("scale"),
+                        Identifier("factor"),
+                    ),
+                    ArithmeticExpression.Multiplication(
+                        ChainedCall(
+                            Identifier("scale"),
+                            Identifier("factor"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("function call result target") {
+            val code = "getMetrics().rate *= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("getMetrics"),
+                        ),
+                        Identifier("rate"),
+                    ),
+                    ArithmeticExpression.Multiplication(
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("getMetrics"),
+                            ),
+                            Identifier("rate"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("without whitespace") {
+            val code = "a*=2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Multiplication(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+    }
+
+    context("division assignment /=") {
+        test("simple identifier division assignment") {
+            val code = "a /= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Division(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with identifier") {
+            val code = "a /= b"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Division(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with complex expression") {
+            val code = "x /= y - 1"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("x"),
+                    ArithmeticExpression.Division(
+                        Identifier("x"),
+                        ArithmeticExpression.Subtraction(
+                            Identifier("y"),
+                            AstNumber.SimpleNumber.IntegerNumber(1),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("array reference target") {
+            val code = "arr[i] /= 10"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ArrayReference(
+                        Identifier("arr"),
+                        Identifier("i"),
+                    ),
+                    ArithmeticExpression.Division(
+                        ArrayReference(
+                            Identifier("arr"),
+                            Identifier("i"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(10),
+                    ),
+                ),
+            )
+        }
+
+        test("object property chain target") {
+            val code = "point.x /= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("point"),
+                        Identifier("x"),
+                    ),
+                    ArithmeticExpression.Division(
+                        ChainedCall(
+                            Identifier("point"),
+                            Identifier("x"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("function call result target") {
+            val code = "getSize().width /= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("getSize"),
+                        ),
+                        Identifier("width"),
+                    ),
+                    ArithmeticExpression.Division(
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("getSize"),
+                            ),
+                            Identifier("width"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("without whitespace") {
+            val code = "a/=2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Division(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+    }
+
+    context("modulo assignment %=") {
+        test("simple identifier modulo assignment") {
+            val code = "a %= 3"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Modulo(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(3),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with identifier") {
+            val code = "a %= b"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Modulo(
+                        Identifier("a"),
+                        Identifier("b"),
+                    ),
+                ),
+            )
+        }
+
+        test("identifier with complex expression") {
+            val code = "x %= y * 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("x"),
+                    ArithmeticExpression.Modulo(
+                        Identifier("x"),
+                        ArithmeticExpression.Multiplication(
+                            Identifier("y"),
+                            AstNumber.SimpleNumber.IntegerNumber(2),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("array reference target") {
+            val code = "arr[0] %= 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ArrayReference(
+                        Identifier("arr"),
+                        AstNumber.SimpleNumber.IntegerNumber(0),
+                    ),
+                    ArithmeticExpression.Modulo(
+                        ArrayReference(
+                            Identifier("arr"),
+                            AstNumber.SimpleNumber.IntegerNumber(0),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(2),
+                    ),
+                ),
+            )
+        }
+
+        test("object property chain target") {
+            val code = "timer.seconds %= 60"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        Identifier("timer"),
+                        Identifier("seconds"),
+                    ),
+                    ArithmeticExpression.Modulo(
+                        ChainedCall(
+                            Identifier("timer"),
+                            Identifier("seconds"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(60),
+                    ),
+                ),
+            )
+        }
+
+        test("function call result target") {
+            val code = "getQueue().index %= 10"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    ChainedCall(
+                        FunctionCall(
+                            Identifier("getQueue"),
+                        ),
+                        Identifier("index"),
+                    ),
+                    ArithmeticExpression.Modulo(
+                        ChainedCall(
+                            FunctionCall(
+                                Identifier("getQueue"),
+                            ),
+                            Identifier("index"),
+                        ),
+                        AstNumber.SimpleNumber.IntegerNumber(10),
+                    ),
+                ),
+            )
+        }
+
+        test("without whitespace") {
+            val code = "a%=3"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Modulo(
+                        Identifier("a"),
+                        AstNumber.SimpleNumber.IntegerNumber(3),
+                    ),
+                ),
+            )
+        }
+    }
+
+    context("chained and combined compound assignments") {
+        test("chained compound assignment") {
+            val code = "a += b += 3"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    ArithmeticExpression.Addition(
+                        Identifier("a"),
+                        Assignment(
+                            Identifier("b"),
+                            ArithmeticExpression.Addition(
+                                Identifier("b"),
+                                AstNumber.SimpleNumber.IntegerNumber(3),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        test("simple assignment combined with compound assignment") {
+            val code = "a = b += 2"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Assignment(
+                    Identifier("a"),
+                    Assignment(
+                        Identifier("b"),
+                        ArithmeticExpression.Addition(
+                            Identifier("b"),
+                            AstNumber.SimpleNumber.IntegerNumber(2),
+                        ),
+                    ),
+                ),
+            )
+        }
+    }
+
     context("toCode") {
         test("array assignment toCode") {
             val assignment = Assignment(
