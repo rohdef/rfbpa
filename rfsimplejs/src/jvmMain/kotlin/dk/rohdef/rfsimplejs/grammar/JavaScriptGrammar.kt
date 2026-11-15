@@ -160,9 +160,10 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun assignment(): Rule<Statement> = sequence(
-        identifierGrammar.start(),
+        primaryExpression(),
         zeroOrMore(sameLineWhitespace()),
         equalChar,
+        testNot(choice(equalChar, char('>'))),
         zeroOrMore(whitespace()),
         choice(
             assignment(),
@@ -172,9 +173,9 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
         push {
             val expression = pop(it) as Expression
-            val identifier = pop(it) as Identifier
+            val target = pop(it) as Expression
 
-            Assignment(identifier, expression)
+            Assignment(target, expression)
         },
     )
 
