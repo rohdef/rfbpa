@@ -4,18 +4,12 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
-import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.BitwiseExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
-import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
-import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
-import dk.rohdef.rfsimplejs.ast2.statement.logic.Switch
-import dk.rohdef.rfsimplejs.ast2.statement.logic.SwitchCase
-import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
-import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
+import dk.rohdef.rfsimplejs.ast2.statement.logic.*
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
@@ -415,7 +409,7 @@ class ALittleMoreTest : FunSpec({
         )
     }
 
-    context("statements without semicolon or newline separators") {
+    context("same line statements without separators") {
         test("for loop followed by function call") {
             val code = "for(var i=0;i<navn.length;i++){i} foo();"
 

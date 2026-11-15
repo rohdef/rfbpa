@@ -49,28 +49,53 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
     )
 
     open fun topLevel(): Rule<Statement> = sequence(
-        optional(
-            sequence(
-                topLevelItem(),
-                zeroOrMore(
-                    sequence(
-                        codeSeparator(),
-                        zeroOrMore(ignorable()),
-                        topLevelItem(),
-                    ),
-                ),
-                optional(semiColon),
-            ),
-        ),
+        optional(statementList()),
         zeroOrMore(ignorable()),
     )
 
-    open fun topLevelItem(): Rule<Statement> = sequence(
-        choice(
-            functionDeclaration(),
-            statement(),
+    open fun statementList(): Rule<Statement> = sequence(
+        topLevelItem(),
+        zeroOrMore(
+            choice(
+                sequence(
+                    codeSeparator(),
+                    zeroOrMore(ignorable()),
+                    topLevelItem(),
+                ),
+                sequence(
+                    semiColon,
+                    zeroOrMore(ignorable()),
+                ),
+            ),
         ),
+        optional(semiColon),
+    )
 
+    open fun topLevelItem(): Rule<Statement> = choice(
+        blockEndedTopLevelItem(),
+        simpleTopLevelItem(),
+        blockStatementItem(),
+    )
+
+    open fun blockEndedTopLevelItem(): Rule<Statement> = sequence(
+        blockEndedStatement(),
+        push {
+            val statement = pop(it)
+            val blockStatment = pop(it) as BlockStatement
+
+            blockStatment.withStatement(statement)
+        },
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                testNot(choice(semiColon, lf(), cr(), rightCurlyBracket, eoi())),
+                topLevelItem(),
+            ),
+        ),
+    )
+
+    open fun simpleTopLevelItem(): Rule<Statement> = sequence(
+        simpleStatement(),
         push {
             val statement = pop(it)
             val blockStatment = pop(it) as BlockStatement
@@ -79,17 +104,43 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
         },
     )
 
+    open fun blockStatementItem(): Rule<Statement> = sequence(
+        blockStatement(),
+        push {
+            val statement = pop(it)
+            val blockStatment = pop(it) as BlockStatement
+
+            blockStatment.withStatement(statement)
+        },
+        zeroOrMore(
+            sequence(
+                zeroOrMore(sameLineWhitespace()),
+                testNot(choice(semiColon, lf(), cr(), rightCurlyBracket, eoi())),
+                topLevelItem(),
+            ),
+        ),
+    )
+
+    open fun blockEndedStatement(): Rule<Statement> = choice(
+        functionDeclaration(),
+        ifStatement(),
+        forStatement(),
+        whileStatement(),
+        switchStatement(),
+    )
+
+    open fun simpleStatement(): Rule<Statement> = choice(
+        declaration(),
+        assignment(),
+        breakStatement(),
+        continueStatement(),
+        expression(),
+    )
+
     open fun statement(): Rule<Statement> = sequence(
         choice(
-            ifStatement(),
-            forStatement(),
-            whileStatement(),
-            switchStatement(),
-            declaration(),
-            assignment(),
-            breakStatement(),
-            continueStatement(),
-            expression(),
+            blockEndedStatement(),
+            simpleStatement(),
             blockStatement(),
         ),
         zeroOrMore(sameLineWhitespace()),
@@ -322,10 +373,16 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
             sequence(
                 switchCaseItem(),
                 zeroOrMore(
-                    sequence(
-                        codeSeparator(),
-                        zeroOrMore(ignorable()),
-                        switchCaseItem(),
+                    choice(
+                        sequence(
+                            codeSeparator(),
+                            zeroOrMore(ignorable()),
+                            switchCaseItem(),
+                        ),
+                        sequence(
+                            semiColon,
+                            zeroOrMore(ignorable()),
+                        ),
                     ),
                 ),
                 optional(semiColon),
@@ -336,15 +393,7 @@ open class JavaScriptGrammar : AbstractGrammar<Statement>() {
 
     open fun switchCaseItem(): Rule<Statement> = sequence(
         testNot(switchCaseTerminator()),
-        choice(
-            functionDeclaration(),
-            statement(),
-        ),
-        push {
-            val statement = pop(it)
-            val blockStatement = pop(it) as BlockStatement
-            blockStatement.withStatement(statement)
-        },
+        topLevelItem(),
     )
 
     open fun switchCaseTerminator(): Rule<Statement> = choice(
