@@ -4,13 +4,18 @@ import com.github.mpe85.grampa.createGrammar
 import com.github.mpe85.grampa.parser.Parser
 import dk.rohdef.rfsimplejs.ast2.statement.*
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.ArithmeticExpression
+import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.BitwiseExpression
 import dk.rohdef.rfsimplejs.ast2.statement.binaryExpressions.LogicExpression
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ArrayLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.Number
 import dk.rohdef.rfsimplejs.ast2.statement.literals.ObjectLiteral
 import dk.rohdef.rfsimplejs.ast2.statement.literals.StringLiteral
+import dk.rohdef.rfsimplejs.ast2.statement.logic.ForStatement
 import dk.rohdef.rfsimplejs.ast2.statement.logic.IfStatement
+import dk.rohdef.rfsimplejs.ast2.statement.logic.Switch
+import dk.rohdef.rfsimplejs.ast2.statement.logic.SwitchCase
 import dk.rohdef.rfsimplejs.ast2.statement.logic.TernaryExpression
+import dk.rohdef.rfsimplejs.ast2.statement.logic.WhileStatement
 import dk.rohdef.rfsimplejs.grammar.JavaScriptGrammar
 import io.kotest.core.annotation.DisplayName
 import io.kotest.core.spec.style.FunSpec
@@ -408,5 +413,215 @@ class ALittleMoreTest : FunSpec({
                 ),
             ),
         )
+    }
+
+    context("statements without semicolon or newline separators") {
+        test("for loop followed by function call") {
+            val code = "for(var i=0;i<navn.length;i++){i} foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Declaration.Variable(
+                        Identifier("i") to Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.LessThan(
+                        Identifier("i"),
+                        ChainedCall(
+                            Identifier("navn"),
+                            Identifier("length"),
+                        ),
+                    ),
+                    PostfixExpression.Increment(
+                        Identifier("i"),
+                    ),
+                    BlockStatement(
+                        Identifier("i"),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("for loop followed by variable declaration") {
+            val code = "for (var i = 0; i < 10; i++) { x; } var y = 1;"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Declaration.Variable(
+                        Identifier("i") to Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.LessThan(
+                        Identifier("i"),
+                        Number.SimpleNumber.IntegerNumber(10),
+                    ),
+                    PostfixExpression.Increment(
+                        Identifier("i"),
+                    ),
+                    BlockStatement(
+                        Identifier("x"),
+                    ),
+                ),
+                Declaration.Variable(
+                    Identifier("y") to Number.SimpleNumber.IntegerNumber(1),
+                ),
+            )
+        }
+
+        test("if statement followed by function call") {
+            val code = "if (a) { b(); } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                IfStatement(
+                    Identifier("a"),
+                    BlockStatement(
+                        FunctionCall(
+                            Identifier("b"),
+                        ),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("if else statement followed by function call") {
+            val code = "if (a) { b(); } else { c(); } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                IfStatement(
+                    Identifier("a"),
+                    BlockStatement(
+                        FunctionCall(
+                            Identifier("b"),
+                        ),
+                    ),
+                    BlockStatement(
+                        FunctionCall(
+                            Identifier("c"),
+                        ),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("while loop followed by function call") {
+            val code = "while (a) { b(); } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                WhileStatement(
+                    Identifier("a"),
+                    BlockStatement(
+                        FunctionCall(
+                            Identifier("b"),
+                        ),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("function declaration followed by function call") {
+            val code = "function bar() { return 1; } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Declaration.Variable(
+                    Identifier("bar") to FunctionExpression(
+                        FunctionExpression.Parameters(),
+                        BlockStatement(
+                            Return.Expression(
+                                Number.SimpleNumber.IntegerNumber(1),
+                            ),
+                        ),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("switch statement followed by function call") {
+            val code = "switch (x) { case 1: break; } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                Switch(
+                    Identifier("x"),
+                    listOf(
+                        SwitchCase.Match(
+                            Number.SimpleNumber.IntegerNumber(1),
+                            BlockStatement(
+                                Break,
+                            ),
+                        ),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
+
+        test("consecutive block statements without separators") {
+            val code = "for (var i = 0; i < 1; i++) { a; } if (b) { c; } foo();"
+
+            val result = parser.run(code)
+            val program = result.stackTop
+
+            program shouldBe Program(
+                ForStatement(
+                    Declaration.Variable(
+                        Identifier("i") to Number.SimpleNumber.IntegerNumber(0),
+                    ),
+                    LogicExpression.LessThan(
+                        Identifier("i"),
+                        Number.SimpleNumber.IntegerNumber(1),
+                    ),
+                    PostfixExpression.Increment(
+                        Identifier("i"),
+                    ),
+                    BlockStatement(
+                        Identifier("a"),
+                    ),
+                ),
+                IfStatement(
+                    Identifier("b"),
+                    BlockStatement(
+                        Identifier("c"),
+                    ),
+                ),
+                FunctionCall(
+                    Identifier("foo"),
+                ),
+            )
+        }
     }
 })
